@@ -24,3 +24,11 @@ class InlineKeyboardAnswers:
     get_back = "Вернуться"
 
 
+@dataclass
+class MainMenuCommands:
+    need_help = "Нужна помощь"
+    change_data = "Изменить анкету"
+    tasks_nearby = "Задания рядом"
+    workers_nearby = "Исполнители рядом"
+    my_tasks = "Ваши задания"
+    balance = "Баланс"

@@ -4,6 +4,7 @@ from loader import dp
 from keyboards.inline.chose_role import chose_role_callback, chose_role_markup
 from keyboards.inline.start_or_back import start_or_back_markup, start_or_back_callback
 from keyboards.inline.agree_or_not import agree_or_not_markup, agree_or_not_callback
+from keyboards.default.main import main_markup
 from data.config import Roles
 from data.config import InlineKeyboardAnswers
 from states.common.confirm_privacy_policy import ConfirmPrivacyPolicy
@@ -46,7 +47,11 @@ async def ask_to_confirm_privacy_policy(callback: types.CallbackQuery, state: FS
                            state=ConfirmPrivacyPolicy.get_answer)
 async def confirm_privacy_policy(callback: types.CallbackQuery, state: FSMContext):
     await callback.answer()
-    await callback.message.answer("Согласен 123")
+    await callback.message.answer(
+        text="Главное меню",
+        reply_markup=main_markup
+
+    )
     await state.finish()
 
 
