@@ -1,9 +1,12 @@
+from datetime import datetime
 from aiogram.dispatcher import FSMContext
 from aiogram import types
 from loader import dp
 from keyboards.inline.categories import create_categories_markup, get_category_callback
 from keyboards.inline.yes_or_no import yes_or_no_markup, yes_or_no_callback
 from keyboards.inline.skip import skip_markup, skip_callback
+from keyboards.inline.now import now_markup, now_callback
+from keyboards.inline.order_execution_time import order_execution_time_markup, order_execution_time_callback
 from keyboards.default.get_location import get_location_markup
 from keyboards.default.get_phone import get_phone_markup
 from data.config import Roles
@@ -87,13 +90,13 @@ async def can_write(callback: types.CallbackQuery, callback_data: dict, state: F
 @dp.callback_query_handler(skip_callback.filter(question="has_additional_contacts"),
                            state=CreateOrderStates.get_additional_contacts)
 async def has_additional_contacts_skip(callback: types.CallbackQuery, callback_data: dict, state: FSMContext):
+    await callback.answer()
     await state.update_data(additional_contacts=None)
     await callback.message.answer(
         text="Напишите описание задачи или опишите голосом",
-        reply_markup=skip_markup("task_description")
+        reply_markup=skip_markup("order_description")
     )
-    await CreateOrderStates.get_task_description.set()
-    await callback.answer()
+    await CreateOrderStates.get_order_description.set()
 
 
 @dp.message_handler(state=CreateOrderStates.get_additional_contacts)
@@ -101,25 +104,63 @@ async def has_additional_contacts(message: types.Message, state: FSMContext):
     additional_contacts: str = message.text
     await message.answer(
         text="Напишите описание задачи или опишите голосом",
-        reply_markup=skip_markup("task_description")
+        reply_markup=skip_markup("order_description")
     )
-    await CreateOrderStates.get_task_description.set()
+    await CreateOrderStates.get_order_description.set()
     await state.update_data(additional_contacts=additional_contacts)
 
 
-@dp.callback_query_handler(skip_callback.filter(question="task_description"),
-                           state=CreateOrderStates.get_additional_contacts)
+@dp.callback_query_handler(skip_callback.filter(question="order_description"),
+                           state=CreateOrderStates.get_order_description)
 async def has_additional_contacts_skip(callback: types.CallbackQuery, callback_data: dict, state: FSMContext):
-    await state.update_data(task_description=None)
-    await CreateOrderStates.get_task_start_date.set()
     await callback.answer()
+    await state.update_data(order_description=None)
+    await callback.message.answer(
+        text="Укажите дату и время начала задания.",
+        reply_markup=now_markup("order_start_date")
+    )
+    await CreateOrderStates.get_order_start_date.set()
 
 
-@dp.message_handler(state=CreateOrderStates.get_task_description)
+@dp.message_handler(state=CreateOrderStates.get_order_description)
 async def get_task_description(message: types.Message, state: FSMContext):
     task_description: str = message.text
-    await state.update_data(task_description=task_description)
-    await CreateOrderStates.get_task_start_date.set()
+    await state.update_data(order_description=task_description)
+    await message.answer(
+        text="Укажите дату и время начала задания.",
+        reply_markup=now_markup("order_start_date")
+    )
+    await CreateOrderStates.get_order_start_date.set()
+
+
+@dp.message_handler(state=CreateOrderStates.get_order_start_date)
+async def get_order_start_date(message: types.Message, state: FSMContext):
+    date: str = message.text  # needs to be format %d.%m.%Y
+    await state.update_data(order_start_date=date)
+    await message.answer(
+        text="Время на выполнение задания ( выберите кнопкой или введите самостоятельно текстом)",
+        reply_markup=order_execution_time_markup()
+    )
+    await CreateOrderStates.get_order_execution_time.set()
+
+
+@dp.callback_query_handler(now_callback.filter(question="order_start_date"),
+                           state=CreateOrderStates.get_order_start_date)
+async def get_order_start_date_now(callback: types.CallbackQuery, state: FSMContext):
+    await callback.answer()
+    await state.update_data(order_start_date=datetime.now().strftime("%d.%m.%Y"))
+    await callback.message.answer(
+        text="Время на выполнение задания (выберите кнопкой или введите самостоятельно текстом)",
+        reply_markup=order_execution_time_markup()
+    )
+    await CreateOrderStates.get_order_execution_time.set()
+
+
+
+
+
+
+
 
 
 

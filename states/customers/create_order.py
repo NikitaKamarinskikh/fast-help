@@ -9,8 +9,8 @@ class CreateOrderStates(StatesGroup):
     get_phone = State()
     cat_write = State()
     get_additional_contacts = State()
-    get_task_description = State()
+    get_order_description = State()
     get_communication_method = State()
-    get_task_start_date = State()
-    get_task_execution_time = State()
+    get_order_start_date = State()
+    get_order_execution_time = State()
 

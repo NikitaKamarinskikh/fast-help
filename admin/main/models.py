@@ -9,7 +9,7 @@ class TimeBasedModel(models.Model):
         abstract = True
 
 
-class Users(TimeBasedModel):
+class BaseUser(TimeBasedModel):
     telegram_id = models.CharField("ID в телеграмме", max_length=255)
     username = models.CharField("Юзернейм в телеграмме", max_length=255, blank=True, null=True)
 
@@ -25,7 +25,19 @@ class Users(TimeBasedModel):
 class JobCategories(TimeBasedModel):
     name = models.CharField("Название категории", max_length=255)
 
+    def __str__(self):
+        return self.name
+
     class Meta:
         verbose_name = "Категория"
         verbose_name_plural = "Категории"
+
+
+class BotUsers(BaseUser):
+
+    class Meta:
+        verbose_name = "Пользователь бота"
+        verbose_name_plural = "Пользователи бота"
+
+
 

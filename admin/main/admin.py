@@ -8,3 +8,14 @@ class JobCategoriesAdmin(admin.ModelAdmin):
 
     class Meta:
         model = models.JobCategories
+
+
+@admin.register(models.BotUsers)
+class BotUsersAdmin(admin.ModelAdmin):
+
+    class Meta:
+        model = models.BotUsers
+
+
+
+
