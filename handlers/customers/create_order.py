@@ -17,7 +17,6 @@ from models import JobCategoriesModel, CustomersModel, OrdersModel
 from data.config import MainMenuCommands
 
 from django.utils import timezone
-import pytz
 
 
 @dp.message_handler(text=MainMenuCommands.need_help)

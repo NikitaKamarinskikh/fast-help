@@ -4,11 +4,11 @@ from admin.main.models import JobCategories
 
 
 class Workers(TimeBasedModel):
-    # categories
     user = models.ForeignKey(BotUsers, verbose_name="Пользователь", on_delete=models.CASCADE)
     name = models.CharField("Имя", max_length=255)
     location = models.CharField("Локация", max_length=255)
     phone = models.CharField("Телефон", max_length=255)
+    additional_contacts = models.CharField("Дополнительная информация", max_length=255, null=True, blank=True)
 
     def __str__(self):
         return self.user.__str__()

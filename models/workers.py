@@ -1,5 +1,6 @@
 from asgiref.sync import sync_to_async
-from admin.workers.models import Workers, BotUsers
+from admin.workers.models import Workers, WorkerCategories, BotUsers
+from admin.main.models import JobCategories
 
 
 class WorkersModel:
@@ -12,7 +13,16 @@ class WorkersModel:
 
     @staticmethod
     @sync_to_async
-    def create_worker(user: object) -> object:
-        return Workers.objects.create(user=user)
+    def create_worker(**data) -> object:
+        return Workers.objects.create(**data)
+
+
+class WorkerCategoriesModel:
+
+    @staticmethod
+    @sync_to_async
+    def add_category(worker: object, category: object):
+        WorkerCategories.objects.create(worker=worker, category=category)
+
 
 
