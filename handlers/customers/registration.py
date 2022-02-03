@@ -7,6 +7,7 @@ from keyboards.inline.agree_or_not import agree_or_not_markup, agree_or_not_call
 from keyboards.default.main import main_markup
 from data.config import Roles
 from data.config import InlineKeyboardAnswers
+from models import BotUsersModel, CustomersModel
 from states.common.confirm_privacy_policy import ConfirmPrivacyPolicy
 
 
@@ -47,10 +48,11 @@ async def ask_to_confirm_privacy_policy(callback: types.CallbackQuery, state: FS
                            state=ConfirmPrivacyPolicy.get_answer)
 async def confirm_privacy_policy(callback: types.CallbackQuery, state: FSMContext):
     await callback.answer()
+    bot_user = await BotUsersModel.create_user(callback.from_user.id, callback.from_user.username)
+    customer = await CustomersModel.create_customer(bot_user)
     await callback.message.answer(
         text="Главное меню",
         reply_markup=main_markup
-
     )
     await state.finish()
 

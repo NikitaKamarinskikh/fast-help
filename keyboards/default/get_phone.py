@@ -8,6 +8,6 @@ get_phone_markup = ReplyKeyboardMarkup(
                            request_contact=True)
         ],
     ],
-    resize_keyboard=True
+    resize_keyboard=True,
 )
 
