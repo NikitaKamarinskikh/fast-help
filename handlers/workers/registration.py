@@ -7,22 +7,22 @@ from keyboards.inline.agree_or_not import agree_or_not_markup, agree_or_not_call
 from keyboards.default.main import main_markup
 from data.config import Roles
 from data.config import InlineKeyboardAnswers
-from models import BotUsersModel, CustomersModel
+from models import BotUsersModel, WorkersModel
 from states.common.confirm_privacy_policy import ConfirmPrivacyPolicy
 
 
-@dp.callback_query_handler(chose_role_callback.filter(role=Roles.customer))
-async def start_customer_registration(callback: types.CallbackQuery):
+@dp.callback_query_handler(chose_role_callback.filter(role=Roles.worker))
+async def start_worker_registration(callback: types.CallbackQuery):
     await callback.answer()
     await callback.message.answer(
-        text="Для того чтобы получить помощь понадобится заполнить небольшую анкету и согласиться с хранением "
-             "и обработкой данных и подписать договор оферту",
-        reply_markup=start_or_back_markup(Roles.customer)
+        text="Для того чтобы стать помощником понадобится заполнить небольшую анкету и "
+             "согласиться с хранением и обработкой данных",
+        reply_markup=start_or_back_markup(Roles.worker)
     )
     await ConfirmPrivacyPolicy.ask_to_confirm.set()
 
 
-@dp.callback_query_handler(start_or_back_callback.filter(choice=InlineKeyboardAnswers.get_back, role=Roles.customer),
+@dp.callback_query_handler(start_or_back_callback.filter(choice=InlineKeyboardAnswers.get_back, role=Roles.worker),
                            state=ConfirmPrivacyPolicy.ask_to_confirm)
 async def ask_to_confirm_privacy_policy(callback: types.CallbackQuery, state: FSMContext):
     await callback.answer()
@@ -33,23 +33,23 @@ async def ask_to_confirm_privacy_policy(callback: types.CallbackQuery, state: FS
     )
 
 
-@dp.callback_query_handler(start_or_back_callback.filter(choice=InlineKeyboardAnswers.start, role=Roles.customer),
+@dp.callback_query_handler(start_or_back_callback.filter(choice=InlineKeyboardAnswers.start, role=Roles.worker),
                            state=ConfirmPrivacyPolicy.ask_to_confirm)
 async def ask_to_confirm_privacy_policy(callback: types.CallbackQuery, state: FSMContext):
     await callback.answer()
     await callback.message.answer(
         text="Прочитайте и подтвердите согласие",
-        reply_markup=agree_or_not_markup(Roles.customer)
+        reply_markup=agree_or_not_markup(Roles.worker)
     )
     await ConfirmPrivacyPolicy.get_answer.set()
 
 
-@dp.callback_query_handler(agree_or_not_callback.filter(choice=InlineKeyboardAnswers.agree, role=Roles.customer),
+@dp.callback_query_handler(agree_or_not_callback.filter(choice=InlineKeyboardAnswers.agree, role=Roles.worker),
                            state=ConfirmPrivacyPolicy.get_answer)
 async def confirm_privacy_policy(callback: types.CallbackQuery, state: FSMContext):
     await callback.answer()
     bot_user = await BotUsersModel.create_user(callback.from_user.id, callback.from_user.username)
-    customer = await CustomersModel.create_customer(bot_user)
+    # worker = await WorkersModel.create_worker(bot_user)
     await callback.message.answer(
         text="Главное меню",
         reply_markup=main_markup
@@ -57,14 +57,14 @@ async def confirm_privacy_policy(callback: types.CallbackQuery, state: FSMContex
     await state.finish()
 
 
-@dp.callback_query_handler(agree_or_not_callback.filter(choice=InlineKeyboardAnswers.do_not_agree, role=Roles.customer),
+@dp.callback_query_handler(agree_or_not_callback.filter(choice=InlineKeyboardAnswers.do_not_agree, role=Roles.worker),
                            state=ConfirmPrivacyPolicy.get_answer)
 async def confirm_privacy_policy(callback: types.CallbackQuery, state: FSMContext):
     await callback.answer()
     await callback.message.answer(
-        text="Для того чтобы получить помощь понадобится заполнить небольшую анкету и согласиться с хранением "
-             "и обработкой данных и подписать договор оферту",
-        reply_markup=start_or_back_markup(Roles.customer)
+        text="Для того чтобы стать помощником понадобится заполнить небольшую анкету и "
+             "согласиться с хранением и обработкой данных",
+        reply_markup=start_or_back_markup(Roles.worker)
     )
     await ConfirmPrivacyPolicy.ask_to_confirm.set()
 

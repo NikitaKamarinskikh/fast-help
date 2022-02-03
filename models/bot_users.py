@@ -12,12 +12,14 @@ class BotUsersModel:
     @staticmethod
     @sync_to_async
     def create_user(telegram_id: int, username: str) -> object:
-        data = {
-            "telegram_id": telegram_id,
-        }
-        if username:
-            data["username"] = username
-        return BotUsers.objects.create(**data)
-
-
+        try:
+            user = BotUsers.objects.get(telegram_id=telegram_id)
+        except:
+            data = {
+                "telegram_id": telegram_id,
+            }
+            if username:
+                data["username"] = username
+            user = BotUsers.objects.create(**data)
+        return user
 
