@@ -14,7 +14,10 @@ class WorkersModel:
     @staticmethod
     @sync_to_async
     def create_worker(**data) -> object:
-        return Workers.objects.create(**data)
+        try:
+            return Workers.objects.get(telegram_id=data.get("telegram_id"))
+        except:
+            return Workers.objects.create(**data)
 
 
 class WorkerCategoriesModel:

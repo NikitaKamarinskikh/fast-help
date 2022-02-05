@@ -13,6 +13,9 @@ class CustomersModel:
     @staticmethod
     @sync_to_async
     def create_customer(user: object) -> object:
-        return Customers.objects.create(user=user)
+        try:
+            return Customers.objects.get(telegram_id=user.telegram_id)
+        except:
+            return Customers.objects.create(user=user)
 
 

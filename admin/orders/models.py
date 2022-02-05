@@ -12,8 +12,11 @@ class Orders(TimeBasedModel):
     customer_username = models.CharField("Юзернейм заказчика", max_length=30, null=True, blank=True)
     additional_contacts = models.CharField("Дополнительные контакты", max_length=255, null=True, blank=True)
     description = models.TextField("Описание", null=True, blank=True)
-    start_date = models.DateTimeField("Дата начала")
+    start_date = models.DateTimeField("Дата и время начала")
     execution_time = models.TimeField("Время выполнения")
+
+    def __str__(self):
+        return f"{self.customer.__str__()} {self.category.name}"
 
     class Meta:
         verbose_name = "Заказ"

@@ -1,7 +1,6 @@
-from datetime import datetime
+from datetime import datetime, time
 from aiogram.dispatcher import FSMContext
 from aiogram import types
-
 from keyboards.default.main import main_markup
 from loader import dp
 from keyboards.inline.categories import create_categories_markup, get_category_callback
@@ -11,12 +10,10 @@ from keyboards.inline.now import now_markup, now_callback
 from keyboards.inline.order_execution_time import order_execution_time_markup, order_execution_time_callback
 from keyboards.default.get_location import get_location_markup
 from keyboards.default.get_phone import get_phone_markup
-from data.config import Roles
 from states.customers.create_order import CreateOrderStates
 from models import JobCategoriesModel, CustomersModel, OrdersModel
 from data.config import MainMenuCommands
-
-from django.utils import timezone
+from common import parse_date, correct_time
 
 
 @dp.message_handler(text=MainMenuCommands.need_help)
@@ -32,6 +29,7 @@ async def start_making_order(message: types.Message):
 @dp.callback_query_handler(get_category_callback.filter(), state=CreateOrderStates.get_category)
 async def get_category(callback: types.CallbackQuery, callback_data: dict, state: FSMContext):
     await callback.answer()
+    await state.update_data(customer_username=callback.from_user.username)
     category_id: str = callback_data.get("category_id")
     await state.update_data(category_id=category_id)
     await callback.message.answer(
@@ -120,7 +118,7 @@ async def has_additional_contacts_skip(callback: types.CallbackQuery, callback_d
     await callback.answer()
     await state.update_data(order_description=None)
     await callback.message.answer(
-        text="Укажите дату и время начала задания.",
+        text="Укажите дату и время начала задания. Необходимый формат: дд.мм.гггг чч:мм (например 07.11.2022 15:30 )",
         reply_markup=now_markup("order_start_date")
     )
     await CreateOrderStates.get_order_start_date.set()
@@ -131,7 +129,7 @@ async def get_task_description(message: types.Message, state: FSMContext):
     task_description: str = message.text
     await state.update_data(order_description=task_description)
     await message.answer(
-        text="Укажите дату и время начала задания",
+        text="Укажите дату и время начала задания. Необходимый формат: дд.мм.гггг чч:мм (например 07.11.2022 15:30 )",
         reply_markup=now_markup("order_start_date")
     )
     await CreateOrderStates.get_order_start_date.set()
@@ -139,13 +137,19 @@ async def get_task_description(message: types.Message, state: FSMContext):
 
 @dp.message_handler(state=CreateOrderStates.get_order_start_date)
 async def get_order_start_date(message: types.Message, state: FSMContext):
-    date: str = message.text  # needs to be format %d.%m.%Y
-    await state.update_data(order_start_date=date)
-    await message.answer(
-        text="Время на выполнение задания ( выберите кнопкой или введите самостоятельно текстом)",
-        reply_markup=order_execution_time_markup()
-    )
-    await CreateOrderStates.get_order_execution_time.set()
+    date_time_str: str = message.text
+    order_start_date_time = parse_date(date_time_str)
+    if order_start_date_time is not None:
+        await state.update_data(order_start_date_time=order_start_date_time)
+        await message.answer(
+            text="Время на выполнение задания ( выберите кнопкой или введите самостоятельно текстом)",
+            reply_markup=order_execution_time_markup()
+        )
+        await CreateOrderStates.get_order_execution_time.set()
+    else:
+        await message.answer(
+            text="Указан неверный формат, либо некоторые значения выходят за границы допустимого. Попробуйте еще раз"
+        )
 
 
 @dp.callback_query_handler(now_callback.filter(question="order_start_date"),
@@ -154,21 +158,25 @@ async def get_order_start_date_now(callback: types.CallbackQuery, state: FSMCont
     await callback.answer()
     await state.update_data(order_start_date=datetime.now().strftime("%d.%m.%Y"))
     await callback.message.answer(
-        text="Время на выполнение задания (выберите кнопкой или введите самостоятельно текстом)",
+        text="Время на выполнение задания (выберите кнопкой или введите самостоятельно текстом "
+             "в формате чч:мм (например 2:05))",
         reply_markup=order_execution_time_markup()
     )
     await CreateOrderStates.get_order_execution_time.set()
 
 
-async def create_order(customer_telegram_id: int, state: FSMContext) -> bool:
+async def create_order(customer_telegram_id: int, state: FSMContext):
     """
     state_data: {'category_id': '3', 'customer_name': 'Мой господин',
     'location': <Location {"latitude": 54.9834, "longitude": 82.806047}>,
     'phone': '79237343772', 'can_write': False,
     'additional_contacts': 'Почта - test@gmail.com', 'order_description': None,
-    'order_start_date': '03.02.2022', 'order_execution_time': '120'}
+    'order_start_date': '03.02.2022', 'order_execution_time': '2:30'}
     """
     state_data = await state.get_data()
+    execution_time_str = state_data.get("order_execution_time")
+    hours, minutes = execution_time_str.split(":")
+    execution_time = time(int(hours), int(minutes), 0)
     customer = await CustomersModel.get_by_telegram_id(customer_telegram_id)
     category = await JobCategoriesModel.get_by_id(state_data.get("category_id"))
     location = f"{state_data.get('location').latitude} {state_data.get('location').longitude}"
@@ -178,8 +186,8 @@ async def create_order(customer_telegram_id: int, state: FSMContext) -> bool:
         "customer_name": state_data.get("customer_name"),
         "location": location,
         "customer_phone": state_data.get("phone"),
-        "start_date": timezone.now(),
-        "execution_time": datetime.now().time()
+        "start_date": state_data.get("order_start_date_time"),
+        "execution_time": execution_time
     }
     if state_data.get("can_write"):
         order_data["customer_username"] = state_data.get("customer_username")
@@ -188,58 +196,49 @@ async def create_order(customer_telegram_id: int, state: FSMContext) -> bool:
     if state_data.get("order_description"):
         order_data["description"] = state_data.get("order_description")
 
-    try:
-        await OrdersModel.create(**order_data)
-        return True
-    except Exception as e:
-        print(e)
-        return False
+    await OrdersModel.create(**order_data)
 
 
 @dp.callback_query_handler(order_execution_time_callback.filter(), state=CreateOrderStates.get_order_execution_time)
 async def get_order_execution_time_callback(callback: types.CallbackQuery, callback_data: dict, state: FSMContext):
     await callback.answer()
-    await state.update_data(order_execution_time_in_minutes=callback_data.get("time_in_minutes"))
-    await state.update_data(customer_username=callback.message.from_user.username)
-    if await create_order(callback.from_user.id, state):
+    execution_time = callback_data.get("time")
+    await state.update_data(order_execution_time=execution_time.replace("-", ":"))
+    try:
+        await create_order(callback.from_user.id, state)
         await callback.message.answer(
-            text="Заказ успешно создан",
+            text="Заказ успешно создан и отправлен исполнителям рядом",
             reply_markup=main_markup
         )
         await state.finish()
-        return
-    await callback.message.answer(
-        text="При создании заказа возникла непредвиденная ошибка",
-        reply_markup=main_markup
-    )
-    await state.finish()
+    except:
+        await callback.message.answer(
+            text="При создании заказа возникла непредвиденная ошибка",
+            reply_markup=main_markup
+        )
+        await state.finish()
 
 
 @dp.message_handler(state=CreateOrderStates.get_order_execution_time)
 async def get_order_execution_time(message: types.Message, state: FSMContext):
     order_execution_time: str = message.text
-    await state.update_data(order_execution_time_in_minutes=order_execution_time)
-    await state.update_data(customer_username=message.from_user.username)
-    if await create_order(message.from_user.id, state):
+    if correct_time(order_execution_time):
+        await state.update_data(order_execution_time=order_execution_time)
+        try:
+            await create_order(message.from_user.id, state)
+            await message.answer(
+                text="Заказ успешно создан и отправлен исполнителям рядом",
+                reply_markup=main_markup
+            )
+            await state.finish()
+        except:
+            await message.answer(
+                text="При создании заказа возникла непредвиденная ошибка",
+                reply_markup=main_markup
+            )
+            await state.finish()
+    else:
         await message.answer(
-            text="Заказ успешно создан",
-            reply_markup=main_markup
+            text="Время указано в неправильном формате, либо выходит за границы допустимого. Попробуйте еще раз"
         )
-        await state.finish()
-        return
-    await message.answer(
-        text="При создании заказа возникла непредвиденная ошибка",
-        reply_markup=main_markup
-    )
-    await state.finish()
-
-
-
-
-
-
-
-
-
-
 
