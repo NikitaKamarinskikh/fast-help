@@ -11,7 +11,7 @@ async def send_message(user_telegram_id: int, text: str):
         ...
 
 
-async def notify_worker_about_new_order(worker: object, order: object):
+async def notify_workers_about_new_order(workers: list, order: object):
     ...
 
 

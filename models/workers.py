@@ -19,6 +19,11 @@ class WorkersModel:
         except:
             return Workers.objects.create(**data)
 
+    @staticmethod
+    @sync_to_async
+    def get_by_filters(**filters) -> list:
+        return Workers.objects.filter(**filters)
+
 
 class WorkerCategoriesModel:
 

@@ -13,7 +13,8 @@ from keyboards.default.get_phone import get_phone_markup
 from states.customers.create_order import CreateOrderStates
 from models import JobCategoriesModel, CustomersModel, OrdersModel
 from data.config import MainMenuCommands
-from common import parse_date, correct_time
+from common import parse_date, correct_time, get_candidates_by_filters
+from notifications import notify_workers_about_new_order
 
 
 @dp.message_handler(text=MainMenuCommands.need_help)
@@ -182,6 +183,7 @@ async def create_order(customer_telegram_id: int, state: FSMContext):
     customer = await CustomersModel.get_by_telegram_id(customer_telegram_id)
     category = await JobCategoriesModel.get_by_id(state_data.get("category_id"))
     location = f"{state_data.get('location').latitude} {state_data.get('location').longitude}"
+    coordinates = (state_data.get('location').latitude, float(state_data.get('location').longitude))
     order_data = {
         "customer": customer,
         "category": category,
@@ -197,7 +199,9 @@ async def create_order(customer_telegram_id: int, state: FSMContext):
     if state_data.get("order_description"):
         order_data["description"] = state_data.get("order_description")
 
-    await OrdersModel.create(**order_data)
+    order = await OrdersModel.create(**order_data)
+    candidates = await get_candidates_by_filters(category, coordinates)
+    await notify_workers_about_new_order(candidates, order)
 
 
 @dp.callback_query_handler(order_execution_time_callback.filter(), state=CreateOrderStates.get_order_execution_time)
