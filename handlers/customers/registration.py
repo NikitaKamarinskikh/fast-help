@@ -1,5 +1,7 @@
 from aiogram.dispatcher import FSMContext
 from aiogram import types
+
+from keyboards.inline.categories import create_categories_markup
 from loader import dp
 from keyboards.inline.chose_role import chose_role_callback, chose_role_markup
 from keyboards.inline.start_or_back import start_or_back_markup, start_or_back_callback
@@ -7,8 +9,9 @@ from keyboards.inline.agree_or_not import agree_or_not_markup, agree_or_not_call
 from keyboards.default.main import main_markup
 from data.config import Roles
 from data.config import InlineKeyboardAnswers
-from models import BotUsersModel, CustomersModel
+from models import BotUsersModel, CustomersModel, JobCategoriesModel
 from states.common.confirm_privacy_policy import ConfirmPrivacyPolicy
+from states.customers.create_order import CreateOrderStates
 
 
 @dp.callback_query_handler(chose_role_callback.filter(role=Roles.customer))
@@ -49,12 +52,15 @@ async def ask_to_confirm_privacy_policy(callback: types.CallbackQuery, state: FS
 async def confirm_privacy_policy(callback: types.CallbackQuery, state: FSMContext):
     await callback.answer()
     bot_user = await BotUsersModel.create_user(callback.from_user.id, callback.from_user.username)
-    customer = await CustomersModel.create_customer(bot_user)
-    await callback.message.answer(
-        text="Главное меню",
-        reply_markup=main_markup
-    )
     await state.finish()
+    customer = await CustomersModel.create_customer(bot_user)
+
+    categories: list = await JobCategoriesModel.get_all()
+    await callback.message.answer(
+        text="Выберите категорию в которой нужен помощник",
+        reply_markup=create_categories_markup(categories)
+    )
+    await CreateOrderStates.get_category.set()
 
 
 @dp.callback_query_handler(agree_or_not_callback.filter(choice=InlineKeyboardAnswers.do_not_agree, role=Roles.customer),

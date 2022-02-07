@@ -1,3 +1,4 @@
-from .common import *
+from .checks import *
+from .cities import *
 
 

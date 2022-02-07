@@ -64,13 +64,21 @@ async def get_location(message: types.Message, state: FSMContext):
 
 @dp.message_handler(content_types=types.ContentTypes.CONTACT, state=CreateOrderStates.get_phone)
 async def get_phone(message: types.Message, state: FSMContext):
-    phone: str = message.contact.phone_number
-    await state.update_data(phone=phone)
-    await message.answer(
-        text="Может ли исполнитель написать вам в телеграм?",
-        reply_markup=yes_or_no_markup("can_write", text_no="Только звонок")
-    )
-    await CreateOrderStates.cat_write.set()
+    if message.contact.user_id == message.from_user.id:
+        phone: str = message.contact.phone_number
+        await state.update_data(phone=phone)
+        await message.answer(
+            text="Телефон принят (это сообщение нужно, что бы удалить кнопку для отправки телефона)",
+            reply_markup=types.ReplyKeyboardRemove()
+        )
+        await message.answer(
+            text="Может ли исполнитель написать вам в телеграм?",
+            reply_markup=yes_or_no_markup("can_write", text_no="Только звонок")
+        )
+        await CreateOrderStates.cat_write.set()
+    else:
+        await message.answer("Похоже, вы использовали чужой номер телефона. Воспользуйтесь кнопкой, чтобы отправить "
+                             "свой номер телефона")
 
 
 @dp.callback_query_handler(yes_or_no_callback.filter(question="can_write"), state=CreateOrderStates.cat_write)
@@ -139,8 +147,9 @@ async def get_task_description(message: types.Message, state: FSMContext):
 async def get_order_start_date(message: types.Message, state: FSMContext):
     date_time_str: str = message.text
     order_start_date_time = parse_date(date_time_str)
+
     if order_start_date_time is not None:
-        await state.update_data(order_start_date_time=order_start_date_time)
+        await state.update_data(order_start_date_time=order_start_date_time.strftime("%Y-%m-%d %H:%M"))
         await message.answer(
             text="Время на выполнение задания ( выберите кнопкой или введите самостоятельно текстом)",
             reply_markup=order_execution_time_markup()
@@ -156,7 +165,7 @@ async def get_order_start_date(message: types.Message, state: FSMContext):
                            state=CreateOrderStates.get_order_start_date)
 async def get_order_start_date_now(callback: types.CallbackQuery, state: FSMContext):
     await callback.answer()
-    await state.update_data(order_start_date=datetime.now().strftime("%d.%m.%Y"))
+    await state.update_data(order_start_date_time=datetime.now().strftime("%Y-%m-%d %H:%M"))
     await callback.message.answer(
         text="Время на выполнение задания (выберите кнопкой или введите самостоятельно текстом "
              "в формате чч:мм (например 2:05))",
@@ -166,13 +175,6 @@ async def get_order_start_date_now(callback: types.CallbackQuery, state: FSMCont
 
 
 async def create_order(customer_telegram_id: int, state: FSMContext):
-    """
-    state_data: {'category_id': '3', 'customer_name': 'Мой господин',
-    'location': <Location {"latitude": 54.9834, "longitude": 82.806047}>,
-    'phone': '79237343772', 'can_write': False,
-    'additional_contacts': 'Почта - test@gmail.com', 'order_description': None,
-    'order_start_date': '03.02.2022', 'order_execution_time': '2:30'}
-    """
     state_data = await state.get_data()
     execution_time_str = state_data.get("order_execution_time")
     hours, minutes = execution_time_str.split(":")
@@ -187,10 +189,9 @@ async def create_order(customer_telegram_id: int, state: FSMContext):
         "location": location,
         "customer_phone": state_data.get("phone"),
         "start_date": state_data.get("order_start_date_time"),
-        "execution_time": execution_time
+        "execution_time": execution_time,
+        "allow_to_write_in_telegram": state_data.get("can_write")
     }
-    if state_data.get("can_write"):
-        order_data["customer_username"] = state_data.get("customer_username")
     if state_data.get("additional_contacts"):
         order_data["additional_contacts"] = state_data.get("additional_contacts")
     if state_data.get("order_description"):
@@ -211,7 +212,8 @@ async def get_order_execution_time_callback(callback: types.CallbackQuery, callb
             reply_markup=main_markup
         )
         await state.finish()
-    except:
+    except Exception as e:
+        print(e)
         await callback.message.answer(
             text="При создании заказа возникла непредвиденная ошибка",
             reply_markup=main_markup
@@ -231,7 +233,8 @@ async def get_order_execution_time(message: types.Message, state: FSMContext):
                 reply_markup=main_markup
             )
             await state.finish()
-        except:
+        except Exception as e:
+            print(e)
             await message.answer(
                 text="При создании заказа возникла непредвиденная ошибка",
                 reply_markup=main_markup
