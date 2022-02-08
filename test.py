@@ -19,7 +19,8 @@ from common import get_city_by_coordinates
 
 
 if __name__ == '__main__':
-    #print(get_distance_between_two_cords((55.030199, 82.92043), (55.030199, 82.92043)).meters)
-    city = get_city_by_coordinates(54.983381, 82.805789)
-    print(city)
+    ...
+    # print(get_distance_between_two_cords((55.030199, 82.92043), (55.030199, 82.92043)).meters)
+    # city = get_city_by_coordinates(54.983381, 82.805789)
+    # print(city)
     # print(get_distance_between_two_cords(55.030199, 82.92043, 55.753215, 37.622504))

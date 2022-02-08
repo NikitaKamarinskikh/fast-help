@@ -7,22 +7,41 @@ from keyboards.inline.chose_role import chose_role_callback, chose_role_markup
 from keyboards.inline.start_or_back import start_or_back_markup, start_or_back_callback
 from keyboards.inline.agree_or_not import agree_or_not_markup, agree_or_not_callback
 from keyboards.default.main import main_markup
-from data.config import Roles
+from data.config import Roles, MainMenuCommands
 from data.config import InlineKeyboardAnswers
 from models import BotUsersModel, CustomersModel, JobCategoriesModel
 from states.common.confirm_privacy_policy import ConfirmPrivacyPolicy
 from states.customers.create_order import CreateOrderStates
 
 
-@dp.callback_query_handler(chose_role_callback.filter(role=Roles.customer))
-async def start_customer_registration(callback: types.CallbackQuery):
-    await callback.answer()
-    await callback.message.answer(
-        text="Для того чтобы получить помощь понадобится заполнить небольшую анкету и согласиться с хранением "
-             "и обработкой данных и подписать договор оферту",
-        reply_markup=start_or_back_markup(Roles.customer)
-    )
-    await ConfirmPrivacyPolicy.ask_to_confirm.set()
+# @dp.callback_query_handler(chose_role_callback.filter(role=Roles.customer))
+# async def start_customer_registration(callback: types.CallbackQuery):
+#     await callback.answer()
+#     await callback.message.answer(
+#         text="Для того чтобы получить помощь понадобится заполнить небольшую анкету и согласиться с хранением "
+#              "и обработкой данных и подписать договор оферту",
+#         reply_markup=start_or_back_markup(Roles.customer)
+#     )
+#     await ConfirmPrivacyPolicy.ask_to_confirm.set()
+
+
+@dp.message_handler(text=MainMenuCommands.need_help)
+async def start_making_order(message: types.Message):
+    try:
+        customer = await CustomersModel.get_by_telegram_id(message.from_user.id)
+        categories: list = await JobCategoriesModel.get_all()
+        await message.answer(
+            text="Выберите категорию в которой нужен помощник",
+            reply_markup=create_categories_markup(categories)
+        )
+        await CreateOrderStates.get_category.set()
+    except:
+        await message.answer(
+            text="Для того чтобы получить помощь понадобится заполнить небольшую анкету и согласиться с хранением "
+                 "и обработкой данных и подписать договор оферту",
+            reply_markup=start_or_back_markup(Roles.customer)
+        )
+        await ConfirmPrivacyPolicy.ask_to_confirm.set()
 
 
 @dp.callback_query_handler(start_or_back_callback.filter(choice=InlineKeyboardAnswers.get_back, role=Roles.customer),
@@ -32,7 +51,7 @@ async def ask_to_confirm_privacy_policy(callback: types.CallbackQuery, state: FS
     await state.finish()
     await callback.message.answer(
         text="Добро пожаловать\nВы ищите помощь или хотите стать помощником?",
-        reply_markup=chose_role_markup()
+        reply_markup=main_markup
     )
 
 

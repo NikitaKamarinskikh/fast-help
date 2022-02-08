@@ -17,16 +17,6 @@ from common import parse_date, correct_time, get_candidates_by_filters
 from notifications import notify_workers_about_new_order
 
 
-@dp.message_handler(text=MainMenuCommands.need_help)
-async def start_making_order(message: types.Message):
-    categories: list = await JobCategoriesModel.get_all()
-    await message.answer(
-        text="Выберите категорию в которой нужен помощник",
-        reply_markup=create_categories_markup(categories)
-    )
-    await CreateOrderStates.get_category.set()
-
-
 @dp.callback_query_handler(get_category_callback.filter(), state=CreateOrderStates.get_category)
 async def get_category(callback: types.CallbackQuery, callback_data: dict, state: FSMContext):
     await callback.answer()

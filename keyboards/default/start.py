@@ -1,23 +1,13 @@
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 
 
-# start_markup = ReplyKeyboardMarkup(
-#     keyboard=[
-#         [
-#             KeyboardButton("Старт")
-#         ],
-#     ],
-#     resize_keyboard=True
-# )
+start_keyboard = ReplyKeyboardMarkup(
+    keyboard=[
+        [KeyboardButton("Нужна помощь")],
+        [KeyboardButton("Стать помощником")],
+        [KeyboardButton("Пригласить")],
+    ],
+    resize_keyboard=True
+)
 
 
-
-# start_markup = ReplyKeyboardMarkup(
-#     keyboard=[
-#         [
-#             KeyboardButton(text="Отправить номер телефона 📞",
-#                            request_contact=True)
-#         ],
-#     ],
-#     resize_keyboard=True
-# )

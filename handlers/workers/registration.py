@@ -10,17 +10,16 @@ from keyboards.inline.categories import create_categories_markup, get_category_c
 from keyboards.default.main import main_markup
 from keyboards.default.get_location import get_location_markup
 from keyboards.default.get_phone import get_phone_markup
-from data.config import Roles
+from data.config import Roles, MainMenuCommands
 from data.config import InlineKeyboardAnswers
 from models import BotUsersModel, WorkersModel, JobCategoriesModel, WorkerCategoriesModel
 from states.common.confirm_privacy_policy import ConfirmPrivacyPolicy
 from states.workers.registration import WorkerRegistrationStates
 
 
-@dp.callback_query_handler(chose_role_callback.filter(role=Roles.worker))
-async def start_worker_registration(callback: types.CallbackQuery):
-    await callback.answer()
-    await callback.message.answer(
+@dp.message_handler(text="Стать помощником")
+async def start_worker_registration(message: types.Message, state: FSMContext):
+    await message.answer(
         text="Для того чтобы стать помощником понадобится заполнить небольшую анкету и "
              "согласиться с хранением и обработкой данных",
         reply_markup=start_or_back_markup(Roles.worker)
@@ -139,14 +138,22 @@ async def get_location(message: types.Message, state: FSMContext):
 
 @dp.message_handler(content_types=types.ContentTypes.CONTACT, state=WorkerRegistrationStates.get_phone)
 async def get_phone(message: types.Message, state: FSMContext):
-    phone: str = message.contact.phone_number
-    await state.update_data(phone=phone)
-    await message.answer(
-        text="Вы хотите указать дополнительные контакты? Если да - введите всю информацию в строке ввода. "
-             "Если нет нажмите кнопку пропустить",
-        reply_markup=skip_markup("worker_has_additional_contacts")
-    )
-    await WorkerRegistrationStates.get_additional_contacts.set()
+    if message.contact.user_id == message.from_user.id:
+        phone: str = message.contact.phone_number
+        await state.update_data(phone=phone)
+        await message.answer(
+            text="Телефон принят (это сообщение нужно, что бы удалить кнопку для отправки телефона)",
+            reply_markup=types.ReplyKeyboardRemove()
+        )
+        await message.answer(
+            text="Вы хотите указать дополнительные контакты? Если да - введите всю информацию в строке ввода. "
+                 "Если нет нажмите кнопку пропустить",
+            reply_markup=skip_markup("worker_has_additional_contacts")
+        )
+        await WorkerRegistrationStates.get_additional_contacts.set()
+    else:
+        await message.answer("Похоже, вы использовали чужой номер телефона. Воспользуйтесь кнопкой, чтобы отправить "
+                             "свой номер телефона")
 
 
 async def save_worker_data(worker_telegram_id: int, state: FSMContext):
