@@ -34,8 +34,13 @@ async def notify_worker_about_being_chosen_as_implementer(customer: object, work
     ...
 
 
-async def notify_customer_about_new_response(customer: object, worker: object, order: object):
-    ...
+async def notify_customer_about_new_response(order: object, worker: object):
+    if order.description:
+        text = f"На ваш заказ {order.description} откликнулся {worker.name}"
+    else:
+        text = f"На ваш заказ в категории {order.category.name} откликнулся {worker.name}"
+    await send_message(order.customer.user.telegram_id, text)
+
 
 
 
