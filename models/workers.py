@@ -21,8 +21,15 @@ class WorkersModel:
 
     @staticmethod
     @sync_to_async
-    def get_by_filters(**filters) -> list:
-        return Workers.objects.filter(**filters)
+    def get_by_category(category) -> list:
+        candidates = list()
+        workers = Workers.objects.all()
+        for worker in workers:
+            worker_categories = WorkerCategories.objects.filter(worker=worker)
+            worker_categories_names = [i.category.name for i in worker_categories]
+            if category.name in worker_categories_names:
+                candidates.append(worker)
+        return candidates
 
 
 class WorkerCategoriesModel:

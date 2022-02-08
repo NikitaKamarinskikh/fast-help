@@ -41,7 +41,7 @@ def order_execution_time_markup():
         ),
         InlineKeyboardButton(
             text="24 часа",
-            callback_data=order_execution_time_callback.new("24-00"),
+            callback_data=order_execution_time_callback.new("23-59"),
         ),
     )
     return markup
