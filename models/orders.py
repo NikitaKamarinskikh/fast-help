@@ -14,6 +14,11 @@ class OrdersModel:
     def get_available_by_id(id_: int) -> object:
         return Orders.objects.get(pk=id_)
 
+    @staticmethod
+    @sync_to_async
+    def get_by_filters(**filters):
+        return Orders.objects.filter(**filters)
+
 
 class OrderCandidatesModel:
 

@@ -7,7 +7,7 @@ main_markup = ReplyKeyboardMarkup(
         [KeyboardButton(MainMenuCommands.change_data)],
         [KeyboardButton(MainMenuCommands.tasks_nearby)],
         [KeyboardButton(MainMenuCommands.workers_nearby)],
-        [KeyboardButton(MainMenuCommands.my_tasks)],
+        [KeyboardButton(MainMenuCommands.my_orders)],
         [KeyboardButton(MainMenuCommands.balance)],
     ],
     resize_keyboard=True

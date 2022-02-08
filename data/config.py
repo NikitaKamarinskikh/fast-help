@@ -30,5 +30,5 @@ class MainMenuCommands:
     change_data = "Изменить анкету"
     tasks_nearby = "Задания рядом"
     workers_nearby = "Исполнители рядом"
-    my_tasks = "Ваши задания"
+    my_orders = "Ваши задания"
     balance = "Баланс"
