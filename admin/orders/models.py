@@ -1,6 +1,7 @@
 from django.db import models
 from admin.main.models import TimeBasedModel, JobCategories
 from admin.customers.models import Customers
+from admin.workers.models import Workers
 
 
 class Orders(TimeBasedModel):
@@ -23,5 +24,16 @@ class Orders(TimeBasedModel):
         verbose_name = "Заказ"
         verbose_name_plural = "Заказы"
 
+
+class OrderCandidates(TimeBasedModel):
+    worker = models.ForeignKey(Workers, verbose_name="Исполнитель", on_delete=models.CASCADE)
+    order = models.ForeignKey(Orders, verbose_name="Заказ", on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"{self.worker.__str__()} {self.order.__str__()}"
+
+    class Meta:
+        verbose_name = "Кандидат"
+        verbose_name_plural = "Кандидаты"
 
 
