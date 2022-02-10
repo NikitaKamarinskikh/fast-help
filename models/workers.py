@@ -13,6 +13,11 @@ class WorkersModel:
 
     @staticmethod
     @sync_to_async
+    def get_by_id(id_: int) -> object:
+        return Workers.objects.get(pk=id_)
+
+    @staticmethod
+    @sync_to_async
     def create_worker(**data) -> object:
         try:
             return Workers.objects.get(telegram_id=data.get("telegram_id"))

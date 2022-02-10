@@ -30,13 +30,26 @@ async def notify_worker_about_success_response(worker: object):
     ...
 
 
-async def notify_worker_about_being_chosen_as_implementer(customer: object, worker: object, order: object):
-    ...
+async def notify_worker_about_being_chosen_as_implementer(worker: object, order: object):
+    text: str = ""
+    if order.description:
+        text = f"Вас выбрали исполнителем по заданию \"{order.description}\". Свяжитесь с заказчиком\n"
+    else:
+        text = f"Вас выбрали исполнителем в категории \"{order.category.name}\". Свяжитесь с заказчиком\n"
+    text += "Удаленность: {вставить сюда удаленность}\n" \
+            f"Имя заказчика: {order.customer_name}\n" \
+            f"Задание: {order.description}\n" \
+            f"Контакты: {order.customer_phone}\n"
+    if order.additional_contacts:
+        text += f"Дополнительные контакты: {order.additional_contacts}\n"
+    if not order.allow_to_write_in_telegram:
+        text += "Примечание: заказчие запретил писать ему в телеграмм"
+    await send_message(worker.user.telegram_id, text)
 
 
 async def notify_customer_about_new_response(order: object, worker: object):
     if order.description:
-        text = f"На ваш заказ {order.description} откликнулся {worker.name}"
+        text = f"На ваш заказ \"{order.description}\" откликнулся {worker.name}"
     else:
         text = f"На ваш заказ в категории {order.category.name} откликнулся {worker.name}"
     await send_message(order.customer.user.telegram_id, text)

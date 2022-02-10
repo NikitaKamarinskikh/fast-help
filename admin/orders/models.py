@@ -7,6 +7,7 @@ from admin.workers.models import Workers
 class Orders(TimeBasedModel):
     customer = models.ForeignKey(Customers, verbose_name="Заказчик", on_delete=models.CASCADE)
     category = models.ForeignKey(JobCategories, verbose_name="Категория", on_delete=models.CASCADE)
+    worker = models.ForeignKey(Workers, verbose_name="Исполнитель", null=True, blank=True, on_delete=models.CASCADE)
     customer_name = models.CharField("Имя для обращения к заказчику", max_length=255)
     location = models.CharField("Координаты", max_length=255)
     city = models.CharField("Город", default="Неизвестный", max_length=255)
