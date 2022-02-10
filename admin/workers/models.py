@@ -10,6 +10,8 @@ class Workers(TimeBasedModel):
     city = models.CharField("Город", default="Неизвестный", max_length=255)
     phone = models.CharField("Телефон", max_length=255)
     additional_contacts = models.CharField("Дополнительная информация", max_length=255, null=True, blank=True)
+    rating = models.FloatField("Рейтинг", default=0.0)
+    completed_orders_quantity = models.PositiveBigIntegerField("Количество выполненных заказов", default=0)
 
     def __str__(self):
         return self.user.__str__()

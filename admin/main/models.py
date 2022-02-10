@@ -34,6 +34,7 @@ class JobCategories(TimeBasedModel):
 
 
 class BotUsers(BaseUser):
+    points = models.PositiveBigIntegerField("Количество монет", default=0)
 
     class Meta:
         verbose_name = "Пользователь бота"
