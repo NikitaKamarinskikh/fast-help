@@ -12,6 +12,7 @@ class Workers(TimeBasedModel):
     additional_contacts = models.CharField("Дополнительная информация", max_length=255, null=True, blank=True)
     rating = models.FloatField("Рейтинг", default=0.0)
     completed_orders_quantity = models.PositiveBigIntegerField("Количество выполненных заказов", default=0)
+    categories = models.ManyToManyField(JobCategories, verbose_name="Категории")
 
     def __str__(self):
         return self.user.__str__()
@@ -19,14 +20,5 @@ class Workers(TimeBasedModel):
     class Meta:
         verbose_name = "Исполнитель"
         verbose_name_plural = "Исполнители"
-
-
-class WorkerCategories(TimeBasedModel):
-    worker = models.ForeignKey(Workers, verbose_name="Работник", on_delete=models.CASCADE)
-    category = models.ForeignKey(JobCategories, verbose_name="Категория", on_delete=models.CASCADE)
-
-    class Meta:
-        verbose_name = "Категория исполнителя"
-        verbose_name_plural = "Категории исполнителей"
 
 

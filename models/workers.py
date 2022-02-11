@@ -26,23 +26,25 @@ class WorkersModel:
 
     @staticmethod
     @sync_to_async
-    def get_by_category(category) -> list:
+    def add_categories_to_worker(worker: object, categories: list):
+        for category in categories:
+            worker.categories.add(category)
+        worker.save()
+
+    @staticmethod
+    @sync_to_async
+    def get_by_category(category, **filters) -> list:
         candidates = list()
-        workers = Workers.objects.all()
+        workers = Workers.objects.filter(**filters)
         for worker in workers:
-            worker_categories = WorkerCategories.objects.filter(worker=worker)
-            worker_categories_names = [i.category.name for i in worker_categories]
-            if category.name in worker_categories_names:
+            if category in worker.categories.all():
                 candidates.append(worker)
         return candidates
 
 
-class WorkerCategoriesModel:
-
-    @staticmethod
-    @sync_to_async
-    def add_category(worker: object, category: object):
-        WorkerCategories.objects.create(worker=worker, category=category)
+# worker_categories = WorkerCategories.objects.filter(worker=worker)
+# worker_categories_names = [i.category.name for i in worker_categories]
+# if category.name in worker_categories_names:
 
 
 

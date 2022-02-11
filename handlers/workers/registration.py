@@ -176,9 +176,10 @@ async def save_worker_data(worker_telegram_id: int, state: FSMContext):
     if state_data.get("additional_contacts"):
         worker_data["additional_contacts"] = state_data.get("additional_contacts")
     worker = await WorkersModel.create_worker(**worker_data)
+    categories = list()
     for category_id in state_data.get("categories"):
-        category = get_category_by_id(categories_list, int(category_id))
-        await WorkerCategoriesModel.add_category(worker, category)
+        categories.append(get_category_by_id(categories_list, int(category_id)))
+    await WorkersModel.add_categories_to_worker(worker, categories)
 
 
 @dp.callback_query_handler(skip_callback.filter(question="worker_has_additional_contacts"),
@@ -206,3 +207,7 @@ async def has_additional_contacts(message: types.Message, state: FSMContext):
         reply_markup=main_markup
     )
     await state.finish()
+
+
+
+
