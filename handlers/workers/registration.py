@@ -12,7 +12,7 @@ from keyboards.default.get_location import get_location_markup
 from keyboards.default.get_phone import get_phone_markup
 from data.config import Roles, MainMenuCommands
 from data.config import InlineKeyboardAnswers
-from models import BotUsersModel, WorkersModel, JobCategoriesModel, WorkerCategoriesModel
+from models import BotUsersModel, WorkersModel, JobCategoriesModel
 from states.common.confirm_privacy_policy import ConfirmPrivacyPolicy
 from states.workers.registration import WorkerRegistrationStates
 
@@ -53,7 +53,7 @@ async def ask_to_confirm_privacy_policy(callback: types.CallbackQuery, state: FS
                            state=ConfirmPrivacyPolicy.get_answer)
 async def confirm_privacy_policy(callback: types.CallbackQuery, state: FSMContext):
     await callback.answer()
-    bot_user = await BotUsersModel.create_user(callback.from_user.id, callback.from_user.username)
+    # bot_user = await BotUsersModel.create_user(callback.from_user.id, callback.from_user.username)
     await state.finish()
 
     await callback.message.answer(

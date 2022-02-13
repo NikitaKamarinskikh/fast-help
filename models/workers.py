@@ -1,5 +1,5 @@
 from asgiref.sync import sync_to_async
-from admin.workers.models import Workers, WorkerCategories, BotUsers
+from admin.workers.models import Workers, BotUsers
 from admin.main.models import JobCategories
 
 
@@ -40,11 +40,4 @@ class WorkersModel:
             if category in worker.categories.all():
                 candidates.append(worker)
         return candidates
-
-
-# worker_categories = WorkerCategories.objects.filter(worker=worker)
-# worker_categories_names = [i.category.name for i in worker_categories]
-# if category.name in worker_categories_names:
-
-
 

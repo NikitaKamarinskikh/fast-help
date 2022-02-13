@@ -34,6 +34,8 @@ class JobCategories(TimeBasedModel):
 
 
 class BotUsers(BaseUser):
+    referrer = models.ForeignKey("BotUsers", verbose_name="Приведен пользователем", on_delete=models.SET_NULL,
+                                 blank=True, null=True)
     points = models.PositiveBigIntegerField("Количество монет", default=0)
 
     class Meta:

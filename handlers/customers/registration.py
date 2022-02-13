@@ -70,7 +70,8 @@ async def ask_to_confirm_privacy_policy(callback: types.CallbackQuery, state: FS
                            state=ConfirmPrivacyPolicy.get_answer)
 async def confirm_privacy_policy(callback: types.CallbackQuery, state: FSMContext):
     await callback.answer()
-    bot_user = await BotUsersModel.create_user(callback.from_user.id, callback.from_user.username)
+    # bot_user = await BotUsersModel.create_user(callback.from_user.id, callback.from_user.username)
+    bot_user = await BotUsersModel.get_by_telegram_id(callback.from_user.id)
     await state.finish()
     customer = await CustomersModel.create_customer(bot_user)
 
