@@ -43,4 +43,34 @@ class BotUsers(BaseUser):
         verbose_name_plural = "Пользователи бота"
 
 
+class BotAdmins(BaseUser):
+    name = models.CharField("Имя", max_length=255)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = "Админ бота"
+        verbose_name_plural = "Админы бота"
+
+
+class Documents(TimeBasedModel):
+    choices = [
+        ("customers", "Заказчики"),
+        ("workers", "Исполнители"),
+    ]
+    users_category = models.CharField("Категория пользователей", max_length=255, choices=choices)
+    name = models.CharField("Название документа", max_length=255)
+    telegram_id = models.CharField("ID документа в телеграмме", max_length=255)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = "Документ"
+        verbose_name_plural = "Документы"
+
+
+
+
 

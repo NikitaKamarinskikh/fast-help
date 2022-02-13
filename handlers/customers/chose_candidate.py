@@ -10,11 +10,11 @@ from states.common.confirm_privacy_policy import ConfirmPrivacyPolicy
 from models import CustomersModel, OrdersModel, OrderCandidatesModel, WorkersModel
 from notifications import notify_worker_about_being_chosen_as_implementer
 
+
 @dp.callback_query_handler(orders_callback.filter())
 async def show_order_candidates(callback: types.CallbackQuery, callback_data: dict):
     await callback.answer()
     order_id = int(callback_data.get("order_id"))
-    # customer = await CustomersModel.get_by_telegram_id(callback.from_user.id)
     order = await OrdersModel.get_by_id(order_id)
     candidates = await OrderCandidatesModel.get_by_order(order)
     if order.description:

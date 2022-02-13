@@ -17,5 +17,16 @@ class BotUsersAdmin(admin.ModelAdmin):
         model = models.BotUsers
 
 
+@admin.register(models.BotAdmins)
+class BotAdminsAdmin(admin.ModelAdmin):
 
+    class Meta:
+        model = models.BotAdmins
+
+
+@admin.register(models.Documents)
+class DocumentsAdmin(admin.ModelAdmin):
+
+    class Meta:
+        model = models.Documents
 
