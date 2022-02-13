@@ -13,6 +13,17 @@ async def send_message(user_telegram_id: int, text: str, reply_markup=None):
         ...
 
 
+async def send_voice(user_telegram_id: int, voice_file_id: str):
+    try:
+        await bot.send_voice(
+            chat_id=user_telegram_id,
+            voice=voice_file_id,
+            caption="Описание задачи"
+        )
+    except:
+        ...
+
+
 async def notify_workers_about_new_order(workers_data: list, order: object):
     for worker_data in workers_data:
         worker = worker_data.get("worker")
@@ -24,6 +35,8 @@ async def notify_workers_about_new_order(workers_data: list, order: object):
         else:
             text += f"Категория: {order.category.name}"
         await send_message(worker.user.telegram_id, text, respond_markup(order.pk))
+        if order.voice_description:
+            await send_voice(worker.user.telegram_id, order.voice_description)
 
 
 async def notify_worker_about_success_response(worker: object):

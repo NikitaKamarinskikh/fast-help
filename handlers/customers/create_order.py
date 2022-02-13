@@ -111,6 +111,17 @@ async def has_additional_contacts(message: types.Message, state: FSMContext):
     await state.update_data(additional_contacts=additional_contacts)
 
 
+@dp.message_handler(state=CreateOrderStates.get_order_description, content_types=types.ContentTypes.VOICE)
+async def get_description_by_voice(message: types.Message, state: FSMContext):
+    voice_id = message.voice.file_id
+    await state.update_data(order_voice_description=voice_id)
+    await message.answer(
+        text="Укажите дату и время начала задания. Необходимый формат: дд.мм.гггг чч:мм (например 07.11.2022 15:30 )",
+        reply_markup=now_markup("order_start_date")
+    )
+    await CreateOrderStates.get_order_start_date.set()
+
+
 @dp.callback_query_handler(skip_callback.filter(question="order_description"),
                            state=CreateOrderStates.get_order_description)
 async def has_additional_contacts_skip(callback: types.CallbackQuery, callback_data: dict, state: FSMContext):
@@ -188,6 +199,8 @@ async def create_order(customer_telegram_id: int, state: FSMContext):
         order_data["additional_contacts"] = state_data.get("additional_contacts")
     if state_data.get("order_description"):
         order_data["description"] = state_data.get("order_description")
+    if state_data.get("order_voice_description"):
+        order_data["voice_description"] = state_data.get("order_voice_description")
 
     order = await OrdersModel.create(**order_data)
     candidates = await get_candidates_by_filters(category, coordinates)

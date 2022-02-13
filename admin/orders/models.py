@@ -14,6 +14,7 @@ class Orders(TimeBasedModel):
     customer_phone = models.CharField("Телефон заказчика", max_length=255)
     additional_contacts = models.CharField("Дополнительные контакты", max_length=255, null=True, blank=True)
     description = models.TextField("Описание", null=True, blank=True)
+    voice_description = models.CharField("ID голосовухи с описанием задачи", max_length=255, null=True, blank=True)
     start_date = models.DateTimeField("Дата и время начала")
     execution_time = models.TimeField("Время выполнения")
     allow_to_write_in_telegram = models.BooleanField("Можно ли писать в телеграмм заказчику", default=False)
