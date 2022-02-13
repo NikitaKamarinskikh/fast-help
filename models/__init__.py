@@ -3,6 +3,7 @@ from .bot_users import BotUsersModel
 from .customers import CustomersModel
 from .orders import OrdersModel, OrderCandidatesModel
 from .workers import WorkersModel
+from .bot_admins import BotAdminsModel
 
 __all__ = [
     "JobCategoriesModel",
@@ -10,6 +11,7 @@ __all__ = [
     "CustomersModel",
     "OrdersModel",
     "WorkersModel",
-    "OrderCandidatesModel"
+    "OrderCandidatesModel",
+    "BotAdminsModel"
 ]
 

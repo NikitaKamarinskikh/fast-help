@@ -8,6 +8,7 @@ import os
 async def on_startup(dp):
     from utils import on_startup_notify
     import filters
+    filters.setup(dp)
     import middlewares
 
     # await on_startup_notify(dp)

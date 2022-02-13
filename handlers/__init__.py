@@ -1,4 +1,5 @@
 from .errors import dp
+from .admin import dp
 from .dev import dp
 from .cancel import dp
 from .customers import dp
