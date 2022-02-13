@@ -12,7 +12,7 @@ from keyboards.default.get_location import get_location_markup
 from keyboards.default.get_phone import get_phone_markup
 from data.config import Roles, MainMenuCommands
 from data.config import InlineKeyboardAnswers
-from models import BotUsersModel, WorkersModel, JobCategoriesModel
+from models import BotUsersModel, WorkersModel, JobCategoriesModel, DocumentsModel
 from states.common.confirm_privacy_policy import ConfirmPrivacyPolicy
 from states.workers.registration import WorkerRegistrationStates
 
@@ -42,6 +42,9 @@ async def ask_to_confirm_privacy_policy(callback: types.CallbackQuery, state: FS
                            state=ConfirmPrivacyPolicy.ask_to_confirm)
 async def ask_to_confirm_privacy_policy(callback: types.CallbackQuery, state: FSMContext):
     await callback.answer()
+    documents = await DocumentsModel.get_by_user_category("workers")
+    for document in documents:
+        await callback.message.answer_document(document.telegram_id)
     await callback.message.answer(
         text="Прочитайте и подтвердите согласие",
         reply_markup=agree_or_not_markup(Roles.worker)

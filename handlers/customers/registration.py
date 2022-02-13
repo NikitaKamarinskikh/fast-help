@@ -9,7 +9,7 @@ from keyboards.inline.agree_or_not import agree_or_not_markup, agree_or_not_call
 from keyboards.default.main import main_markup
 from data.config import Roles, MainMenuCommands
 from data.config import InlineKeyboardAnswers
-from models import BotUsersModel, CustomersModel, JobCategoriesModel
+from models import BotUsersModel, CustomersModel, JobCategoriesModel, DocumentsModel
 from states.common.confirm_privacy_policy import ConfirmPrivacyPolicy
 from states.customers.create_order import CreateOrderStates
 
@@ -59,6 +59,9 @@ async def ask_to_confirm_privacy_policy(callback: types.CallbackQuery, state: FS
                            state=ConfirmPrivacyPolicy.ask_to_confirm)
 async def ask_to_confirm_privacy_policy(callback: types.CallbackQuery, state: FSMContext):
     await callback.answer()
+    documents = await DocumentsModel.get_by_user_category("customers")
+    for document in documents:
+        await callback.message.answer_document(document.telegram_id)
     await callback.message.answer(
         text="Прочитайте и подтвердите согласие",
         reply_markup=agree_or_not_markup(Roles.customer)

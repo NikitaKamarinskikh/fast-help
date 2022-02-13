@@ -4,6 +4,7 @@ from .customers import CustomersModel
 from .orders import OrdersModel, OrderCandidatesModel
 from .workers import WorkersModel
 from .bot_admins import BotAdminsModel
+from .documents import DocumentsModel
 
 __all__ = [
     "JobCategoriesModel",
@@ -12,6 +13,7 @@ __all__ = [
     "OrdersModel",
     "WorkersModel",
     "OrderCandidatesModel",
-    "BotAdminsModel"
+    "BotAdminsModel",
+    "DocumentsModel"
 ]
 
