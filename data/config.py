@@ -32,3 +32,15 @@ class MainMenuCommands:
     workers_nearby = "Исполнители рядом"
     my_orders = "Ваши задания"
     balance = "Баланс"
+
+
+@dataclass
+class OrderStatuses:
+    waiting_for_start = "Ожидает начала"
+    in_progress = "В процессе"
+    completed = "Завершен"
+
+
+
+
+

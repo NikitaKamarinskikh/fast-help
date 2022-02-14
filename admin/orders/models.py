@@ -2,12 +2,14 @@ from django.db import models
 from admin.main.models import TimeBasedModel, JobCategories
 from admin.customers.models import Customers
 from admin.workers.models import Workers
+from data.config import OrderStatuses
 
 
 class Orders(TimeBasedModel):
     customer = models.ForeignKey(Customers, verbose_name="Заказчик", on_delete=models.CASCADE)
     category = models.ForeignKey(JobCategories, verbose_name="Категория", on_delete=models.CASCADE)
     worker = models.ForeignKey(Workers, verbose_name="Исполнитель", null=True, blank=True, on_delete=models.CASCADE)
+    status = models.CharField("Статус", max_length=20, default=OrderStatuses.waiting_for_start)
     customer_name = models.CharField("Имя для обращения к заказчику", max_length=255)
     location = models.CharField("Координаты", max_length=255)
     city = models.CharField("Город", default="Неизвестный", max_length=255)

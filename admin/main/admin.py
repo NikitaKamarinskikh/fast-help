@@ -12,6 +12,8 @@ class JobCategoriesAdmin(admin.ModelAdmin):
 
 @admin.register(models.BotUsers)
 class BotUsersAdmin(admin.ModelAdmin):
+    list_display = ["telegram_id", "username", "points", "referrer"]
+    search_fields = ["telegram_id", "username"]
 
     class Meta:
         model = models.BotUsers

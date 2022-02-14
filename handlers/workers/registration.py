@@ -196,13 +196,20 @@ async def save_worker_data(worker_telegram_id: int, state: FSMContext):
                            state=WorkerRegistrationStates.get_additional_contacts)
 async def has_additional_contacts_skip(callback: types.CallbackQuery, callback_data: dict, state: FSMContext):
     await callback.answer()
+    state_data = await state.get_data()
     await state.update_data(additional_contacts=None)
     await save_worker_data(callback.from_user.id, state)
-    await callback.message.answer(
-        text="Вы завершили регистрацию в боте. Как только рядом с вами появятся задания из выбранных категорий, "
-             "вы  получите уведомление.",
-        reply_markup=main_markup
-    )
+    if state_data.get("update"):
+        await callback.message.answer(
+            text="Данные успешно изменены",
+            reply_markup=main_markup
+        )
+    else:
+        await callback.message.answer(
+            text="Вы завершили регистрацию в боте. Как только рядом с вами появятся задания из выбранных категорий, "
+                 "вы  получите уведомление.",
+            reply_markup=main_markup
+        )
     await state.finish()
 
 
@@ -211,11 +218,18 @@ async def has_additional_contacts(message: types.Message, state: FSMContext):
     additional_contacts: str = message.text
     await state.update_data(additional_contacts=additional_contacts)
     await save_worker_data(message.from_user.id, state)
-    await message.answer(
-        text="Вы завершили регистрацию в боте. Как только рядом с вами появятся задания из выбранных категорий, "
-             "вы  получите уведомление.",
-        reply_markup=main_markup
-    )
+    state_data = await state.get_data()
+    if state_data.get("update"):
+        await message.answer(
+            text="Данные успешно изменены",
+            reply_markup=main_markup
+        )
+    else:
+        await message.answer(
+            text="Вы завершили регистрацию в боте. Как только рядом с вами появятся задания из выбранных категорий, "
+                 "вы  получите уведомление.",
+            reply_markup=main_markup
+        )
     await state.finish()
 
 

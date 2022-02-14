@@ -14,6 +14,8 @@ class OrderCandidatesInline(admin.StackedInline):
 
 @admin.register(Orders)
 class OrdersAdmin(admin.ModelAdmin):
+    list_display = ["customer", "category", "worker", "status"]
+    search_fields = ["customer_phone"]
     inlines = [OrderCandidatesInline]
 
     class Meta:

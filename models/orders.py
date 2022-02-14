@@ -1,5 +1,6 @@
 from asgiref.sync import sync_to_async
 from admin.orders.models import Orders, OrderCandidates
+from data.config import OrderStatuses
 
 
 class OrdersModel:
@@ -17,7 +18,7 @@ class OrdersModel:
     @staticmethod
     @sync_to_async
     def get_available_by_id(id_: int) -> object:
-        return Orders.objects.get(pk=id_)
+        return Orders.objects.get(pk=id_, status=OrderStatuses.waiting_for_start)
 
     @staticmethod
     @sync_to_async
