@@ -1,14 +1,11 @@
 from aiogram import types
 from keyboards.inline.customer_orders import orders_markup, orders_callback
 from loader import dp
-from keyboards.inline.start_or_back import start_or_back_markup, start_or_back_callback
 from keyboards.inline.candidates_data import candidates_markup, candidate_callback
-from keyboards.inline.yes_or_no import yes_or_no_markup, yes_or_no_callback
 from keyboards.inline.confirm_candidate import confirm_candidate_markup, confirm_candidate_callback
-from data.config import Roles, MainMenuCommands
-from states.common.confirm_privacy_policy import ConfirmPrivacyPolicy
 from models import CustomersModel, OrdersModel, OrderCandidatesModel, WorkersModel
 from notifications import notify_worker_about_being_chosen_as_implementer
+from data.config import OrderStatuses
 
 
 @dp.callback_query_handler(orders_callback.filter())
@@ -51,7 +48,7 @@ async def confirm_chosen_candidate(callback: types.CallbackQuery, callback_data:
         order_id = int(callback_data.get("order_id"))
         worker = await WorkersModel.get_by_id(worker_id)
         order = await OrdersModel.get_by_id(order_id)
-        await OrdersModel.update(order_id, worker=worker)
+        await OrdersModel.update(order_id, worker=worker, status=OrderStatuses.in_progress)
         await notify_worker_about_being_chosen_as_implementer(worker, order)
         await callback.message.answer("Тут еще будет вывод информации о выбранном кандидате")
     else:

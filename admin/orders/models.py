@@ -9,7 +9,7 @@ class Orders(TimeBasedModel):
     customer = models.ForeignKey(Customers, verbose_name="Заказчик", on_delete=models.CASCADE)
     category = models.ForeignKey(JobCategories, verbose_name="Категория", on_delete=models.CASCADE)
     worker = models.ForeignKey(Workers, verbose_name="Исполнитель", null=True, blank=True, on_delete=models.CASCADE)
-    status = models.CharField("Статус", max_length=20, default=OrderStatuses.waiting_for_start)
+    status = models.CharField("Статус", max_length=120, default=OrderStatuses.waiting_for_start)
     customer_name = models.CharField("Имя для обращения к заказчику", max_length=255)
     location = models.CharField("Координаты", max_length=255)
     city = models.CharField("Город", default="Неизвестный", max_length=255)
@@ -39,5 +39,16 @@ class OrderCandidates(TimeBasedModel):
     class Meta:
         verbose_name = "Кандидат"
         verbose_name_plural = "Кандидаты"
+
+
+class OrdersTimestamps(models.Model):
+    order = models.ForeignKey(Orders, verbose_name="Заказ", on_delete=models.CASCADE)
+    seconds = models.PositiveBigIntegerField("Секунды")
+
+    class Meta:
+        verbose_name = "Временная отметка для заказа"
+        verbose_name_plural = "Пременные отметки для заказов"
+
+
 
 
