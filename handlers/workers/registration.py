@@ -56,14 +56,13 @@ async def ask_to_confirm_privacy_policy(callback: types.CallbackQuery, state: FS
                            state=ConfirmPrivacyPolicy.get_answer)
 async def confirm_privacy_policy(callback: types.CallbackQuery, state: FSMContext):
     await callback.answer()
-    # bot_user = await BotUsersModel.create_user(callback.from_user.id, callback.from_user.username)
     await state.finish()
-
     await callback.message.answer(
         text="Как к вам должны обращаться заказчики? (Введите имя или имя отчество)",
         reply_markup=types.ReplyKeyboardRemove()
     )
     await WorkerRegistrationStates.get_name.set()
+    await state.update_data(update=False)
 
 
 @dp.callback_query_handler(agree_or_not_callback.filter(choice=InlineKeyboardAnswers.do_not_agree, role=Roles.worker),
@@ -170,6 +169,7 @@ async def save_worker_data(worker_telegram_id: int, state: FSMContext):
     categories_list = state_data.get("categories_list")
     user = await BotUsersModel.get_by_telegram_id(worker_telegram_id)
     location = f"{state_data.get('location').latitude} {state_data.get('location').longitude}"
+    update = state_data.get("update")
     worker_data = {
         "user": user,
         "name": state_data.get("worker_name"),
@@ -178,7 +178,14 @@ async def save_worker_data(worker_telegram_id: int, state: FSMContext):
     }
     if state_data.get("additional_contacts"):
         worker_data["additional_contacts"] = state_data.get("additional_contacts")
-    worker = await WorkersModel.create_worker(**worker_data)
+
+    if update:
+        worker = await WorkersModel.get_by_telegram_id(worker_telegram_id)
+        del worker_data["user"]
+        await WorkersModel.update_worker_by_id(worker.pk, **worker_data)
+    else:
+        worker = await WorkersModel.create_worker(**worker_data)
+
     categories = list()
     for category_id in state_data.get("categories"):
         categories.append(get_category_by_id(categories_list, int(category_id)))

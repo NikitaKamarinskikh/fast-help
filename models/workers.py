@@ -26,10 +26,20 @@ class WorkersModel:
 
     @staticmethod
     @sync_to_async
+    def update_worker_by_id(worker_id: int, **update_data) -> None:
+        Workers.objects.filter(pk=worker_id).update(**update_data)
+
+    @staticmethod
+    @sync_to_async
     def add_categories_to_worker(worker: object, categories: list):
+        worker.categories.clear()
         for category in categories:
             worker.categories.add(category)
-        worker.save()
+
+    @staticmethod
+    @sync_to_async
+    def remove_all_categories(worker: object):
+        worker.categories.clear()
 
     @staticmethod
     @sync_to_async
