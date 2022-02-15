@@ -8,9 +8,7 @@ from notifications import notify_customer_about_new_feedback
 @dp.callback_query_handler(rating_callback.filter(user_role="worker"))
 async def leave_feedback_by_worker(callback: types.CallbackQuery, callback_data: dict):
     await callback.answer()
-
     customer_id = callback_data.get("user_id")
-    print(customer_id)
     value = int(callback_data.get("value"))
     order_id = int(callback_data.get("order_id"))
     order = await OrdersModel.get_by_id(order_id)
