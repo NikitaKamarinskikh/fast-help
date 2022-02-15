@@ -1,3 +1,4 @@
+from keyboards.inline.rating import rating_markup
 from loader import bot
 from keyboards.inline.respond_to_order import respond_markup
 from keyboards.inline.complete_order import is_order_completed_markup
@@ -81,8 +82,20 @@ async def notify_customer_about_completed_order(order):
     )
 
 
-async def notify_worker_about_completed_order():
-    ...
+async def notify_worker_about_completed_order(order: object):
+    if order.description:
+        text = f"Заказчик подтвердил выполнение задания \"{order.description}\""
+    else:
+        text = f"Заказчик подтвердил выполнение заказа в категории \"{order.category.name}\""
+    await send_message(
+        order.worker.user.telegram_id,
+        text
+    )
+    await send_message(
+        order.worker.user.telegram_id,
+        "Оцените заказчика",
+        rating_markup("worker", order.customer.pk, order.pk)
+    )
 
 
 async def notify_worker_about_new_feedback(order: object, feedback_value: int):
@@ -97,5 +110,15 @@ async def notify_worker_about_new_feedback(order: object, feedback_value: int):
     )
 
 
+async def notify_customer_about_new_feedback(order: object, feedback_value: int):
+    if order.description:
+        text = f"Вам поставили оценку {feedback_value} за задание \"{order.description}\"\n"
+    else:
+        text = f"Вам поставили оченку {feedback_value} за задание в категории \"{order.category.name}\"\n"
+    text += f"Ваш рейтинг: {order.customer.rating}"
+    await send_message(
+        order.customer.user.telegram_id,
+        text
+    )
 
 
