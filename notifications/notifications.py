@@ -1,5 +1,6 @@
 from loader import bot
 from keyboards.inline.respond_to_order import respond_markup
+from keyboards.inline.complete_order import is_order_completed_markup
 
 
 async def send_message(user_telegram_id: int, text: str, reply_markup=None):
@@ -68,15 +69,32 @@ async def notify_customer_about_new_response(order: object, worker: object):
     await send_message(order.customer.user.telegram_id, text)
 
 
+async def notify_customer_about_completed_order(order):
+    if order.description:
+        text = f"Задание \"{order.description}\" выполнено?"
+    else:
+        text = f"Задание в категории \"{order.category.name}\" выполнено?"
+    await send_message(
+        user_telegram_id=order.customer.user.telegram_id,
+        text=text,
+        reply_markup=is_order_completed_markup(order.pk)
+    )
 
 
+async def notify_worker_about_completed_order():
+    ...
 
 
-
-
-
-
-
+async def notify_worker_about_new_feedback(order: object, feedback_value: int):
+    if order.description:
+        text = f"Вам поставили оценку {feedback_value} за задание \"{order.description}\"\n"
+    else:
+        text = f"Вам поставили оценку {feedback_value} за задание в категории \"{order.category.name}\"\n"
+    text += f"Ваш рейтинг: {order.worker.rating}"
+    await send_message(
+        order.worker.user.telegram_id,
+        text
+    )
 
 
 
