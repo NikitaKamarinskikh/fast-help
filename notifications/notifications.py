@@ -58,7 +58,7 @@ async def notify_worker_about_being_chosen_as_implementer(worker: object, order:
     if order.additional_contacts:
         text += f"Дополнительные контакты: {order.additional_contacts}\n"
     if not order.allow_to_write_in_telegram:
-        text += "Примечание: заказчие запретил писать ему в телеграмм"
+        text += "<b>Примечание: заказчик запретил писать ему в телеграмм</b>"
     await send_message(worker.user.telegram_id, text)
 
 

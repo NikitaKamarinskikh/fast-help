@@ -51,11 +51,12 @@ async def chose_candidate(callback: types.CallbackQuery, callback_data: dict):
     await callback.answer()
     worker_id = int(callback_data.get("candidate_id"))
     order_id = int(callback_data.get("order_id"))
+    candidate_number = int(callback_data.get("candidate_number"))
     worker = await WorkersModel.get_by_id(worker_id)
     text = f"Выбрать {worker.name} исполнителем?"
-    await callback.message.answer(
+    await callback.message.edit_text(
         text=text,
-        reply_markup=confirm_candidate_markup(worker.pk, order_id)
+        reply_markup=confirm_candidate_markup(worker.pk, order_id, candidate_number)
     )
 
 
@@ -63,15 +64,18 @@ async def chose_candidate(callback: types.CallbackQuery, callback_data: dict):
 async def confirm_chosen_candidate(callback: types.CallbackQuery, callback_data: dict):
     await callback.answer()
     choice = callback_data.get("choice")
+    order_id = int(callback_data.get("order_id"))
     if choice == "yes":
         worker_id = int(callback_data.get("candidate_id"))
-        order_id = int(callback_data.get("order_id"))
         worker = await WorkersModel.get_by_id(worker_id)
         order = await OrdersModel.get_by_id(order_id)
         await OrdersModel.update(order_id, worker=worker, status=OrderStatuses.in_progress)
         await notify_worker_about_being_chosen_as_implementer(worker, order)
         await callback.message.answer("Тут еще будет вывод информации о выбранном кандидате")
     else:
-        ...
+        candidate_number = int(callback_data.get("candidate_number"))
+        await callback.message.edit_text(
+            **(await get_message_content(order_id, candidate_number))
+        )
 
 
