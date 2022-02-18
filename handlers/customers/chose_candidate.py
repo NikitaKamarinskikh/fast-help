@@ -27,7 +27,7 @@ async def get_message_content(order_id: int, candidate_number: int):
     }
 
 
-@dp.callback_query_handler(orders_callback.filter())
+@dp.callback_query_handler(orders_callback.filter(order_status=OrderStatuses.waiting_for_start))
 async def show_order_candidates(callback: types.CallbackQuery, callback_data: dict):
     await callback.answer()
     order_id = int(callback_data.get("order_id"))

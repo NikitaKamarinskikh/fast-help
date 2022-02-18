@@ -35,8 +35,9 @@ class OrdersModel:
     @sync_to_async
     def get_not_completed(customer: object):
         # Item.objects.filter(Q(creator=owner) | Q(moderated=False))
-        return Orders.objects.filter(Q(status=OrderStatuses.waiting_for_start) or Q(status=OrderStatuses.in_progress),
-                                     customer=customer)
+        waiting_for_start = Orders.objects.filter(status=OrderStatuses.waiting_for_start, customer=customer)
+        in_progress = Orders.objects.filter(status=OrderStatuses.in_progress, customer=customer)
+        return list(waiting_for_start) + list(in_progress)
 
 
 class OrderCandidatesModel:

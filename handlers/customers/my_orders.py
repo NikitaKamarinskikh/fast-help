@@ -10,8 +10,6 @@ from models import CustomersModel, OrdersModel, OrderCandidatesModel
 from .utils import get_orders_quantity_by_order_status
 
 
-# Item.objects.filter(Q(creator=owner) | Q(moderated=False))
-# Entry.objects.filter(~Q(id=3))
 @dp.message_handler(text=MainMenuCommands.my_orders)
 async def chose_orders_status(message: types.Message):
     try:
@@ -19,7 +17,6 @@ async def chose_orders_status(message: types.Message):
         orders = await OrdersModel.get_not_completed(customer)
         in_progress_orders_quantity = get_orders_quantity_by_order_status(orders, OrderStatuses.in_progress)
         waiting_for_start_orders_quantity = get_orders_quantity_by_order_status(orders, OrderStatuses.waiting_for_start)
-
         await message.answer(
             text="Ваши задания, в которых осуществляется подбор исполнителей, и там где они найдены.",
             reply_markup=orders_status_markup(waiting_for_start_orders_quantity, in_progress_orders_quantity)
@@ -42,8 +39,9 @@ async def show_waiting_for_start_orders(callback: types.CallbackQuery, callback_
 
     await callback.message.answer(
         text="Ваши задания",
-        reply_markup=orders_markup(orders)
+        reply_markup=orders_markup(orders, OrderStatuses.waiting_for_start)
     )
+
 
 
 

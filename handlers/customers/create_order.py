@@ -178,13 +178,14 @@ async def get_order_start_date_now(callback: types.CallbackQuery, state: FSMCont
 
 async def create_order(customer_telegram_id: int, state: FSMContext):
     state_data = await state.get_data()
+    print(state_data)
     execution_time_str = state_data.get("order_execution_time")
     hours, minutes = execution_time_str.split(":")
     execution_time = time(int(hours), int(minutes), 0)
     customer = await CustomersModel.get_by_telegram_id(customer_telegram_id)
     category = await JobCategoriesModel.get_by_id(state_data.get("category_id"))
     location = f"{state_data.get('location').latitude} {state_data.get('location').longitude}"
-    coordinates = (state_data.get('location').latitude, float(state_data.get('location').longitude))
+    coordinates = (float(state_data.get('location').latitude), float(state_data.get('location').longitude))
     order_data = {
         "customer": customer,
         "category": category,

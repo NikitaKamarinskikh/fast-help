@@ -3,7 +3,11 @@ from geopy.distance import geodesic
 
 
 def get_distance_between_two_points_in_meters(coordinates1: tuple, coordinates2: tuple) -> int:
-    return int(geodesic(coordinates1, coordinates2).meters)
+    try:
+        return int(geodesic(coordinates1, coordinates2).meters)
+    except Exception as e:
+        print(e)
+        return 1000000
 
 
 async def get_candidates_by_filters(category: object, coordinates: tuple) -> list:
