@@ -6,6 +6,7 @@ orders_callback = CallbackData("orders_callback", "order_id", "order_status")
 orders_status_callback = CallbackData("order_status", "status")
 order_manage_callback = CallbackData("order_manage", "order_id", "option")
 confirm_finish_order_callback = CallbackData("confirm_finish_order", "order_id", "choice")
+find_new_candidate_callback = CallbackData("find_new_candidate", "option", "order_id")
 
 
 def orders_status_markup(waiting_for_start_orders_quantity: int, in_progress_orders_quantity: int):
@@ -60,6 +61,21 @@ def confirm_finish_order_markup(order_id: int):
         InlineKeyboardButton(
             text="Отмена",
             callback_data=confirm_finish_order_callback.new(order_id, "no")
+        )
+    )
+    return markup
+
+
+def find_new_candidate_markup(order_id: int):
+    markup = InlineKeyboardMarkup(row_width=1)
+    markup.add(
+        InlineKeyboardButton(
+            text="Найти нового",
+            callback_data=find_new_candidate_callback.new("find_new", order_id)
+        ),
+        InlineKeyboardButton(
+            text="Продолжить с текущим",
+            callback_data=find_new_candidate_callback.new("use_current", order_id)
         )
     )
     return markup

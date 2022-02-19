@@ -2,7 +2,7 @@ import re
 from datetime import datetime
 
 
-def correct_date(string: str):
+def correct_date(string: str) -> bool:
     if re.match(r"^\d\d\.\d\d\.\d\d\d\d$", string):
         current_year = datetime.now().year
         days, months, years = string.split(".")
