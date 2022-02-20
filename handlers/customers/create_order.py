@@ -204,7 +204,7 @@ async def create_order(customer_telegram_id: int, state: FSMContext):
         order_data["voice_description"] = state_data.get("order_voice_description")
 
     order = await OrdersModel.create(**order_data)
-    candidates = await get_candidates_by_filters(category, coordinates)
+    candidates = await get_candidates_by_filters(category, coordinates, [])
     await notify_workers_about_new_order(candidates, order)
 
 

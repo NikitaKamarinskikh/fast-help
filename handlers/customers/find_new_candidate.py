@@ -42,7 +42,7 @@ async def find_new_candidate(callback: types.CallbackQuery, callback_data: dict)
     order_id = int(callback_data.get("order_id"))
     order = await OrdersModel.get_by_id(order_id)
     await notify_worker_about_completed_order(order)
-    # await OrdersModel.update(order_id, status=OrderStatuses.completed) это нужно раскомментить
+    await OrdersModel.update(order_id, status=OrderStatuses.completed)
     await callback.message.answer(
         text="Оцените исполнителя",
         reply_markup=old_candidate_rating_markup(order.worker.pk, order.pk)
