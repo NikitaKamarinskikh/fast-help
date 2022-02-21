@@ -37,16 +37,11 @@ def split_categories_by_orders(orders: list, categories: list) -> Categories:
             total_1000_meters += 1
         elif order.distance <= 1500:
             total_1500_meters += 1
-    # Количество
-    if order.category.pk not in categories_data.keys():
-        categories_data[order.category.pk] = {
-            "name": order.category.name,
-            "quantity": 1,
-            "distance": order.distance,
-            "order_id": order.pk
-        }
-    else:
-        categories_data[order.category.pk]["quantity"] = categories_data[order.category.pk]["quantity"] + 1
+        # Количество
+        if order.category.name not in categories_data.keys():
+            categories_data[order.category.name] = 1
+        else:
+            categories_data[order.category.name] += 1
     print(categories_data)
     return Categories(total_500_meters, total_1000_meters, total_1500_meters, categories_data)
 
@@ -70,9 +65,9 @@ async def show_longer_distance_orders(callback: types.CallbackQuery, callback_da
 @dp.message_handler(text=MainMenuCommands.tasks_nearby)
 async def tasks_nearby(message: types.Message, state: FSMContext):
     try:
-        await message.answer("Ищу задания...",
-                             reply_markup=main_meun_markup)
+
         worker = await WorkersModel.get_by_telegram_id(message.from_user.id)
+        await message.answer("Ищу задания...", reply_markup=main_meun_markup)
         categories = await JobCategoriesModel.get_all()
         orders = await get_orders_by_worker(worker, max_distance=1500)
         # await message.answer(str(len(orders)))
@@ -96,7 +91,7 @@ async def tasks_nearby(message: types.Message, state: FSMContext):
         )
         await ChoseOrderStates.chose_order.set()
     except Exception as e:
-        print(e)
+        print(e, e.__class__)
         await message.answer(
             text="Для того чтобы стать помощником понадобится заполнить небольшую анкету и "
                  "согласиться с хранением и обработкой данных",

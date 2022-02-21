@@ -1,6 +1,7 @@
 from aiogram.dispatcher import FSMContext
 from aiogram import types
 
+from keyboards.default.start import start_keyboard
 from keyboards.inline.categories import create_categories_markup
 from loader import dp
 from keyboards.inline.chose_role import chose_role_callback, chose_role_markup
@@ -9,32 +10,29 @@ from keyboards.inline.agree_or_not import agree_or_not_markup, agree_or_not_call
 from keyboards.default.main import main_markup
 from data.config import Roles, MainMenuCommands
 from data.config import InlineKeyboardAnswers
-from models import BotUsersModel, CustomersModel, JobCategoriesModel, DocumentsModel
+from models import BotUsersModel, CustomersModel, JobCategoriesModel, DocumentsModel, WorkersModel
 from states.common.confirm_privacy_policy import ConfirmPrivacyPolicy
 from states.customers.create_order import CreateOrderStates
-
-
-# @dp.callback_query_handler(chose_role_callback.filter(role=Roles.customer))
-# async def start_customer_registration(callback: types.CallbackQuery):
-#     await callback.answer()
-#     await callback.message.answer(
-#         text="Для того чтобы получить помощь понадобится заполнить небольшую анкету и согласиться с хранением "
-#              "и обработкой данных и подписать договор оферту",
-#         reply_markup=start_or_back_markup(Roles.customer)
-#     )
-#     await ConfirmPrivacyPolicy.ask_to_confirm.set()
 
 
 @dp.message_handler(text=MainMenuCommands.need_help)
 async def start_making_order(message: types.Message):
     try:
         customer = await CustomersModel.get_by_telegram_id(message.from_user.id)
-        categories: list = await JobCategoriesModel.get_all()
-        await message.answer(
-            text="Выберите категорию в которой нужен помощник",
-            reply_markup=create_categories_markup(categories)
-        )
-        await CreateOrderStates.get_category.set()
+        if customer.is_privacy_policy_confirmed:
+            categories: list = await JobCategoriesModel.get_all()
+            await message.answer(
+                text="Выберите категорию в которой нужен помощник",
+                reply_markup=create_categories_markup(categories)
+            )
+            await CreateOrderStates.get_category.set()
+        else:
+            await message.answer(
+                text="Для того чтобы получить помощь понадобится заполнить небольшую анкету и согласиться с хранением "
+                     "и обработкой данных и подписать договор оферту",
+                reply_markup=start_or_back_markup(Roles.customer)
+            )
+            await ConfirmPrivacyPolicy.ask_to_confirm.set()
     except:
         await message.answer(
             text="Для того чтобы получить помощь понадобится заполнить небольшую анкету и согласиться с хранением "
@@ -49,10 +47,17 @@ async def start_making_order(message: types.Message):
 async def ask_to_confirm_privacy_policy(callback: types.CallbackQuery, state: FSMContext):
     await callback.answer()
     await state.finish()
-    await callback.message.answer(
-        text="Добро пожаловать\nВы ищите помощь или хотите стать помощником?",
-        reply_markup=main_markup
-    )
+    worker = await WorkersModel.get_or_none(callback.from_user.id)
+    if worker:
+        await callback.message.answer(
+            text="Главное меню",
+            reply_markup=main_markup
+        )
+    else:
+        await callback.message.answer(
+            text="Добро пожаловать\nВы ищите помощь или хотите стать помощником?",
+            reply_markup=start_keyboard
+        )
 
 
 @dp.callback_query_handler(start_or_back_callback.filter(choice=InlineKeyboardAnswers.start, role=Roles.customer),
@@ -73,11 +78,13 @@ async def ask_to_confirm_privacy_policy(callback: types.CallbackQuery, state: FS
                            state=ConfirmPrivacyPolicy.get_answer)
 async def confirm_privacy_policy(callback: types.CallbackQuery, state: FSMContext):
     await callback.answer()
-    # bot_user = await BotUsersModel.create_user(callback.from_user.id, callback.from_user.username)
     bot_user = await BotUsersModel.get_by_telegram_id(callback.from_user.id)
     await state.finish()
-    customer = await CustomersModel.create_customer(bot_user)
-
+    try:
+        customer = await CustomersModel.get_by_telegram_id(callback.from_user.id)
+        await CustomersModel.update_by_id(customer.pk, is_privacy_policy_confirmed=True)
+    except:
+        customer = await CustomersModel.create_customer(bot_user)
     categories: list = await JobCategoriesModel.get_all()
     await callback.message.answer(
         text="Выберите категорию в которой нужен помощник",
@@ -96,4 +103,3 @@ async def confirm_privacy_policy(callback: types.CallbackQuery, state: FSMContex
         reply_markup=start_or_back_markup(Roles.customer)
     )
     await ConfirmPrivacyPolicy.ask_to_confirm.set()
-

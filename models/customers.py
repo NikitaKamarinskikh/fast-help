@@ -22,6 +22,12 @@ class CustomersModel:
 
     @staticmethod
     @sync_to_async
+    def get_or_none(telegram_id: int) -> object:
+        user = BotUsers.objects.filter(telegram_id=telegram_id).first()
+        return Customers.objects.filter(user=user).first()
+
+    @staticmethod
+    @sync_to_async
     def create_customer(user: object) -> object:
         try:
             return Customers.objects.get(telegram_id=user.telegram_id)

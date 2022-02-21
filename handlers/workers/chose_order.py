@@ -1,3 +1,4 @@
+from datetime import datetime
 from keyboards.inline.orders_nerby import orders_nearby_callback, chose_order_pagination_callback, \
     orders_at_longer_distance_callback
 from keyboards.inline.yes_or_no import yes_or_no_markup, yes_or_no_callback
@@ -43,10 +44,19 @@ async def send_voice(callback, state, order):
 @dp.callback_query_handler(orders_nearby_callback.filter(), state=ChoseOrderStates.chose_order)
 async def get_orders_nearby_by_category(callback: types.CallbackQuery, callback_data: dict, state: FSMContext):
     await callback.answer()
+    print("start_await state.get_data()", datetime.now().time())
     state_data = await state.get_data()
+    print("finish_await state.get_data()", datetime.now().time())
+    print()
+    print("start_tate_data.get(orders)", datetime.now().time())
     orders = state_data.get("orders")
+    print("finish_tate_data.get(orders)", datetime.now().time())
     category_name = callback_data.get("category_name")
+    print()
+    print("start_get_orders_by_category_name", datetime.now().time())
     orders = get_orders_by_category_name(orders, category_name)
+    print("finish_get_orders_by_category_name", datetime.now().time())
+
     await state.update_data(category_orders=orders, voice_messages_ids=[])
     await callback.message.answer(
         **(await get_message_content(orders[0], len(orders), 0))
@@ -58,7 +68,10 @@ async def get_orders_nearby_by_category(callback: types.CallbackQuery, callback_
 @dp.callback_query_handler(chose_order_pagination_callback.filter(), state=ChoseOrderStates.chose_order)
 async def flip_candidate(callback: types.CallbackQuery, callback_data: dict, state: FSMContext):
     await callback.answer()
+    print("start_await state.get_data()", datetime.now().time())
     state_data = await state.get_data()
+    print("finish_await state.get_data()", datetime.now().time())
+    print()
     voice_messages_ids = state_data.get("voice_messages_ids")
     for message_id in voice_messages_ids:
         await bot.delete_message(chat_id=callback.from_user.id, message_id=message_id)

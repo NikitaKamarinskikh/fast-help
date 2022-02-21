@@ -11,11 +11,11 @@ back_to_orders_callback = CallbackData("back_to_orders")
 
 def orders_nearby_markup(categories: dict):
     markup = InlineKeyboardMarkup(row_width=2)
-    for category_id, category_data in categories.items():
+    for category_name, category_quantity in categories.items():
         markup.insert(
             InlineKeyboardButton(
-                text=f"{category_data.get('name')} ({category_data.get('quantity')})",
-                callback_data=orders_nearby_callback.new(category_data.get('name'), category_data.get('order_id'), 500),
+                text=f"{category_name} ({category_quantity})",
+                callback_data=orders_nearby_callback.new(category_name, "test", 500),
             )
         )
     return markup

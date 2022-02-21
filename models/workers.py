@@ -18,6 +18,12 @@ class WorkersModel:
 
     @staticmethod
     @sync_to_async
+    def get_or_none(telegram_id: int) -> object:
+        user = BotUsers.objects.filter(telegram_id=telegram_id).first()
+        return Workers.objects.filter(user=user).first()
+
+    @staticmethod
+    @sync_to_async
     def create_worker(**data) -> object:
         try:
             return Workers.objects.get(telegram_id=data.get("telegram_id"))

@@ -20,12 +20,14 @@ async def get_referrer_by_message_args(message_args, user_telegram_id: int):
 
 @dp.message_handler(CommandStart())
 async def bot_start(message: types.Message):
-    try:
-        await BotUsersModel.get_by_telegram_id(message.from_user.id)
+    customer = await CustomersModel.get_or_none(message.from_user.id)
+    worker = await WorkersModel.get_or_none(message.from_user.id)
+    if customer or worker:
         await message.answer(
             text="Вы уже использовали эту команду",
+            reply_markup=main_markup
         )
-    except:
+    else:
         referrer = await get_referrer_by_message_args(message.get_args(), message.from_user.id)
         user = await BotUsersModel.create_user(message.from_user.id, message.from_user.username, referrer)
         await message.answer(

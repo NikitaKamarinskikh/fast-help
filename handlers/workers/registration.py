@@ -1,6 +1,7 @@
 from aiogram.dispatcher import FSMContext
 from aiogram import types
 
+from keyboards.default.start import start_keyboard
 from keyboards.inline.skip import skip_markup, skip_callback
 from loader import dp
 from keyboards.inline.chose_role import chose_role_callback, chose_role_markup
@@ -12,7 +13,7 @@ from keyboards.default.get_location import get_location_markup
 from keyboards.default.get_phone import get_phone_markup
 from data.config import Roles, MainMenuCommands
 from data.config import InlineKeyboardAnswers
-from models import BotUsersModel, WorkersModel, JobCategoriesModel, DocumentsModel
+from models import BotUsersModel, WorkersModel, JobCategoriesModel, DocumentsModel, CustomersModel
 from states.common.confirm_privacy_policy import ConfirmPrivacyPolicy
 from states.workers.registration import WorkerRegistrationStates
 
@@ -32,10 +33,17 @@ async def start_worker_registration(message: types.Message, state: FSMContext):
 async def ask_to_confirm_privacy_policy(callback: types.CallbackQuery, state: FSMContext):
     await callback.answer()
     await state.finish()
-    await callback.message.answer(
-        text="Добро пожаловать\nВы ищите помощь или хотите стать помощником?",
-        reply_markup=chose_role_markup()
-    )
+    customer = await CustomersModel.get_or_none(callback.from_user.id)
+    if customer:
+        await callback.message.answer(
+            text="Главное меню",
+            reply_markup=main_markup
+        )
+    else:
+        await callback.message.answer(
+            text="Добро пожаловать\nВы ищите помощь или хотите стать помощником?",
+            reply_markup=start_keyboard
+        )
 
 
 @dp.callback_query_handler(start_or_back_callback.filter(choice=InlineKeyboardAnswers.start, role=Roles.worker),

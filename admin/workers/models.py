@@ -13,6 +13,7 @@ class Workers(TimeBasedModel):
     rating = models.FloatField("Рейтинг", default=0.0)
     completed_orders_quantity = models.PositiveBigIntegerField("Количество выполненных заказов", default=0)
     categories = models.ManyToManyField(JobCategories, verbose_name="Категории")
+    is_privacy_policy_confirmed = models.BooleanField("Подтверждена ли политика конфиденциальности", default=False)
 
     def __str__(self):
         return self.user.__str__()

@@ -6,6 +6,7 @@ class Customers(TimeBasedModel):
     user = models.ForeignKey(BotUsers, verbose_name="Пользователь", on_delete=models.CASCADE)
     completed_orders_quantity = models.PositiveBigIntegerField("Количество завершенных заказов", default=0)
     rating = models.FloatField("Рейтинг", default=0.0)
+    is_privacy_policy_confirmed = models.BooleanField("Подтверждена ли политика конфиденциальности", default=False)
 
     def __str__(self):
         return self.user.__str__()
