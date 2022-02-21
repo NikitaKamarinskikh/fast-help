@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-
+from datetime import datetime
 from aiogram import types
 from aiogram.dispatcher import FSMContext
 from data.config import MainMenuCommands, Roles
@@ -7,8 +7,9 @@ from keyboards.inline.start_or_back import start_or_back_markup
 from keyboards.inline.orders_nerby import orders_nearby_markup, orders_nearby_callback, \
     orders_at_longer_distance_markup, orders_at_longer_distance_callback
 from keyboards.default.home import main_meun_markup
+from keyboards.inline.yes_or_no import yes_or_no_markup, yes_or_no_callback
 from loader import dp
-from models import WorkersModel
+from models import WorkersModel, JobCategoriesModel
 from states.common.confirm_privacy_policy import ConfirmPrivacyPolicy
 from common import get_orders_by_worker
 from states.workers.chose_order import ChoseOrderStates
@@ -22,11 +23,12 @@ class Categories:
     data: dict
 
 
-def split_categories_by_orders(orders: list) -> Categories:
+def split_categories_by_orders(orders: list, categories: list) -> Categories:
     """
     return: {"category_name": quantity}, {"category_name": quantity}
     """
     categories_data = dict()
+
     total_500_meters, total_1000_meters, total_1500_meters = 0, 0, 0
     for order in orders:
         if order.distance <= 500:
@@ -35,28 +37,54 @@ def split_categories_by_orders(orders: list) -> Categories:
             total_1000_meters += 1
         elif order.distance <= 1500:
             total_1500_meters += 1
-        if order.category.pk not in categories_data.keys():
-            categories_data[order.category.pk] = {
-                "name": order.category.name,
-                "quantity": 1,
-                "distance": order.distance,
-                "order_id": order.pk
-            }
-        else:
-            categories_data[order.category.pk]["quantity"] = categories_data[order.category.pk]["quantity"] + 1
+    # Количество
+    if order.category.pk not in categories_data.keys():
+        categories_data[order.category.pk] = {
+            "name": order.category.name,
+            "quantity": 1,
+            "distance": order.distance,
+            "order_id": order.pk
+        }
+    else:
+        categories_data[order.category.pk]["quantity"] = categories_data[order.category.pk]["quantity"] + 1
+    print(categories_data)
     return Categories(total_500_meters, total_1000_meters, total_1500_meters, categories_data)
+
+
+@dp.callback_query_handler(orders_at_longer_distance_callback.filter(), state=ChoseOrderStates.chose_order)
+async def orders_at_longer_distance(callback: types.CallbackQuery, callback_data: dict, state: FSMContext):
+    await callback.answer()
+    distance = int(callback_data.get("distance"))
+    await callback.message.answer(
+        text=f"Вы уверены, что хотите задания на {distance}м?",
+        reply_markup=yes_or_no_markup(question="show_longer_distance_orders")
+    )
+
+
+@dp.callback_query_handler(yes_or_no_callback.filter(question="show_longer_distance_orders"),
+                           state=ChoseOrderStates.chose_order)
+async def show_longer_distance_orders(callback: types.CallbackQuery, callback_data: dict, state: FSMContext):
+    await callback.answer()
 
 
 @dp.message_handler(text=MainMenuCommands.tasks_nearby)
 async def tasks_nearby(message: types.Message, state: FSMContext):
     try:
-        worker = await WorkersModel.get_by_telegram_id(message.from_user.id)
-        orders = await get_orders_by_worker(worker, max_distance=1500)
-        await state.update_data(orders=orders)
-        await message.answer("Чтобы попасть в главное меню, воспользуйтесь кнопкой, "
-                             "которая расположена рядом с клавиатурой",
+        await message.answer("Ищу задания...",
                              reply_markup=main_meun_markup)
-        categories = split_categories_by_orders(orders)
+        worker = await WorkersModel.get_by_telegram_id(message.from_user.id)
+        categories = await JobCategoriesModel.get_all()
+        orders = await get_orders_by_worker(worker, max_distance=1500)
+        # await message.answer(str(len(orders)))
+        print("start_updating_state_data", datetime.now().time())
+        await state.update_data(orders=orders)
+        print("finish_updating_data", datetime.now().time())
+        print()
+
+        print("start splitting categories", datetime.now().time())
+        categories = split_categories_by_orders(orders, categories)
+        print("finish splitting categories", datetime.now().time())
+
         await message.answer(
             text=f"Количество заданий в 500м от вас: {categories.total_500_meters}",
             reply_markup=orders_nearby_markup(categories.data)

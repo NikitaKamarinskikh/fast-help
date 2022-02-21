@@ -13,6 +13,11 @@ class OrdersModel:
 
     @staticmethod
     @sync_to_async
+    def delete_all():
+        Orders.objects.all().delete()
+
+    @staticmethod
+    @sync_to_async
     def update(order_id: int, **update_data) -> None:
         Orders.objects.filter(pk=order_id).update(**update_data)
 
@@ -41,12 +46,14 @@ class OrdersModel:
     @staticmethod
     @sync_to_async
     def get_not_completed_by_categories(categories: list):
-        candidates = list()
-        orders = Orders.objects.filter(status=OrderStatuses.waiting_for_start)
-        for order in orders:
-            if order.category in categories:
-                candidates.append(order)
-        return candidates
+        return Orders.objects.filter(status=OrderStatuses.waiting_for_start, category__in=categories)
+
+    @staticmethod
+    @sync_to_async
+    def add_candidate(order: object, worker: object) -> object:
+        order.candidates.add(worker)
+        order.save()
+        return order
 
 
 class OrderCandidatesModel:

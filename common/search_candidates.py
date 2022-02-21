@@ -1,3 +1,6 @@
+import os
+from datetime import datetime
+
 from models import WorkersModel, OrdersModel
 from geopy.distance import geodesic
 
@@ -32,14 +35,42 @@ async def get_orders_by_worker(worker: object, max_distance: int = 500) -> list:
     candidates = list()
     worker_coordinates_list = worker.location.split()
     worker_coordinates = (float(worker_coordinates_list[0]), float(worker_coordinates_list[1]))
+    print("start_getting_orders", datetime.now().time())
     orders = await OrdersModel.get_not_completed_by_categories(worker.categories.all())
+    print("finish_getting_orders", datetime.now().time())
+    print()
+
+    print("start calculating", datetime.now().time())
+    filename = f"{worker.user.telegram_id}_order_coordinates.txt"
+
+    # Вывод координат в файл
+    with open(filename, "w") as f:
+        for order in orders:
+            # order_coordinates_list = order.location.split()
+            # order_coordinates = (float(order_coordinates_list[0]), float(order_coordinates_list[1]))
+            # distance = get_distance_between_two_points_in_meters(order_coordinates, worker_coordinates)
+            # if distance <= max_distance:
+            #     setattr(order, "distance", distance)
+            #     candidates.append(order)
+
+            f.write(f"{worker.location} {order.location}\n")
+
+    # Эти координаты считает файл на си и записывает в другой файл
+    os.system(f"./calc_distance {filename} result_{filename}")
+
+    # Затем открываем новый файл и проверяем числа еще раз
+    f = open(f"result_{filename}", "r")
     for order in orders:
-        order_coordinates_list = order.location.split()
-        order_coordinates = (float(order_coordinates_list[0]), float(order_coordinates_list[1]))
-        distance = get_distance_between_two_points_in_meters(order_coordinates, worker_coordinates)
+        distance = int(f.readline())
         if distance <= max_distance:
             setattr(order, "distance", distance)
             candidates.append(order)
+    f.close()
+    os.remove(filename)
+    os.remove(f"result_{filename}")
+    print(len(candidates))
+    print("finish calculating", datetime.now().time())
+    print()
     return candidates
 
 

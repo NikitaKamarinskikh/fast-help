@@ -1,10 +1,10 @@
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils.callback_data import CallbackData
+from keyboards.inline.respond_to_order import respond_callback
 
-orders_nearby_callback = CallbackData("order_nearby", "category_name", "order_id")
+orders_nearby_callback = CallbackData("order_nearby", "category_name", "order_id", "distance")
 orders_at_longer_distance_callback = CallbackData("orders_at_longer_distance", "distance")
 
-chose_order_callback = CallbackData("chose_order", "order_id")
 chose_order_pagination_callback = CallbackData("chose_order_pagination", "order_id", "order_number", "direction")
 back_to_orders_callback = CallbackData("back_to_orders")
 
@@ -15,7 +15,7 @@ def orders_nearby_markup(categories: dict):
         markup.insert(
             InlineKeyboardButton(
                 text=f"{category_data.get('name')} ({category_data.get('quantity')})",
-                callback_data=orders_nearby_callback.new(category_data.get('name'), category_data.get('order_id')),
+                callback_data=orders_nearby_callback.new(category_data.get('name'), category_data.get('order_id'), 500),
             )
         )
     return markup
@@ -62,7 +62,7 @@ def chose_order_markup(order_number: int, orders_quantity: int, order_id: int):
     markup.add(
         InlineKeyboardButton(
             text="Откликнуться",
-            callback_data=chose_order_callback.new(order_id),
+            callback_data=respond_callback.new(order_id),
         )
     )
     markup.add(

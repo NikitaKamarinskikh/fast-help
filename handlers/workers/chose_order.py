@@ -1,16 +1,18 @@
-from keyboards.inline.orders_nerby import orders_nearby_callback, chose_order_pagination_callback
+from keyboards.inline.orders_nerby import orders_nearby_callback, chose_order_pagination_callback, \
+    orders_at_longer_distance_callback
+from keyboards.inline.yes_or_no import yes_or_no_markup, yes_or_no_callback
 from loader import dp, bot
 from aiogram import types
 from aiogram.dispatcher import FSMContext
-from keyboards.inline.orders_nerby import chose_order_markup, chose_order_callback, back_to_orders_callback
+from keyboards.inline.orders_nerby import chose_order_markup, back_to_orders_callback
 from states.workers.chose_order import ChoseOrderStates
 from models import OrdersModel
 
 
-def get_orders_by_category_name(orders: list, category_name: str, max_distance: int = 500):
+def get_orders_by_category_name(orders: list, category_name: str, max_distance_in_meters: int = 500):
     candidates = list()
     for order in orders:
-        if order.category.name == category_name and order.distance <= max_distance:
+        if order.category.name == category_name and order.distance <= max_distance_in_meters:
             candidates.append(order)
     return candidates
 
@@ -30,25 +32,27 @@ async def get_message_content(order: object, orders_quantity: int, order_number:
     }
 
 
+async def send_voice(callback, state, order):
+    voice_message = await callback.message.answer_voice(
+        order.voice_description,
+        caption="Описание задачи"
+    )
+    await state.update_data(voice_messages_ids=[voice_message.message_id])
+
+
 @dp.callback_query_handler(orders_nearby_callback.filter(), state=ChoseOrderStates.chose_order)
 async def get_orders_nearby_by_category(callback: types.CallbackQuery, callback_data: dict, state: FSMContext):
     await callback.answer()
     state_data = await state.get_data()
     orders = state_data.get("orders")
-    category_id = callback_data.get("category_id")
     category_name = callback_data.get("category_name")
     orders = get_orders_by_category_name(orders, category_name)
-    await state.update_data(category_orders=orders)
-    await state.update_data(voice_messages_ids=[])
+    await state.update_data(category_orders=orders, voice_messages_ids=[])
     await callback.message.answer(
         **(await get_message_content(orders[0], len(orders), 0))
     )
     if orders[0].voice_description:
-        voice_message = await callback.message.answer_voice(
-            orders[0].voice_description,
-            caption="Описание задачи"
-        )
-        await state.update_data(voice_messages_ids=[voice_message.message_id])
+        await send_voice(callback, state, orders[0])
 
 
 @dp.callback_query_handler(chose_order_pagination_callback.filter(), state=ChoseOrderStates.chose_order)
@@ -66,11 +70,7 @@ async def flip_candidate(callback: types.CallbackQuery, callback_data: dict, sta
         **(await get_message_content(order, len(orders), order_number))
     )
     if orders[int(order_number)].voice_description:
-        voice_message = await callback.message.answer_voice(
-            orders[int(order_number)].voice_description,
-            caption="Описание задачи"
-        )
-        await state.update_data(voice_messages_ids=[voice_message.message_id])
+        await send_voice(callback, state, orders[int(order_number)])
 
 
 
