@@ -3,6 +3,7 @@ from aiogram.dispatcher.filters.state import StatesGroup, State
 
 class CreateOrderStates(StatesGroup):
     get_category = State()
+    get_possible_category = State()
     # get_subcategory = State()
     get_name = State()
     get_location = State()
