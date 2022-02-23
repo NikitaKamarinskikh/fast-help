@@ -18,7 +18,7 @@ async def get_order_start_date(message: types.Message, state: FSMContext):
     if order_start_date_time is not None:
         await state.update_data(order_start_date_time=order_start_date_time.strftime("%Y-%m-%d %H:%M"))
         await message.answer(
-            text="Время на выполнение задания ( выберите кнопкой или введите самостоятельно текстом)",
+            text="Время на выполнение задания (выберите кнопкой или введите самостоятельно текстом)",
             reply_markup=update_order_execution_time_markup()
         )
         await UpdateOrderStates.get_execution_time.set()
@@ -56,7 +56,7 @@ async def update_order(state: FSMContext):
         "execution_time": execution_time,
     }
     await OrdersModel.update(order_id, **update_data)
-    candidates = await get_candidates_by_filters(order.category, coordinates)
+    candidates = await get_candidates_by_filters(order, [])
     await notify_workers_about_new_order(candidates, order)
 
 

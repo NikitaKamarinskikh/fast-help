@@ -36,11 +36,15 @@ async def show_waiting_for_start_orders(callback: types.CallbackQuery, callback_
     await callback.answer()
     customer = await CustomersModel.get_by_telegram_id(callback.from_user.id)
     orders = await OrdersModel.get_by_filters(customer=customer, status=OrderStatuses.waiting_for_start)
-
-    await callback.message.answer(
-        text="Ваши задания",
-        reply_markup=orders_markup(orders, OrderStatuses.waiting_for_start)
-    )
+    if len(orders):
+        await callback.message.answer(
+            text="Ваши задания",
+            reply_markup=orders_markup(orders, OrderStatuses.waiting_for_start)
+        )
+    else:
+        await callback.message.answer(
+            text="Задания отсутствуют"
+        )
 
 
 

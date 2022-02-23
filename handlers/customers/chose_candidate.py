@@ -12,18 +12,22 @@ from data.config import OrderStatuses
 async def get_message_content(order_id: int, candidate_number: int):
     order = await OrdersModel.get_by_id(order_id)
     candidates = order.candidates.all()
-    if order.description:
-        text = f"Исполнители на задание \"{order.description}\". Указан средний балл и количество выполненных заданий\n"
-    else:
-        text = f"Исполнители на задание в категории \"{order.category.name}\". Указан средний балл и количество " \
-               f"выполненных заданий\n"
+    if len(candidates):
+        if order.description:
+            text = f"Исполнители на задание \"{order.description}\". Указан средний балл и количество выполненных заданий\n"
+        else:
+            text = f"Исполнители на задание в категории \"{order.category.name}\". Указан средний балл и количество " \
+                   f"выполненных заданий\n"
 
-    text += f"{candidates[candidate_number].name} [{candidate_number + 1} из {len(candidates)}]\n" \
-            f"Средний балл: {candidates[candidate_number].rating}\n" \
-            f"Заданий выполнено: {candidates[candidate_number].completed_orders_quantity}"
+        text += f"{candidates[candidate_number].name} [{candidate_number + 1} из {len(candidates)}]\n" \
+                f"Средний балл: {candidates[candidate_number].rating}\n" \
+                f"Заданий выполнено: {candidates[candidate_number].completed_orders_quantity}"
+        return {
+            "text": text,
+            "reply_markup": candidates_markup(candidates[candidate_number], candidate_number, len(candidates), order_id)
+        }
     return {
-        "text": text,
-        "reply_markup": candidates_markup(candidates[candidate_number], candidate_number, len(candidates), order_id)
+        "text": "Откликов на это задание еще нет"
     }
 
 
@@ -68,10 +72,11 @@ def get_order_finish_time_in_seconds(order_time: time) -> int:
 
 @dp.callback_query_handler(confirm_candidate_callback.filter())
 async def confirm_chosen_candidate(callback: types.CallbackQuery, callback_data: dict):
-    await callback.answer()
+    await callback.answer(cache_time=10)
     choice = callback_data.get("choice")
     order_id = int(callback_data.get("order_id"))
     if choice == "yes":
+        await callback.message.delete()
         worker_id = int(callback_data.get("candidate_id"))
         worker = await WorkersModel.get_by_id(worker_id)
         order = await OrdersModel.get_by_id(order_id)

@@ -11,7 +11,7 @@ def rating_markup(user_role: str, user_id: int, order_id: int):
         markup.insert(
             InlineKeyboardButton(
                 text=str(i),
-                callback_data=rating_callback.new(user_role, user_id, order_id, i)
+                callback_data=rating_callback.new(user_role, user_id, order_id, i),
             ),
         )
     return markup

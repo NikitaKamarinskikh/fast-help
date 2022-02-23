@@ -28,5 +28,16 @@ class OrderTimestampsModel:
     def get_all() -> list:
         return OrdersTimestamps.objects.all()
 
+    @staticmethod
+    @sync_to_async
+    def get_by_order(order: object) -> object:
+        return OrdersTimestamps.objects.get(order=order)
+
+    @staticmethod
+    @sync_to_async
+    def delete_by_order(order: object) -> None:
+        OrdersTimestamps.objects.filter(order=order).delete()
+
+
 
 

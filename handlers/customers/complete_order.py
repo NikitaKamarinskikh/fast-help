@@ -4,17 +4,19 @@ from loader import dp
 from keyboards.inline.complete_order import is_order_competed_callback, order_complete_denied_markup, \
     order_complete_denied_callback
 from keyboards.inline.rating import rating_markup
-from models import OrdersModel
+from models import OrdersModel, OrderTimestampsModel
 from data.config import OrderStatuses
 from notifications import notify_worker_about_completed_order
 
 
 @dp.callback_query_handler(is_order_competed_callback.filter(choice="yes"))
 async def confirm_order_complete(callback: types.CallbackQuery, callback_data: dict):
-    await callback.answer()
+    await callback.answer(cache_time=10)
+    await callback.message.delete()
     order_id = callback_data.get("order_id")
     await OrdersModel.update(int(order_id), status=OrderStatuses.completed)
     order = await OrdersModel.get_by_id(order_id)
+    await OrderTimestampsModel.delete_by_order(order)
     await callback.message.answer(
         text="Оцените исполнителя",
         reply_markup=rating_markup("customer", order.worker.pk, order.pk)
@@ -24,9 +26,10 @@ async def confirm_order_complete(callback: types.CallbackQuery, callback_data: d
 
 @dp.callback_query_handler(is_order_competed_callback.filter(choice="no"))
 async def deny_order_complete(callback: types.CallbackQuery, callback_data: dict):
-    await callback.answer()
+    await callback.answer(cache_time=10)
     order_id = int(callback_data.get("order_id"))
     order = await OrdersModel.get_by_id(order_id)
+    await callback.message.delete()
     await callback.message.answer(
         text="Что делаем?",
         reply_markup=order_complete_denied_markup(order_id, order.worker.pk)

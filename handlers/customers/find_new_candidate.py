@@ -51,8 +51,8 @@ async def find_new_candidate(callback: types.CallbackQuery, callback_data: dict)
 
 @dp.callback_query_handler(old_candidate_rating_callback.filter())
 async def old_candidate_rating(callback: types.CallbackQuery, callback_data: dict, state: FSMContext):
+    await callback.answer(cache_time=100)
     await callback.message.delete()
-    await callback.answer()
     order_id = int(callback_data.get("order_id"))
     value = int(callback_data.get("value"))
     order = await OrdersModel.get_by_id(order_id)
