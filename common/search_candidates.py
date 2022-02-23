@@ -1,6 +1,4 @@
 import os
-import numpy as np
-from array import array
 from datetime import datetime
 
 from models import WorkersModel, OrdersModel

@@ -1,25 +1,20 @@
 from django.contrib import admin
-from .models import Orders, OrderCandidates
-
-
-@admin.register(OrderCandidates)
-class OrderCandidatesAdmin(admin.ModelAdmin):
-    ...
-
-
-class OrderCandidatesInline(admin.StackedInline):
-    model = OrderCandidates
-    extra = 0
+from .models import Orders, OrderCandidates, OrdersTimestamps
 
 
 @admin.register(Orders)
 class OrdersAdmin(admin.ModelAdmin):
     list_display = ["customer", "category", "worker", "status"]
     search_fields = ["customer_phone"]
-    inlines = [OrderCandidatesInline]
 
     class Meta:
         model = Orders
 
 
+@admin.register(OrdersTimestamps)
+class OrderTimestampsAdmin(admin.ModelAdmin):
+    list_display = ["order", "seconds"]
+
+    class Meta:
+        model = OrdersTimestamps
 

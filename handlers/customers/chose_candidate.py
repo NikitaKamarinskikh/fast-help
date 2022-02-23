@@ -1,10 +1,10 @@
+from time import time
 from aiogram import types
-
 from keyboards.inline.customer_orders import orders_markup, orders_callback
 from loader import dp
 from keyboards.inline.candidates_data import candidates_markup, candidate_callback, candidate_pagination_callback
 from keyboards.inline.confirm_candidate import confirm_candidate_markup, confirm_candidate_callback
-from models import CustomersModel, OrdersModel, OrderCandidatesModel, WorkersModel
+from models import CustomersModel, OrdersModel, OrderCandidatesModel, WorkersModel, OrderTimestampsModel
 from notifications import notify_worker_about_being_chosen_as_implementer
 from data.config import OrderStatuses
 
@@ -60,6 +60,12 @@ async def chose_candidate(callback: types.CallbackQuery, callback_data: dict):
     )
 
 
+def get_order_finish_time_in_seconds(order_time: time) -> int:
+    hours = int(order_time.strftime("%H")) * 60
+    minutes = int(order_time.strftime("%M"))
+    return int(time()) + (hours + minutes) * 60
+
+
 @dp.callback_query_handler(confirm_candidate_callback.filter())
 async def confirm_chosen_candidate(callback: types.CallbackQuery, callback_data: dict):
     await callback.answer()
@@ -71,6 +77,8 @@ async def confirm_chosen_candidate(callback: types.CallbackQuery, callback_data:
         order = await OrdersModel.get_by_id(order_id)
         await OrdersModel.update(order_id, worker=worker, status=OrderStatuses.in_progress)
         await notify_worker_about_being_chosen_as_implementer(worker, order)
+        timestamp_seconds = get_order_finish_time_in_seconds(order.execution_time)
+        await OrderTimestampsModel.set_timestamp(order, timestamp_seconds)
         await callback.message.answer("Тут еще будет вывод информации о выбранном кандидате")
     else:
         candidate_number = int(callback_data.get("candidate_number"))

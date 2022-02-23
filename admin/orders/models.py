@@ -48,7 +48,7 @@ class OrdersTimestamps(models.Model):
 
     class Meta:
         verbose_name = "Временная отметка для заказа"
-        verbose_name_plural = "Пременные отметки для заказов"
+        verbose_name_plural = "Временные отметки для заказов"
 
 
 

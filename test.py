@@ -1,5 +1,6 @@
 from math import radians, sqrt, sin, cos, atan2
 from geopy.distance import geodesic as get_distance_between_two_cords_geo
+from datetime import datetime
 # from common import get_city_by_coordinates
 
 
@@ -25,7 +26,8 @@ if __name__ == '__main__':
     # print(get_distance_between_two_cords_geo((55.030199, 82.92043), (55.030199, 82.92043)).meters)
     #     # city = get_city_by_coordinates(54.983381, 82.805789)
     #     #
-    print(get_distance_between_two_cords_geo( (54.980394, 82.897891), (54.983357, 82.805794)).meters )
+
+    # print(get_distance_between_two_cords_geo( (54.980394, 82.897891), (54.983357, 82.805794)).meters )
     # print(get_distance_between_two_cords(55.030199, 82.33333, 55.753215, 37.622504))
     # print(get_distance_between_two_cords(55.030199, 82.92043, 55.753215, 37.622504))
     # print(get_distance_between_two_cords(55.123, 82.92043, 55.753215, 37.622504))

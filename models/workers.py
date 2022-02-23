@@ -52,6 +52,11 @@ class WorkersModel:
     def get_by_category(category: list, **filters) -> list:
         return Workers.objects.filter(categories__in=category)
 
+    @staticmethod
+    @sync_to_async
+    def delete_all():
+        Workers.objects.all().delete()
+
         # candidates = list()
         # workers = Workers.objects.filter(**filters)
         # for worker in workers:

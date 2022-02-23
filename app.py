@@ -34,10 +34,10 @@ if __name__ == '__main__':
     from utils.set_bot_commands import set_default_commands
     from aiogram import executor
     from handlers import dp
+    import tasks
 
-    # import tasks
-    # loop = asyncio.get_event_loop()
-    # loop.create_task(tasks.testtask.say_hi())
+    loop = asyncio.get_event_loop()
+    loop.create_task(tasks.tasks.setup())
 
     executor.start_polling(
         dp,
