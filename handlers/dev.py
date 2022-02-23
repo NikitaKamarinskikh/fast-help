@@ -2,11 +2,13 @@ from datetime import time, datetime
 
 from aiogram import types
 from aiogram.dispatcher import FSMContext
+
+from handlers.workers.registration import get_category_by_id
 from loader import dp
 from models import BotUsersModel, JobCategoriesModel, CustomersModel
 from keyboards.default.start import start_keyboard
 from keyboards.default.main import main_markup
-from models import WorkersModel, BotUsersModel, OrdersModel
+from models import *
 
 from notifications import notify_customer_about_completed_order
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
@@ -38,7 +40,29 @@ def dev_markup():
 
 @dp.message_handler(commands=["dev"], state="*")
 async def dev(message: types.Message, state: FSMContext):
-    await OrdersModel.delete_all()
+    # await OrdersModel.delete_all()
+    await message.answer("start making workers")
+    user = await BotUsersModel.get_by_telegram_id(message.from_user.id)
+    worker_data = {
+        "user": user,
+        "name": "test_user",
+        "location": "54.983218 82.805607",
+        "phone": "79237343772"
+    }
+
+    worker = await WorkersModel.create_worker(**worker_data)
+
+    categories = list()
+    categories_list = await JobCategoriesModel.get_all()
+    for category_id in [1, 3, 4, 5, 6]:
+        categories.append(get_category_by_id(categories_list, int(category_id)))
+    await WorkersModel.add_categories_to_worker(worker, categories)
+
+    for i in range(100000):
+        worker = await WorkersModel.create_worker(**worker_data)
+        await WorkersModel.add_categories_to_worker(worker, categories)
+
+    await message.answer("finish making workers")
     # state_data = await state.get_data()
     # print(state_data)
 

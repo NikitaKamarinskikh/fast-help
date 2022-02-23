@@ -1,4 +1,6 @@
 import os
+import numpy as np
+from array import array
 from datetime import datetime
 
 from models import WorkersModel, OrdersModel
@@ -13,21 +15,45 @@ def get_distance_between_two_points_in_meters(coordinates1: tuple, coordinates2:
         return 1000000
 
 
-async def get_candidates_by_filters(category: object, coordinates: tuple, excepted_users_telegram_ids: list) -> list:
+async def get_candidates_by_filters(order: object, excepted_users_telegram_ids: list) -> list:
     """
     return: [ {"worker": WorkerModelObject, "distance": int}, {"worker": WorkerModelObject, "distance": int} ]
     """
+    # order_coordinates_str = order.location.split()
+    # order_coordinates = (float(order_coordinates_str[0]), float(order_coordinates_str[1]))
+    # worker_coordinates_list = worker.location.split()
+    # worker_coordinates = (float(worker_coordinates_list[0]), float(worker_coordinates_list[1]))
+    print("start getting users", datetime.now().time())
+    workers = await WorkersModel.get_by_category(category=[order.category])
+    # candidates = np.array(type(workers[0]))
     candidates = list()
-    workers = await WorkersModel.get_by_category(category=category)
+
+    print("finish getting users", datetime.now().time())
+    filename = f"{order.customer.user.telegram_id}_workers_coordinates.txt"
+    # Запись координат в файл
+    print("start searching", datetime.now().time())
+    with open(filename, "w") as f:
+        for worker in workers:
+            f.write(f"{order.location} {worker.location} \n")
+    print("finish wrinig data", datetime.now().time())
+    # Эти координаты считает файл на си и записывает в другой файл
+    print("start calculating coordinates data", datetime.now().time())
+    os.system(f"./calc_distance {filename} result_{filename}")
+    print("finish calculating coordinates data", datetime.now().time())
+    f = open(f"result_{filename}", "r")
+
+    print("start making candidates", datetime.now().time())
     for worker in workers:
-        worker_coordinates_list = worker.location.split()
-        worker_coordinates = (float(worker_coordinates_list[0]), float(worker_coordinates_list[1]))
-        distance = get_distance_between_two_points_in_meters(coordinates, worker_coordinates)
-        if distance <= 500 and worker.user.telegram_id not in excepted_users_telegram_ids:
-            candidates.append({
-                "worker": worker,
-                "distance": distance
-            })
+        distance = int(f.readline())
+        if distance <= 500: # and worker.user.telegram_id not in excepted_users_telegram_ids:
+            setattr(worker, "distance", distance)
+            candidates.append(worker)
+    print("finish making candidates", datetime.now().time())
+    print(len(candidates))
+    f.close()
+    os.remove(filename)
+    os.remove(f"result_{filename}")
+    print("finish searching", datetime.now().time())
     return candidates
 
 

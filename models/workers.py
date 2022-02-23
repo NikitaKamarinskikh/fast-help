@@ -49,11 +49,13 @@ class WorkersModel:
 
     @staticmethod
     @sync_to_async
-    def get_by_category(category, **filters) -> list:
-        candidates = list()
-        workers = Workers.objects.filter(**filters)
-        for worker in workers:
-            if category in worker.categories.all():
-                candidates.append(worker)
-        return candidates
+    def get_by_category(category: list, **filters) -> list:
+        return Workers.objects.filter(categories__in=category)
+
+        # candidates = list()
+        # workers = Workers.objects.filter(**filters)
+        # for worker in workers:
+        #     if category in worker.categories.all():
+        #         candidates.append(worker)
+        # return candidates
 

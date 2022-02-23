@@ -185,7 +185,6 @@ async def create_order(customer_telegram_id: int, state: FSMContext):
     customer = await CustomersModel.get_by_telegram_id(customer_telegram_id)
     category = await JobCategoriesModel.get_by_id(state_data.get("category_id"))
     location = f"{state_data.get('location').latitude} {state_data.get('location').longitude}"
-    coordinates = (float(state_data.get('location').latitude), float(state_data.get('location').longitude))
     order_data = {
         "customer": customer,
         "category": category,
@@ -204,7 +203,7 @@ async def create_order(customer_telegram_id: int, state: FSMContext):
         order_data["voice_description"] = state_data.get("order_voice_description")
 
     order = await OrdersModel.create(**order_data)
-    candidates = await get_candidates_by_filters(category, coordinates, [])
+    candidates = await get_candidates_by_filters(order, [])
     await notify_workers_about_new_order(candidates, order)
 
 

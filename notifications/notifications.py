@@ -26,11 +26,10 @@ async def send_voice(user_telegram_id: int, voice_file_id: str):
         ...
 
 
-async def notify_workers_about_new_order(workers_data: list, order: object):
-    for worker_data in workers_data:
-        worker = worker_data.get("worker")
+async def notify_workers_about_new_order(workers: list, order: object):
+    for worker in workers:
         text = f"Появилось задание!\n" \
-               f"Удаленность: {worker_data.get('distance')}м\n" \
+               f"Удаленность: {worker.distance}м\n" \
                f"Имя: {order.customer_name}\n"
         if order.description:
             text += f"Задание: {order.description}"
