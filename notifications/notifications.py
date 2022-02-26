@@ -2,6 +2,8 @@ from keyboards.inline.rating import rating_markup
 from loader import bot
 from keyboards.inline.respond_to_order import respond_markup
 from keyboards.inline.complete_order import is_order_completed_markup
+from models import OrdersModel
+from data.config import OrderStatuses
 
 
 async def send_message(user_telegram_id: int, text: str, reply_markup=None):
@@ -74,6 +76,7 @@ async def notify_customer_about_completed_order(order):
         text = f"Задание \"{order.description}\" выполнено?"
     else:
         text = f"Задание в категории \"{order.category.name}\" выполнено?"
+    await OrdersModel.update(order.pk, status=OrderStatuses.waiting_for_finish)
     await send_message(
         user_telegram_id=order.customer.user.telegram_id,
         text=text,

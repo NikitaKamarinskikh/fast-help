@@ -8,6 +8,7 @@ from keyboards.inline.update_order import update_order_start_date_callback, upda
     update_order_execution_time_callback
 from notifications import notify_workers_about_new_order
 from states.customers.update_order import UpdateOrderStates
+from data.config import OrderStatuses
 from models import OrdersModel
 
 
@@ -49,11 +50,12 @@ async def update_order(state: FSMContext):
     hours, minutes = execution_time_str.split(":")
     execution_time = time(int(hours), int(minutes), 0)
 
-    lat, lon = order.location.split()
-    coordinates = (float(lat), float(lon))
+    # lat, lon = order.location.split()
+    # coordinates = (float(lat), float(lon))
     update_data = {
         "start_date": state_data.get("order_start_date_time"),
         "execution_time": execution_time,
+        "status": OrderStatuses.waiting_for_start
     }
     await OrdersModel.update(order_id, **update_data)
     candidates = await get_candidates_by_filters(order, [])

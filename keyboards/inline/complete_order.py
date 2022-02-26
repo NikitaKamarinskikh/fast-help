@@ -2,7 +2,7 @@ from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils.callback_data import CallbackData
 
 is_order_competed_callback = CallbackData("is_order_completed", "choice", "order_id")
-order_complete_denied_callback = CallbackData("order_denied", "action", "worker_id", "order_id")
+order_complete_denied_callback = CallbackData("order_denied", "action", "order_id", "worker_id")
 
 
 def is_order_completed_markup(order_id: int):

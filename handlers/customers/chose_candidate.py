@@ -35,9 +35,15 @@ async def get_message_content(order_id: int, candidate_number: int):
 async def show_order_candidates(callback: types.CallbackQuery, callback_data: dict):
     await callback.answer()
     order_id = int(callback_data.get("order_id"))
-    await callback.message.answer(
-        **(await get_message_content(order_id, 0))
-    )
+    order = await OrdersModel.get_by_id(order_id)
+    if not order.worker:
+        await callback.message.answer(
+            **(await get_message_content(order_id, 0))
+        )
+    else:
+        await callback.message.answer(
+            text="Иполнитель уже выбран"
+        )
 
 
 @dp.callback_query_handler(candidate_pagination_callback.filter())

@@ -41,6 +41,7 @@ async def find_new_candidate(callback: types.CallbackQuery, callback_data: dict)
     await callback.answer()
     order_id = int(callback_data.get("order_id"))
     order = await OrdersModel.get_by_id(order_id)
+    await OrdersModel.update(order.pk, status=OrderStatuses.waiting_for_start)
     await notify_worker_about_completed_order(order)
     await OrdersModel.update(order_id, status=OrderStatuses.completed)
     await callback.message.answer(
