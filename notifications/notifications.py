@@ -2,6 +2,7 @@ from keyboards.inline.rating import rating_markup
 from loader import bot
 from keyboards.inline.respond_to_order import respond_markup
 from keyboards.inline.complete_order import is_order_completed_markup
+from common.search_candidates import get_distance_between_two_points_in_meters
 from models import OrdersModel
 from data.config import OrderStatuses
 
@@ -47,14 +48,17 @@ async def notify_worker_about_success_response(worker: object):
 
 
 async def notify_worker_about_being_chosen_as_implementer(worker: object, order: object):
-    text: str = ""
+    worker_coordinates_list = worker.location.split()
+    order_coordinates_list = order.location.split()
+    worker_coordinates = (float(worker_coordinates_list[0]), float(worker_coordinates_list[1]))
+    order_coordinates = (float(order_coordinates_list[0]), float(order_coordinates_list[1]))
+    distance = get_distance_between_two_points_in_meters(worker_coordinates, order_coordinates)
     if order.description:
         text = f"Вас выбрали исполнителем по заданию \"{order.description}\". Свяжитесь с заказчиком\n"
     else:
         text = f"Вас выбрали исполнителем в категории \"{order.category.name}\". Свяжитесь с заказчиком\n"
-    text += "Удаленность: {вставить сюда удаленность}\n" \
+    text += f"Удаленность: {distance}м\n" \
             f"Имя заказчика: {order.customer_name}\n" \
-            f"Задание: {order.description}\n" \
             f"Контакты: {order.customer_phone}\n"
     if order.additional_contacts:
         text += f"Дополнительные контакты: {order.additional_contacts}\n"

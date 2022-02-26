@@ -13,5 +13,5 @@ async def bot_echo(message: types.Message):
 # Эхо хендлер, куда летят ВСЕ сообщения с указанным состоянием
 @dp.message_handler(state="*", content_types=types.ContentTypes.ANY)
 async def bot_echo_all(message: types.Message, state: FSMContext):
-    state = await state.get_state()
+    # state = await state.get_state()
     await message.answer("Пожалуйсат, выберите один из предоставленных пунктов")
