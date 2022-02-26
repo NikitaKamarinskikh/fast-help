@@ -1,3 +1,4 @@
+import json
 from datetime import datetime, time
 from aiogram.dispatcher import FSMContext
 from aiogram import types
@@ -45,7 +46,7 @@ async def get_name(message: types.Message, state: FSMContext):
 @dp.message_handler(content_types=types.ContentTypes.LOCATION, state=CreateOrderStates.get_location)
 async def get_location(message: types.Message, state: FSMContext):
     location = message.location  # {"latitude": 10.123123, "longitude": 23.44233}
-    await state.update_data(location=location)
+    await state.update_data(location=location.as_json())
     await message.answer(
         text="Укажите телефон для исполнителей",
         reply_markup=get_phone_markup

@@ -152,7 +152,7 @@ async def get_phone(message: types.Message, state: FSMContext):
         phone: str = message.contact.phone_number
         await state.update_data(phone=phone)
         await message.answer(
-            text="Телефон принят (это сообщение нужно, что бы удалить кнопку для отправки телефона)",
+            text="Телефон принят",
             reply_markup=types.ReplyKeyboardRemove()
         )
         await message.answer(

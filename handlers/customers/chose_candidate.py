@@ -90,7 +90,13 @@ async def confirm_chosen_candidate(callback: types.CallbackQuery, callback_data:
         await notify_worker_about_being_chosen_as_implementer(worker, order)
         timestamp_seconds = get_order_finish_time_in_seconds(order.execution_time)
         await OrderTimestampsModel.set_timestamp(order, timestamp_seconds)
-        await callback.message.answer("Тут еще будет вывод информации о выбранном кандидате")
+        worker_data = f"{worker.name} {worker.rating}/{worker.completed_orders_quantity}\n" \
+                      f"Телефон: {worker.phone}\n"
+        if worker.additional_contacts:
+            worker_data += worker.additional_contacts
+        await callback.message.answer(
+            text=worker_data
+        )
     else:
         candidate_number = int(callback_data.get("candidate_number"))
         await callback.message.edit_text(

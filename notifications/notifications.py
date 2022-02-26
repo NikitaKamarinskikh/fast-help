@@ -65,6 +65,8 @@ async def notify_worker_about_being_chosen_as_implementer(worker: object, order:
     if not order.allow_to_write_in_telegram:
         text += "<b>Примечание: заказчик запретил писать ему в телеграмм</b>"
     await send_message(worker.user.telegram_id, text)
+    if order.voice_description:
+        await send_voice(worker.user.telegram_id, order.voice_description)
 
 
 async def notify_customer_about_new_response(order: object, worker: object):

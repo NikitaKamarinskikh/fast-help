@@ -34,11 +34,12 @@ async def get_order_start_date(message: types.Message, state: FSMContext):
 @dp.callback_query_handler(update_order_start_date_callback.filter(), state=UpdateOrderStates.get_start_date)
 async def get_new_start_date_callback(callback: types.CallbackQuery, callback_data: dict, state: FSMContext):
     await callback.answer()
+    order_id = int(callback_data.get("order_id"))
     await state.update_data(order_start_date_time=datetime.now().strftime("%Y-%m-%d %H:%M"))
     await callback.message.answer(
         text="Время на выполнение задания (выберите кнопкой или введите самостоятельно текстом "
              "в формате чч:мм (например 2:05))",
-        reply_markup=update_order_execution_time_markup()
+        reply_markup=update_order_execution_time_markup(order_id)
     )
     await UpdateOrderStates.get_execution_time.set()
 
@@ -60,7 +61,7 @@ async def update_order(state_data: dict):
         await notify_workers_about_new_order(candidates, order)
     else:
         timestamp_seconds = get_order_finish_time_in_seconds(execution_time)
-        await OrdersModel.update(order_id, execution_time=execution_time)
+        await OrdersModel.update(order_id, execution_time=execution_time, status=OrderStatuses.in_progress)
         order = await OrdersModel.get_by_id(order_id)
         await OrderTimestampsModel.set_timestamp(order, timestamp_seconds)
 

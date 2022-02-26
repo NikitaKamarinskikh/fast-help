@@ -32,6 +32,6 @@ class CustomersModel:
         try:
             return Customers.objects.get(telegram_id=user.telegram_id)
         except:
-            return Customers.objects.create(user=user)
+            return Customers.objects.create(user=user, is_privacy_policy_confirmed=True)
 
 
