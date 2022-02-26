@@ -213,7 +213,7 @@ async def get_order_execution_time_callback(callback: types.CallbackQuery, callb
     execution_time = callback_data.get("time")
     await state.update_data(order_execution_time=execution_time.replace("-", ":"))
     try:
-        await callback.message.answer("Шщу исполнителей...")
+        await callback.message.answer("Ищу исполнителей...")
         await create_order(callback.from_user.id, state)
         await callback.message.answer(
             text="Заказ успешно создан и отправлен исполнителям рядом",
@@ -235,7 +235,7 @@ async def get_order_execution_time(message: types.Message, state: FSMContext):
     if correct_time(order_execution_time):
         await state.update_data(order_execution_time=order_execution_time)
         try:
-            await message.answer("Шщу исполнителей...")
+            await message.answer("Ищу исполнителей...")
             await create_order(message.from_user.id, state)
             await message.answer(
                 text="Заказ успешно создан и отправлен исполнителям рядом",
