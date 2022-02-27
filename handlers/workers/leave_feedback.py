@@ -18,6 +18,6 @@ async def leave_feedback_by_worker(callback: types.CallbackQuery, callback_data:
     current_rating = customer.rating + value
     new_completed_orders_quantity = current_completed_orders_quantity + 1
     await CustomersModel.update_by_id(customer_id, completed_orders_quantity=new_completed_orders_quantity,
-                                      rating=round(current_rating / new_completed_orders_quantity, 2))
+                                      rating=round(current_rating / new_completed_orders_quantity, 1))
     await notify_customer_about_new_feedback(order, value)
     await callback.message.answer("Заказчик получил уведомление")

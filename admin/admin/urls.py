@@ -15,7 +15,9 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from admin.main.views import process_pay_notification
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path("get_transaction", process_pay_notification),
 ]
