@@ -16,5 +16,9 @@ class TransactionsModel:
     def get_by_id(id_: int):
         return Transactions.objects.get(id=id_)
 
+    @staticmethod
+    @sync_to_async
+    def update(id_: int, **update_data):
+        Transactions.objects.filter(id=id_).update(**update_data)
 
 

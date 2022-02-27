@@ -21,7 +21,7 @@ async def get_coins(callback: types.CallbackQuery, callback_data: dict):
     coins = int(callback_data.get("coins"))
     amount_rub = int(callback_data.get("amount_rub"))
     bot_user = await BotUsersModel.get_by_telegram_id(callback.from_user.id)
-    # payment_link = get_payment_link(amount_rub, "Тестовый запрос")
+    # payment_link = get_payment_link(amount_rub, "Тестовый запрос", bot_user.pk)
     transaction = await TransactionsModel.create(bot_user, amount_rub)
     payment_link = "test"
     if payment_link:
@@ -36,9 +36,13 @@ async def get_coins(callback: types.CallbackQuery, callback_data: dict):
     # Все что написано дальше нужно вынести в отдельный обработчик, а точнее
     # в обработку url фдреса в джанге
     bot_user = await BotUsersModel.add_coins(callback.from_user.id, coins)
-
     await callback.message.answer(
         text=f"Оплата прошла успешно, ваш баланс: {bot_user.coins} монет"
+    )
+
+    await TransactionsModel.update(
+        transaction.pk,
+        is_paid=True
     )
 
 
