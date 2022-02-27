@@ -42,6 +42,10 @@ class OrderStatuses:
     completed = "Завершен"
 
 
+@dataclass
+class TransactionStatuses:
+    ...
+
 
 
 
