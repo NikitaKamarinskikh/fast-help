@@ -4,6 +4,21 @@ from keyboards.inline.balance import balance_callback
 from keyboards.inline.referral import referral_markup, referral_callback
 from data.config import MainMenuCommands
 from models import BotUsersModel
+from data.config import MainMenuCommands
+
+
+@dp.message_handler(text="Пригласить")
+async def invite(message: types.Message):
+    bot_user = await BotUsersModel.get_by_telegram_id(message.from_user.id)
+    referrals = await BotUsersModel.get_referrals(bot_user)
+    referrals_quantity = len(referrals)
+    await message.answer(
+        text="Реферальная программа. \n"
+             "За каждого приглашенного пользователя вы получаете (20) монет.\n"
+             "Со всех внесенных пользователем платежей вы получаете (5)%.\n"
+             f"Количество ваших рефералов: {referrals_quantity}",
+        reply_markup=referral_markup()
+    )
 
 
 @dp.callback_query_handler(balance_callback.filter(option="invite"))

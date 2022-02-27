@@ -12,7 +12,7 @@ class JobCategoriesAdmin(admin.ModelAdmin):
 
 @admin.register(models.BotUsers)
 class BotUsersAdmin(admin.ModelAdmin):
-    list_display = ["telegram_id", "username", "points", "referrer"]
+    list_display = ["telegram_id", "username", "coins", "referrer"]
     search_fields = ["telegram_id", "username"]
 
     class Meta:

@@ -27,5 +27,30 @@ class BotUsersModel:
 
     @staticmethod
     @sync_to_async
-    def get_referrals(user: object):
+    def update_user(telegram_id: int, **update_data) -> None:
+        BotUsers.objects.filter(telegram_id=telegram_id).update(**update_data)
+
+    @staticmethod
+    @sync_to_async
+    def add_coins(telegram_id: int, coins: int) -> object:
+        user = BotUsers.objects.get(telegram_id=telegram_id)
+        current_coins = user.coins
+        current_coins += coins
+        user.coins = current_coins
+        user.save()
+        return user
+
+    @staticmethod
+    @sync_to_async
+    def remove_coins(telegram_id: int, coins: int) -> object:
+        user = BotUsers.objects.get(telegram_id=telegram_id)
+        current_coins = user.coins
+        current_coins -= coins
+        user.coins = current_coins
+        user.save()
+        return user
+
+    @staticmethod
+    @sync_to_async
+    def get_referrals(user: object) -> list:
         return BotUsers.objects.filter(referrer=user)
