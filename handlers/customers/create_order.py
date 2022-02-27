@@ -9,13 +9,15 @@ from keyboards.inline.yes_or_no import yes_or_no_markup, yes_or_no_callback
 from keyboards.inline.skip import skip_markup, skip_callback
 from keyboards.inline.now import now_markup, now_callback
 from keyboards.inline.order_execution_time import order_execution_time_markup, order_execution_time_callback
+from keyboards.inline.payments import chose_payment_markup, chose_payment_callback
 from keyboards.default.get_location import get_location_markup
 from keyboards.default.get_phone import get_phone_markup
 from states.customers.create_order import CreateOrderStates
-from models import JobCategoriesModel, CustomersModel, OrdersModel
+from models import JobCategoriesModel, CustomersModel, OrdersModel, BotUsersModel, TransactionsModel
 from data.config import MainMenuCommands
 from common import parse_date, correct_time, get_candidates_by_filters
 from notifications import notify_workers_about_new_order
+from payments.payments import get_payment_link
 
 
 @dp.callback_query_handler(get_category_callback.filter(), state=CreateOrderStates.get_category)
@@ -203,10 +205,11 @@ async def create_order(customer_telegram_id: int, state: FSMContext):
     if state_data.get("order_voice_description"):
         order_data["voice_description"] = state_data.get("order_voice_description")
 
-    order = await OrdersModel.create(**order_data)
-    candidates = await get_candidates_by_filters(order, [])
-    await notify_workers_about_new_order(candidates, order)
+    return await OrdersModel.create(**order_data)
 
+
+# candidates = await get_candidates_by_filters(order, [])
+# await notify_workers_about_new_order(candidates, order)
 
 @dp.callback_query_handler(order_execution_time_callback.filter(), state=CreateOrderStates.get_order_execution_time)
 async def get_order_execution_time_callback(callback: types.CallbackQuery, callback_data: dict, state: FSMContext):
@@ -214,11 +217,11 @@ async def get_order_execution_time_callback(callback: types.CallbackQuery, callb
     execution_time = callback_data.get("time")
     await state.update_data(order_execution_time=execution_time.replace("-", ":"))
     try:
-        await callback.message.answer("Ищу исполнителей...")
-        await create_order(callback.from_user.id, state)
+        order = await create_order(callback.from_user.id, state)
         await callback.message.answer(
-            text="Заказ успешно создан и отправлен исполнителям рядом",
-            reply_markup=main_markup
+            text="Оплатите сумму 30 рублей. Для передачи вашего заказа исполнителям в радиусе 500м. "
+                 "Или 50 руб в радиусе 1 км. Или пополните счет для оплаты и получите бонусы.",
+            reply_markup=chose_payment_markup(order.pk)
         )
         await state.finish()
     except Exception as e:
@@ -236,11 +239,11 @@ async def get_order_execution_time(message: types.Message, state: FSMContext):
     if correct_time(order_execution_time):
         await state.update_data(order_execution_time=order_execution_time)
         try:
-            await message.answer("Ищу исполнителей...")
-            await create_order(message.from_user.id, state)
+            order = await create_order(message.from_user.id, state)
             await message.answer(
-                text="Заказ успешно создан и отправлен исполнителям рядом",
-                reply_markup=main_markup
+                text="Оплатите сумму 30 рублей. Для передачи вашего заказа исполнителям в радиусе 500м. "
+                     "Или 50 руб в радиусе 1 км. Или пополните счет для оплаты и получите бонусы.",
+                reply_markup=chose_payment_markup(order.pk)
             )
             await state.finish()
         except Exception as e:
@@ -254,6 +257,25 @@ async def get_order_execution_time(message: types.Message, state: FSMContext):
         await message.answer(
             text="Время указано в неправильном формате, либо выходит за границы допустимого. Попробуйте еще раз"
         )
+
+
+@dp.callback_query_handler(chose_payment_callback.filter(with_bonus="False"))
+async def get_payment(callback: types.CallbackQuery, callback_data: dict):
+    await callback.answer()
+    distance = int(callback_data.get("distance"))
+    amount = int(callback_data.get("amount"))
+    order_id = int(callback_data.get("order_id"))
+    bot_user = await BotUsersModel.get_by_telegram_id(callback.from_user.id)
+    transaction = await TransactionsModel.create(bot_user, amount)
+    payment_link = get_payment_link(
+        amount_rub=amount,
+        description=f"Оплата {amount}р для размещения задания на расстоянии {distance}м",
+        user_id=bot_user.pk,
+        json_data={"order_id": order_id, "has_order": True}
+    )
+    await callback.message.answer(
+        text=f"ID транзакции: {transaction.pk}\nСсылка на оплату: {payment_link}"
+    )
 
 
 
