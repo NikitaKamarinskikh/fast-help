@@ -271,12 +271,16 @@ async def get_payment(callback: types.CallbackQuery, callback_data: dict):
         coins = 30
     else:
         coins = 50
+    await callback.message.answer(
+        text=f"order_id=: {order_id}, amount: {amount}"
+    )
+
     payment_link = get_payment_link(
         amount_rub=amount,
         description=f"Оплата {amount}р для размещения задания на расстоянии {distance}м",
         user_id=bot_user.pk,
         invoice_id=transaction.pk,
-        json_data={"order_id": order_id, "has_order": True, "coins": coins}
+        json_data={"order_id": order_id, "has_order": True, "coins": coins, "with_bonus": False}
     )
 
     await callback.message.answer(

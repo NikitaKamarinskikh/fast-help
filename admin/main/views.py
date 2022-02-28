@@ -3,6 +3,8 @@ from requests import post
 from django.shortcuts import render, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from admin.main.models import BotUsers
+from admin.transactions.models import Transactions
+
 
 from environs import Env
 
@@ -11,26 +13,61 @@ env.read_env()
 bot_token = env.str("BOT_TOKEN")
 
 
+def update_order():
+    ...
+
+
+def get_user_by_id(user_id: int):
+    return BotUsers.objects.get(pk=user_id)
+
+
+def get_transaction_by_id(transaction_id: int):
+    return Transactions.objects.get(pk=transaction_id)
+
+
+# def set_transaction_paid_status(transaction_id: int):
+#     Transactions.objects.filter(pk=transaction_id).update(is_paid=True)
+
+
+def notify_user_about_success_transaction(user_telegram_id: int, text: str, reply_markup=None):
+    url = f'https://api.telegram.org/bot{bot_token}/sendMessage?chat_id=' \
+          f'{user_telegram_id}&text={text}&reply_markup={reply_markup}'
+    post(url)
+    # response = json.loads(r.content.decode('utf-8'))
+
+
 @csrf_exempt
 def process_pay_notification(request):
     if request.method == 'POST':
         user_id = request.POST.get("AccountId")
         transaction_id = request.POST.get("InvoiceId")
-
         data = json.loads(request.POST.get("Data"))
         order_id = data.get("order_id")
         has_order = data.get("has_order")
         coins = data.get("coins")
+        with_bonus = data.get("with_bonus")
 
-        text = f"user_id: {user_id}\ntransaction_id: {transaction_id}\n" \
-               f"order_id: {order_id}\nhas_order: {has_order}\ncoins: {coins}"
+        transaction = get_transaction_by_id(transaction_id)
+        user = get_user_by_id(user_id)
 
-        url = f'https://api.telegram.org/bot{bot_token}/sendMessage?chat_id=' \
-              f'802019362&text={text}'
+        if not transaction.is_paid:
+            transaction.is_paid = True
+            transaction.save()
 
-        r = post(url)
-        response = json.loads(r.content.decode('utf-8'))
+            current_user_coins = user.coins
+            new_user_coins = current_user_coins + coins
+            user.coins = new_user_coins
+            user.save()
 
+            text = f"user_id: {user_id}\ntransaction_id: {transaction_id}\n" \
+                   f"order_id: {order_id}\nhas_order: {has_order}\ncoins: {coins}\n"
+
+            text += "Оплата принята"
+            if not has_order:
+                ...
+            else:
+                ...
+            notify_user_about_success_transaction(user.telegram_id, text)
         return HttpResponse({"code": 0})
     else:
         return HttpResponse("get request")

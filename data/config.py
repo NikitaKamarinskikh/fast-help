@@ -36,6 +36,7 @@ class MainMenuCommands:
 
 @dataclass
 class OrderStatuses:
+    waiting_for_payment = "Ожидает оплаты"
     waiting_for_start = "Ожидает начала"
     waiting_for_finish = "Ожидает пожтверждения о завершении"
     in_progress = "В процессе"
