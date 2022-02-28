@@ -11,12 +11,13 @@ TEST_REQUEST_URL = "https://api.cloudpayments.ru/test"
 PAYMENT_URL = "https://api.cloudpayments.ru/orders/create"
 
 
-def get_payment_link(amount_rub: int, description: str, user_id: int, json_data: dict):
+def get_payment_link(amount_rub: int, description: str, user_id: int, invoice_id: int, json_data: dict):
     data = {
         "Amount": amount_rub,
         "Currency": "RUB",
         "Description": description,
         "AccountId": str(user_id),
+        "InvoiceId": invoice_id,
         "JsonData": json.dumps(json_data),
     }
     # если без ssl добавить verify=False

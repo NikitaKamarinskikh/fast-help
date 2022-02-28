@@ -267,12 +267,18 @@ async def get_payment(callback: types.CallbackQuery, callback_data: dict):
     order_id = int(callback_data.get("order_id"))
     bot_user = await BotUsersModel.get_by_telegram_id(callback.from_user.id)
     transaction = await TransactionsModel.create(bot_user, amount)
+    if distance == 500:
+        coins = 30
+    else:
+        coins = 50
     payment_link = get_payment_link(
         amount_rub=amount,
         description=f"Оплата {amount}р для размещения задания на расстоянии {distance}м",
         user_id=bot_user.pk,
-        json_data={"order_id": order_id, "has_order": True}
+        invoice_id=transaction.pk,
+        json_data={"order_id": order_id, "has_order": True, "coins": coins}
     )
+
     await callback.message.answer(
         text=f"ID транзакции: {transaction.pk}\nСсылка на оплату: {payment_link}"
     )

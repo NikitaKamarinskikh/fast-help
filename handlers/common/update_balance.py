@@ -21,9 +21,9 @@ async def get_coins(callback: types.CallbackQuery, callback_data: dict):
     coins = int(callback_data.get("coins"))
     amount_rub = int(callback_data.get("amount_rub"))
     bot_user = await BotUsersModel.get_by_telegram_id(callback.from_user.id)
+    transaction = await TransactionsModel.create(bot_user, amount_rub)
     # payment_link = get_payment_link(amount_rub, "Тестовый запрос", bot_user.pk,
     #                                 json_data={"order_id": -1, "has_order": False})
-    transaction = await TransactionsModel.create(bot_user, amount_rub)
     payment_link = "test"
     if payment_link:
         await callback.message.answer(
