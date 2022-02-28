@@ -10,11 +10,11 @@ def chose_payment_markup(order_id: int, has_order: bool = False):
     markup.add(
         InlineKeyboardButton(
             text=f"Единоразово 500м",
-            callback_data=chose_payment_callback.new(order_id, 500, 1, "False", has_order),
+            callback_data=chose_payment_callback.new(order_id, 500, 30, "False", has_order),
         ),
         InlineKeyboardButton(
             text=f"Единоразово 1000м",
-            callback_data=chose_payment_callback.new(order_id, 1000, 1, "False", has_order),
+            callback_data=chose_payment_callback.new(order_id, 1000, 50, "False", has_order),
         ),
         InlineKeyboardButton(
             text=f"Пополнить с бонусами",
