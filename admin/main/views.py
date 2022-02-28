@@ -10,7 +10,6 @@ def process_pay_notification(request):
         # print(request)
         try:
             with open("request_data.txt", "w") as f:
-                f.write(request.POST.__dict__)
                 f.write(request.POST)
         except Exception as e:
             print(e)
