@@ -259,7 +259,7 @@ async def get_order_execution_time(message: types.Message, state: FSMContext):
         )
 
 
-@dp.callback_query_handler(chose_payment_callback.filter(with_bonus="False"), CreateOrderStates.get_payment)
+@dp.callback_query_handler(chose_payment_callback.filter(with_bonus="False"), state=CreateOrderStates.get_payment)
 async def get_payment(callback: types.CallbackQuery, callback_data: dict):
     await callback.answer()
     distance = int(callback_data.get("distance"))
