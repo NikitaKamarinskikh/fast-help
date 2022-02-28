@@ -10,11 +10,11 @@ def process_pay_notification(request):
         with open("request_data.txt", "w") as f:
             f.write("test")
         # print(request)
-        try:
-            with open("request_data.txt") as f:
-                f.write(request.POST)
-        except Exception as e:
-            f.write(str(e))
+        # try:
+        #     with open("request_data.txt") as f:
+        #         f.write(request.POST)
+        # except Exception as e:
+        #     f.write(str(e))
         # try:
         #     with open("request_data.txt", "a") as f:
         #         f.write(request.POST)
