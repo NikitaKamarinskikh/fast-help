@@ -10,7 +10,7 @@ def process_pay_notification(request):
     if request.method == 'POST':
         print("request")
         data = json.loads(request.body)
-        with open('frames.request_data', 'a', encoding='utf-8') as file:
+        with open('request_data', 'a', encoding='utf-8') as file:
             json.dump(data, file)
             file.write('\n')
         # print(request)
