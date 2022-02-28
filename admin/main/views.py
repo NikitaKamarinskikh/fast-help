@@ -1,8 +1,14 @@
 import json
-
+from requests import post
 from django.shortcuts import render, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from admin.main.models import BotUsers
+
+from environs import Env
+
+env = Env()
+env.read_env()
+bot_token = env.str("BOT_TOKEN")
 
 
 @csrf_exempt
@@ -10,13 +16,25 @@ def process_pay_notification(request):
     if request.method == 'POST':
         user_id = request.POST.get("AccountId")
         transaction_id = request.POST.get("InvoiceId")
-        data = json.loads(request.POST.get("Data")[0])
+
+        data = json.loads(request.POST.get("Data"))
         order_id = data.get("order_id")
         has_order = data.get("has_order")
         coins = data.get("coins")
+
+        text = f"user_id: {user_id}\ntransaction_id: {transaction_id}\n" \
+               f"order_id: {order_id}\nhas_order: {has_order}\ncoins: {coins}"
+
+        url = f'https://api.telegram.org/bot{bot_token}/sendMessage?chat_id=' \
+              f'802019362&text={text}'
+
+        r = post(url)
+        response = json.loads(r.content.decode('utf-8'))
+
         return HttpResponse({"code": 0})
     else:
         return HttpResponse("get request")
+
 
 """
 <WSGIRequest: POST '/get_transaction'>
