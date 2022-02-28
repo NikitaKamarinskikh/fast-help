@@ -17,7 +17,7 @@ def get_payment_link(amount_rub: int, description: str, user_id: int, json_data:
         "Currency": "RUB",
         "Description": description,
         "AccountId": str(user_id),
-        "JsonData": json.dumps(json_data)
+        "JsonData": json.dumps(json_data),
     }
     # если без ssl добавить verify=False
     result = requests.post(PAYMENT_URL,

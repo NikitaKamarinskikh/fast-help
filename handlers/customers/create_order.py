@@ -156,7 +156,7 @@ async def get_order_start_date(message: types.Message, state: FSMContext):
     if order_start_date_time is not None:
         await state.update_data(order_start_date_time=order_start_date_time.strftime("%Y-%m-%d %H:%M"))
         await message.answer(
-            text="Время на выполнение задания ( выберите кнопкой или введите самостоятельно текстом)",
+            text="Время на выполнение задания (выберите кнопкой или введите самостоятельно текстом)",
             reply_markup=order_execution_time_markup()
         )
         await CreateOrderStates.get_order_execution_time.set()
@@ -221,9 +221,9 @@ async def get_order_execution_time_callback(callback: types.CallbackQuery, callb
         await callback.message.answer(
             text="Оплатите сумму 30 рублей. Для передачи вашего заказа исполнителям в радиусе 500м. "
                  "Или 50 руб в радиусе 1 км. Или пополните счет для оплаты и получите бонусы.",
-            reply_markup=chose_payment_markup(order.pk)
+            reply_markup=chose_payment_markup(order.pk, True)
         )
-        await state.finish()
+        await CreateOrderStates.get_payment.set()
     except Exception as e:
         print(e)
         await callback.message.answer(
@@ -243,9 +243,9 @@ async def get_order_execution_time(message: types.Message, state: FSMContext):
             await message.answer(
                 text="Оплатите сумму 30 рублей. Для передачи вашего заказа исполнителям в радиусе 500м. "
                      "Или 50 руб в радиусе 1 км. Или пополните счет для оплаты и получите бонусы.",
-                reply_markup=chose_payment_markup(order.pk)
+                reply_markup=chose_payment_markup(order.pk, True)
             )
-            await state.finish()
+            await CreateOrderStates.get_payment.set()
         except Exception as e:
             print(e)
             await message.answer(
@@ -259,7 +259,7 @@ async def get_order_execution_time(message: types.Message, state: FSMContext):
         )
 
 
-@dp.callback_query_handler(chose_payment_callback.filter(with_bonus="False"))
+@dp.callback_query_handler(chose_payment_callback.filter(with_bonus="False"), CreateOrderStates.get_payment)
 async def get_payment(callback: types.CallbackQuery, callback_data: dict):
     await callback.answer()
     distance = int(callback_data.get("distance"))
@@ -278,5 +278,12 @@ async def get_payment(callback: types.CallbackQuery, callback_data: dict):
     )
 
 
+@dp.message_handler(state=CreateOrderStates.get_payment)
+async def get_payment_by_message(message: types.Message, state: FSMContext):
+    coins = message.text
+    try:
+        coins = int(coins)
+    except:
+        await message.answer("Значение должно быть указано числом")
 
 

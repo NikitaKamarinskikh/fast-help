@@ -14,4 +14,5 @@ class CreateOrderStates(StatesGroup):
     get_communication_method = State()
     get_order_start_date = State()
     get_order_execution_time = State()
+    get_payment = State()
 
