@@ -9,9 +9,19 @@ def process_pay_notification(request):
         print(request)
         try:
             with open("request_data.txt", "w") as f:
-                f.write(request.text)
-        except:
-            ...
+                f.write(request.POST.__dict__)
+        except Exception as e:
+            print(e)
+        try:
+            with open("request_data.txt", "a") as f:
+                f.write(request.POST)
+        except Exception as e:
+            print(e)
+        try:
+            with open("request_data.txt", "a") as f:
+                f.write(request)
+        except Exception as e:
+            print(e)
         print(request)
         return HttpResponse({"code": 0})
     else:
