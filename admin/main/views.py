@@ -10,7 +10,7 @@ def process_pay_notification(request):
     if request.method == 'POST':
         user_id = request.POST.get("AccountId")
         transaction_id = request.POST.get("InvoiceId")
-        data = request.POST.get("Data")[0]
+        data = json.loads(request.POST.get("Data")[0])
         order_id = data.get("order_id")
         has_order = data.get("has_order")
         coins = data.get("coins")
