@@ -71,6 +71,7 @@ def process_pay_notification(request):
                 new_user_coins = current_user_coins + coins
                 user.coins = new_user_coins
                 user.save()
+                text += f"\nВаш баланс {new_user_coins} монет"
             notify_user_about_success_transaction(user.telegram_id, text, reply_markup)
         return HttpResponse({"code": 0})
     # else:
