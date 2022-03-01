@@ -277,7 +277,13 @@ async def get_payment(callback: types.CallbackQuery, callback_data: dict):
         description=f"Оплата {amount}р для размещения задания на расстоянии {distance}м",
         user_id=bot_user.pk,
         invoice_id=transaction.pk,
-        json_data={"order_id": order_id, "has_order": True, "coins": coins, "with_bonus": False}
+        json_data={
+            "order_id": order_id,
+            "has_order": True,
+            "coins": coins,
+            "with_bonus": False,
+            "distance": distance
+        }
     )
 
     await callback.message.answer(

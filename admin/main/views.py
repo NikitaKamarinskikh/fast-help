@@ -49,6 +49,7 @@ def process_pay_notification(request):
         order_id = data.get("order_id")
         has_order = data.get("has_order")
         coins = data.get("coins")
+        distance = data.get("distance")
         data.get("with_bonus")
 
         transaction = get_transaction_by_id(transaction_id)
@@ -70,7 +71,7 @@ def process_pay_notification(request):
                    f"order_id: {order_id}\nhas_order: {has_order}\ncoins: {coins}\n"
             text += "Оплата принята"
             if has_order:
-                reply_markup = send_order_to_workers_markup(order_id)
+                reply_markup = send_order_to_workers_markup(order_id, distance)
                 user.coins = user.coins - coins
                 user.save()
             else:
