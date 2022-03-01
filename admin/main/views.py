@@ -68,11 +68,11 @@ def process_pay_notification(request):
 
             text = f"user_id: {user_id}\ntransaction_id: {transaction_id}\n" \
                    f"order_id: {order_id}\nhas_order: {has_order}\ncoins: {coins}\n"
-            print("fasdagfsfdghasdf")
             text += "Оплата принята"
             if has_order:
                 reply_markup = send_order_to_workers_markup(order_id)
-                print(reply_markup)
+                user.coins = user.coins - coins
+                user.save()
             else:
                 ...
             notify_user_about_success_transaction(user.telegram_id, text, reply_markup)

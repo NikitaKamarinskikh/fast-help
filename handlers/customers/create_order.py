@@ -208,9 +208,6 @@ async def create_order(customer_telegram_id: int, state: FSMContext):
     return await OrdersModel.create(**order_data)
 
 
-# candidates = await get_candidates_by_filters(order, [])
-# await notify_workers_about_new_order(candidates, order)
-
 @dp.callback_query_handler(order_execution_time_callback.filter(), state=CreateOrderStates.get_order_execution_time)
 async def get_order_execution_time_callback(callback: types.CallbackQuery, callback_data: dict, state: FSMContext):
     await callback.answer()
