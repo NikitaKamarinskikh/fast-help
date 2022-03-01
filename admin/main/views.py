@@ -42,7 +42,7 @@ def notify_user_about_success_transaction(user_telegram_id: int, text: str, repl
 
 @csrf_exempt
 def process_pay_notification(request):
-    if request.method == 'POST': # 'POST':
+    if request.method == 'POST':
         user_id = request.POST.get("AccountId")
         transaction_id = request.POST.get("InvoiceId")
         data = json.loads(request.POST.get("Data"))
@@ -56,26 +56,21 @@ def process_pay_notification(request):
         user = get_user_by_id(user_id)
         reply_markup = None
 
-        print(transaction, user)
-
         if not transaction.is_paid:
             transaction.is_paid = True
             transaction.save()
 
-            current_user_coins = user.coins
-            new_user_coins = current_user_coins + coins
-            user.coins = new_user_coins
-            user.save()
-
-            text = f"user_id: {user_id}\ntransaction_id: {transaction_id}\n" \
-                   f"order_id: {order_id}\nhas_order: {has_order}\ncoins: {coins}\n"
-            text += "Оплата принята"
+            # text = f"user_id: {user_id}\ntransaction_id: {transaction_id}\n" \
+            #        f"order_id: {order_id}\nhas_order: {has_order}\ncoins: {coins}\n"
+            text = "Оплата принята"
             if has_order:
                 reply_markup = send_order_to_workers_markup(order_id, distance)
-                user.coins = user.coins - coins
-                user.save()
+                text += "\nЧобы отправить задание исполнителям, нажмите на прикрепленную кнопку"
             else:
-                ...
+                current_user_coins = user.coins
+                new_user_coins = current_user_coins + coins
+                user.coins = new_user_coins
+                user.save()
             notify_user_about_success_transaction(user.telegram_id, text, reply_markup)
         return HttpResponse({"code": 0})
     # else:
