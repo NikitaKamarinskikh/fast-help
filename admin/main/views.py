@@ -2,10 +2,9 @@ import json
 from requests import post
 from django.shortcuts import render, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
+from keyboards.inline.send_order_to_workers import send_order_to_workers_markup
 from admin.main.models import BotUsers
 from admin.transactions.models import Transactions
-
-
 from environs import Env
 
 env = Env()
@@ -30,25 +29,33 @@ def get_transaction_by_id(transaction_id: int):
 
 
 def notify_user_about_success_transaction(user_telegram_id: int, text: str, reply_markup=None):
-    url = f'https://api.telegram.org/bot{bot_token}/sendMessage?chat_id=' \
-          f'{user_telegram_id}&text={text}&reply_markup={reply_markup}'
-    post(url)
-    # response = json.loads(r.content.decode('utf-8'))
+    if reply_markup:
+        url = f'https://api.telegram.org/bot{bot_token}/sendMessage?chat_id=' \
+              f'{user_telegram_id}&text={text}&reply_markup={reply_markup}'
+    else:
+        url = f'https://api.telegram.org/bot{bot_token}/sendMessage?chat_id=' \
+              f'{user_telegram_id}&text={text}'
+    r = post(url)
+    response = json.loads(r.content.decode('utf-8'))
+    print(response)
 
 
 @csrf_exempt
 def process_pay_notification(request):
-    if request.method == 'POST':
+    if request.method == 'POST': # 'POST':
         user_id = request.POST.get("AccountId")
         transaction_id = request.POST.get("InvoiceId")
         data = json.loads(request.POST.get("Data"))
         order_id = data.get("order_id")
         has_order = data.get("has_order")
         coins = data.get("coins")
-        with_bonus = data.get("with_bonus")
+        data.get("with_bonus")
 
         transaction = get_transaction_by_id(transaction_id)
         user = get_user_by_id(user_id)
+        reply_markup = None
+
+        print(transaction, user)
 
         if not transaction.is_paid:
             transaction.is_paid = True
@@ -61,16 +68,17 @@ def process_pay_notification(request):
 
             text = f"user_id: {user_id}\ntransaction_id: {transaction_id}\n" \
                    f"order_id: {order_id}\nhas_order: {has_order}\ncoins: {coins}\n"
-
+            print("fasdagfsfdghasdf")
             text += "Оплата принята"
-            if not has_order:
-                ...
+            if has_order:
+                reply_markup = send_order_to_workers_markup(order_id)
+                print(reply_markup)
             else:
                 ...
-            notify_user_about_success_transaction(user.telegram_id, text)
+            notify_user_about_success_transaction(user.telegram_id, text, reply_markup)
         return HttpResponse({"code": 0})
-    else:
-        return HttpResponse("get request")
+    # else:
+    #     return HttpResponse("get request")
 
 
 """
