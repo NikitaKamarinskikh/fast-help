@@ -70,6 +70,9 @@ async def get_amount_by_message(message: types.Message, state: FSMContext):
                     "distance": 0
                 }
             )
+            await message.answer(
+                text=f"Ссылка для оплаты:\n{payment_link}"
+            )
         else:
             await message.answer("Значение должно быть больше 0")
     except:
