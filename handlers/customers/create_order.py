@@ -257,7 +257,7 @@ async def get_order_execution_time(message: types.Message, state: FSMContext):
 
 
 @dp.callback_query_handler(chose_payment_callback.filter(with_bonus="False"), state=CreateOrderStates.get_payment)
-async def get_payment(callback: types.CallbackQuery, callback_data: dict):
+async def get_payment(callback: types.CallbackQuery, callback_data: dict, state: FSMContext):
     await callback.answer()
     distance = int(callback_data.get("distance"))
     amount = int(callback_data.get("amount"))
@@ -289,6 +289,7 @@ async def get_payment(callback: types.CallbackQuery, callback_data: dict):
     await callback.message.answer(
         text=f"ID транзакции: {transaction.pk}\nСсылка на оплату: {payment_link}"
     )
+    await state.finish()
 
 
 @dp.message_handler(state=CreateOrderStates.get_payment)
