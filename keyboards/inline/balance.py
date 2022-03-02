@@ -43,4 +43,3 @@ def coins_sum_markup():
     return markup
 
 
-

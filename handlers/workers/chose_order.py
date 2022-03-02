@@ -10,7 +10,7 @@ from states.workers.chose_order import ChoseOrderStates
 from models import OrdersModel
 
 
-def get_orders_by_category_name(orders: list, category_name: str, max_distance_in_meters: int = 500):
+def get_orders_by_category_name_and_max_distance(orders: list, category_name: str, max_distance_in_meters: int = 500):
     candidates = list()
     for order in orders:
         if order.category.name == category_name and order.distance <= max_distance_in_meters:
@@ -44,19 +44,12 @@ async def send_voice(callback, state, order):
 @dp.callback_query_handler(orders_nearby_callback.filter(), state=ChoseOrderStates.chose_order)
 async def get_orders_nearby_by_category(callback: types.CallbackQuery, callback_data: dict, state: FSMContext):
     await callback.answer()
-    print("start_await state.get_data()", datetime.now().time())
     state_data = await state.get_data()
-    print("finish_await state.get_data()", datetime.now().time())
-    print()
-    print("start_tate_data.get(orders)", datetime.now().time())
     orders = state_data.get("orders")
-    print("finish_tate_data.get(orders)", datetime.now().time())
     category_name = callback_data.get("category_name")
-    print()
-    print("start_get_orders_by_category_name", datetime.now().time())
-    orders = get_orders_by_category_name(orders, category_name)
-    print("finish_get_orders_by_category_name", datetime.now().time())
-
+    distance = int(callback_data.get("distance"))
+    print(distance)
+    orders = get_orders_by_category_name_and_max_distance(orders, category_name, distance)
     await state.update_data(category_orders=orders, voice_messages_ids=[])
     await callback.message.answer(
         **(await get_message_content(orders[0], len(orders), 0))
@@ -66,7 +59,7 @@ async def get_orders_nearby_by_category(callback: types.CallbackQuery, callback_
 
 
 @dp.callback_query_handler(chose_order_pagination_callback.filter(), state=ChoseOrderStates.chose_order)
-async def flip_candidate(callback: types.CallbackQuery, callback_data: dict, state: FSMContext):
+async def move_candidate(callback: types.CallbackQuery, callback_data: dict, state: FSMContext):
     await callback.answer()
     print("start_await state.get_data()", datetime.now().time())
     state_data = await state.get_data()

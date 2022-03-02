@@ -1,12 +1,25 @@
 from aiogram.dispatcher import FSMContext
-
 from loader import dp
 from aiogram import types
 from keyboards.inline.balance import balance_callback, coins_sum_callback
 from keyboards.inline.balance import coins_sum_markup
+from keyboards.inline.yes_or_no import yes_or_no_callback
 from payments.payments import get_payment_link
 from models import BotUsersModel, TransactionsModel
 from states.common.update_balance import UpdateBalanceStates
+from states.workers.chose_order import ChoseOrderStates
+
+
+@dp.callback_query_handler(yes_or_no_callback.filter(question="update_balance", choice="yes"),
+                           state=ChoseOrderStates.chose_order)
+async def update_balance_by_callback(callback: types.CallbackQuery, callback_data: dict, state: FSMContext):
+    await state.finish()
+    await callback.answer()
+    await callback.message.answer(
+        text="Введите сумму в строке ввода или выберите один из вариантов",
+        reply_markup=coins_sum_markup()
+    )
+    await UpdateBalanceStates.get_payment.set()
 
 
 @dp.callback_query_handler(balance_callback.filter(option="update_balance"))
@@ -20,7 +33,7 @@ async def update_balance(callback: types.CallbackQuery, callback_data: dict):
 
 
 @dp.callback_query_handler(coins_sum_callback.filter(), state=UpdateBalanceStates.get_payment)
-async def get_coins(callback: types.CallbackQuery, callback_data: dict):
+async def get_coins(callback: types.CallbackQuery, callback_data: dict, state: FSMContext):
     await callback.answer()
     coins = int(callback_data.get("coins"))
     amount_rub = int(callback_data.get("amount_rub"))
@@ -43,10 +56,9 @@ async def get_coins(callback: types.CallbackQuery, callback_data: dict):
         await callback.message.answer(
             text=f"ID транзакции: {transaction.pk}\nСсылка на оплату: {payment_link}"
         )
+        await state.finish()
     else:
-        await callback.message.answer(
-            text="При создании ссылки на оплату произошла ошибка"
-        )
+        await callback.message.answer("При создании ссылки на оплату возникла непредвиденная ошибка")
 
 
 @dp.message_handler(state=UpdateBalanceStates.get_payment)
@@ -70,9 +82,13 @@ async def get_amount_by_message(message: types.Message, state: FSMContext):
                     "distance": 0
                 }
             )
-            await message.answer(
-                text=f"Ссылка для оплаты:\n{payment_link}"
-            )
+            if payment_link:
+                await message.answer(
+                    text=f"Ссылка для оплаты:\n{payment_link}"
+                )
+            else:
+                await message.answer("При создании ссылки на оплату возникла непредвиденная ошибка")
+            await state.finish()
         else:
             await message.answer("Значение должно быть больше 0")
     except:
