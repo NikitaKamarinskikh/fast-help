@@ -79,13 +79,13 @@ def process_pay_notification(request):
                 text += f"\nВаш баланс {new_user_coins} монет"
             notify_user_about_success_transaction(user.telegram_id, text, reply_markup)
 
-            if user.referrer:
-                referrer = get_user_by_id(user.referrer.telegram_id)
-                referrer_coins = referrer.coins
-                referrer_coins += count_bonus(coins)
-                referrer.coins = referrer_coins
-                referrer.save()
-                notify_referrer(referrer.telegram_id, referrer_coins)
+        if user.referrer:
+            referrer = get_user_by_id(user.referrer.pk)
+            referrer_coins = referrer.coins
+            referrer_coins += count_bonus(coins)
+            referrer.coins = referrer_coins
+            referrer.save()
+            notify_referrer(referrer.telegram_id, referrer_coins)
 
         return HttpResponse({"code": 0})
 
