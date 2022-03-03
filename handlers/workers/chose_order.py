@@ -41,6 +41,13 @@ async def send_voice(callback, state, order):
     await state.update_data(voice_messages_ids=[voice_message.message_id])
 
 
+@dp.callback_query_handler(yes_or_no_callback.filter(question="update_balance", choice="no"),
+                           state=ChoseOrderStates.chose_order)
+async def update_balance_by_callback(callback: types.CallbackQuery, callback_data: dict, state: FSMContext):
+    await state.finish()
+    await callback.message.answer("test")
+
+
 @dp.callback_query_handler(orders_nearby_callback.filter(), state=ChoseOrderStates.chose_order)
 async def get_orders_nearby_by_category(callback: types.CallbackQuery, callback_data: dict, state: FSMContext):
     await callback.answer()
@@ -48,14 +55,16 @@ async def get_orders_nearby_by_category(callback: types.CallbackQuery, callback_
     orders = state_data.get("orders")
     category_name = callback_data.get("category_name")
     distance = int(callback_data.get("distance"))
-    print(distance)
     orders = get_orders_by_category_name_and_max_distance(orders, category_name, distance)
-    await state.update_data(category_orders=orders, voice_messages_ids=[])
-    await callback.message.answer(
-        **(await get_message_content(orders[0], len(orders), 0))
-    )
-    if orders[0].voice_description:
-        await send_voice(callback, state, orders[0])
+    if len(orders):
+        await state.update_data(category_orders=orders, voice_messages_ids=[])
+        await callback.message.answer(
+            **(await get_message_content(orders[0], len(orders), 0))
+        )
+        if orders[0].voice_description:
+            await send_voice(callback, state, orders[0])
+    else:
+        await callback.message.answer("Задания отсутствуют")
 
 
 @dp.callback_query_handler(chose_order_pagination_callback.filter(), state=ChoseOrderStates.chose_order)
@@ -64,7 +73,6 @@ async def move_candidate(callback: types.CallbackQuery, callback_data: dict, sta
     print("start_await state.get_data()", datetime.now().time())
     state_data = await state.get_data()
     print("finish_await state.get_data()", datetime.now().time())
-    print()
     voice_messages_ids = state_data.get("voice_messages_ids")
     for message_id in voice_messages_ids:
         await bot.delete_message(chat_id=callback.from_user.id, message_id=message_id)

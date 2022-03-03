@@ -1,11 +1,12 @@
 import json
 from requests import post
+from environs import Env
 from django.shortcuts import render, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from keyboards.inline.send_order_to_workers import send_order_to_workers_markup
 from admin.main.models import BotUsers
 from admin.transactions.models import Transactions
-from environs import Env
+from data.config import REFERRER_BONUS_PERCENT
 
 env = Env()
 env.read_env()
@@ -16,16 +17,16 @@ def update_order():
     ...
 
 
+def count_bonus(sum_: int):
+    return round(REFERRER_BONUS_PERCENT * (1/100) * sum_)
+
+
 def get_user_by_id(user_id: int):
     return BotUsers.objects.get(pk=user_id)
 
 
 def get_transaction_by_id(transaction_id: int):
     return Transactions.objects.get(pk=transaction_id)
-
-
-# def set_transaction_paid_status(transaction_id: int):
-#     Transactions.objects.filter(pk=transaction_id).update(is_paid=True)
 
 
 def notify_user_about_success_transaction(user_telegram_id: int, text: str, reply_markup=None):
@@ -38,6 +39,13 @@ def notify_user_about_success_transaction(user_telegram_id: int, text: str, repl
     r = post(url)
     response = json.loads(r.content.decode('utf-8'))
     print(response)
+
+
+def notify_referrer(referrer_telegram_id: int, bonus: int):
+    text = f"Вы получаете бонус в размере {bonus} монет за пополнение одного из приглашенных вами пользователя"
+    url = f'https://api.telegram.org/bot{bot_token}/sendMessage?chat_id=' \
+          f'{referrer_telegram_id}&text={text}'
+    r = post(url)
 
 
 @csrf_exempt
@@ -59,9 +67,6 @@ def process_pay_notification(request):
         if not transaction.is_paid:
             transaction.is_paid = True
             transaction.save()
-
-            # text = f"user_id: {user_id}\ntransaction_id: {transaction_id}\n" \
-            #        f"order_id: {order_id}\nhas_order: {has_order}\ncoins: {coins}\n"
             text = "Оплата принята"
             if has_order:
                 reply_markup = send_order_to_workers_markup(order_id, distance)
@@ -73,10 +78,16 @@ def process_pay_notification(request):
                 user.save()
                 text += f"\nВаш баланс {new_user_coins} монет"
             notify_user_about_success_transaction(user.telegram_id, text, reply_markup)
-        return HttpResponse({"code": 0})
-    # else:
-    #     return HttpResponse("get request")
 
+            if user.referrer:
+                referrer = get_user_by_id(user.referrer.telegram_id)
+                referrer_coins = referrer.coins
+                referrer_coins += count_bonus(coins)
+                referrer.coins = referrer_coins
+                referrer.save()
+                notify_referrer(referrer.telegram_id, referrer_coins)
+
+        return HttpResponse({"code": 0})
 
 """
 <WSGIRequest: POST '/get_transaction'>
