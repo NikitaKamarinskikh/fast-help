@@ -282,7 +282,8 @@ async def get_payment(callback: types.CallbackQuery, callback_data: dict, state:
             "has_order": True,
             "coins": coins,
             "with_bonus": False,
-            "distance": distance
+            "distance": distance,
+            "amount_rub": amount
         }
     )
 

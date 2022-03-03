@@ -49,7 +49,8 @@ async def get_coins(callback: types.CallbackQuery, callback_data: dict, state: F
             "has_order": False,
             "coins": coins,
             "with_bonus": True,
-            "distance": 0
+            "distance": 0,
+            "amount_rub": amount_rub
         }
     )
     if payment_link:
@@ -79,7 +80,8 @@ async def get_amount_by_message(message: types.Message, state: FSMContext):
                     "has_order": False,
                     "coins": amount_rub,
                     "with_bonus": False,
-                    "distance": 0
+                    "distance": 0,
+                    "amount_rub": amount_rub
                 }
             )
             if payment_link:
