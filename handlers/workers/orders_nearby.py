@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from aiogram import types
 from aiogram.dispatcher import FSMContext
-from data.config import MainMenuCommands, Roles
+from data.config import MainMenuCommands, Roles, DAY_IN_SECONDS
 from keyboards.inline.start_or_back import start_or_back_markup
 from keyboards.inline.orders_nerby import orders_nearby_markup, orders_nearby_callback, \
     orders_at_longer_distance_markup, orders_at_longer_distance_callback, confirm_show_longer_distance_orders_markup, \
@@ -27,6 +27,10 @@ class Categories:
     data_1500: dict
 
 
+def get_orders_at_longer_distance_access_time():
+    return int(time.time()) + DAY_IN_SECONDS
+
+
 def split_categories_by_orders(orders: list, worker_categories: list) -> Categories:
     """
     return: {"category_name": quantity}, {"category_name": quantity}
@@ -40,34 +44,15 @@ def split_categories_by_orders(orders: list, worker_categories: list) -> Categor
         categories_data_1500[category.name] = 0
     total_500_meters, total_1000_meters, total_1500_meters = 0, 0, 0
     for order in orders:
-        # if order.distance <= 1500:
-        #     categories_data_500[order.category.name] += 1
-        #     categories_data_1000[order.category.name] += 1
-        #     categories_data_1500[order.category.name] += 1
-        #     total_1500_meters += 1
-        # elif order.distance <= 1000:
-        #     categories_data_500[order.category.name] += 1
-        #     categories_data_1000[order.category.name] += 1
-        #     total_1000_meters += 1
-        # elif order.distance <= 500:
-        #     categories_data_500[order.category.name] += 1
-        #     total_500_meters += 1
         if order.distance <= 500:
             categories_data_500[order.category.name] += 1
-            # categories_data_1000[order.category.name] += 1
-            # categories_data_1500[order.category.name] += 1
             total_500_meters += 1
         elif order.distance <= 1000:
-            # categories_data_500[order.category.name] += 1
             categories_data_1000[order.category.name] += 1
             total_1000_meters += 1
         elif order.distance <= 1500:
-            # categories_data_500[order.category.name] += 1
-            # categories_data_1000[order.category.name] += 1
-            # categories_data_1000[order.category.name] += 1
             categories_data_1500[order.category.name] += 1
             total_1500_meters += 1
-        # Количество
 
     return Categories(total_500_meters, total_1000_meters, total_1500_meters, categories_data_500,
                       categories_data_1000, categories_data_1500)
@@ -79,34 +64,34 @@ async def orders_at_longer_distance(callback: types.CallbackQuery, callback_data
     distance = int(callback_data.get("distance"))
     user = await BotUsersModel.get_by_telegram_id(callback.from_user.id)
     worker = await WorkersModel.get_by_telegram_id(callback.from_user.id)
-    if distance == 1000:
-        if worker.max_distance < 1000:
-            await callback.message.answer(
-                text="Недостаточно монет на счету. Хотите пополнить баланс?",
-                reply_markup=yes_or_no_markup("update_balance")
-            )
-            return
-        if user.coins < 10:
-            if time.time() > worker.orders_at_longer_distance_access_time:
-                await callback.message.answer(
-                        text="Недостаточно монет на счету. Хотите пополнить баланс?",
-                        reply_markup=yes_or_no_markup("update_balance")
-                    )
-                return
-    if distance == 1500:
-        if worker.max_distance < 1500:
-            await callback.message.answer(
-                text="Недостаточно монет на счету. Хотите пополнить баланс?",
-                reply_markup=yes_or_no_markup("update_balance")
-            )
-            return
-        if user.coins < 20:
-            if time.time() > worker.orders_at_longer_distance_access_time:
-                await callback.message.answer(
-                        text="Недостаточно монет на счету. Хотите пополнить баланс?",
-                        reply_markup=yes_or_no_markup("update_balance")
-                    )
-                return
+    # if distance == 1000:
+    #     if worker.max_distance < 1000:
+    #         await callback.message.answer(
+    #             text="Недостаточно монет на счету. Хотите пополнить баланс?",
+    #             reply_markup=yes_or_no_markup("update_balance")
+    #         )
+    #         return
+    #     if user.coins < 10:
+    #         if time.time() > worker.orders_at_longer_distance_access_time:
+    #             await callback.message.answer(
+    #                     text="Недостаточно монет на счету. Хотите пополнить баланс?",
+    #                     reply_markup=yes_or_no_markup("update_balance")
+    #                 )
+    #             return
+    # if distance == 1500:
+    #     if worker.max_distance < 1500:
+    #         await callback.message.answer(
+    #             text="Недостаточно монет на счету. Хотите пополнить баланс?",
+    #             reply_markup=yes_or_no_markup("update_balance")
+    #         )
+    #         return
+    #     if user.coins < 20:
+    #         if time.time() > worker.orders_at_longer_distance_access_time:
+    #             await callback.message.answer(
+    #                     text="Недостаточно монет на счету. Хотите пополнить баланс?",
+    #                     reply_markup=yes_or_no_markup("update_balance")
+    #                 )
+    #             return
 
     await callback.message.answer(
         text=f"Вы уверены, что хотите задания на {distance}м?",
@@ -134,19 +119,32 @@ async def deny_showing_longer_distance_orders(callback: types.CallbackQuery, cal
                            state=ChoseOrderStates.chose_order)
 async def show_longer_distance_orders(callback: types.CallbackQuery, callback_data: dict, state: FSMContext):
     await callback.answer()
+    await callback.message.delete()
     state_data = await state.get_data()
     categories = state_data.get("categories")
     distance = int(callback_data.get("distance"))
-    # user = await BotUsersModel.get_by_telegram_id(callback.from_user.id)
-    # await callback.message.answer(f"coins: {user.coins}, distance: {distance}")
     if distance == 1000:
+        await BotUsersModel.remove_coins(callback.from_user.id, 10)
+        worker = await WorkersModel.get_by_telegram_id(callback.from_user.id)
+        await WorkersModel.update_worker_by_id(
+            worker.pk,
+            orders_at_longer_distance_access_time=get_orders_at_longer_distance_access_time(),
+            max_distance=1000
+        )
         await callback.message.answer(
             text=f"Количество заданий в 1000м от вас: {categories.total_1000_meters + categories.total_500_meters}",
             reply_markup=orders_nearby_markup(categories.data_1000, distance)
         )
     elif distance == 1500:
+        await BotUsersModel.remove_coins(callback.from_user.id, 20)
+        worker = await WorkersModel.get_by_telegram_id(callback.from_user.id)
+        await WorkersModel.update_worker_by_id(
+            worker.pk,
+            orders_at_longer_distance_access_time=get_orders_at_longer_distance_access_time(),
+            max_distance=1500
+        )
         await callback.message.answer(
-            text=f"Количество заданий в 1000м от вас: {categories.total_1500_meters}",
+            text=f"Количество заданий в 1500м от вас: {categories.total_1500_meters}",
             reply_markup=orders_nearby_markup(categories.data_1500, distance)
         )
 
@@ -156,7 +154,6 @@ async def tasks_nearby(message: types.Message, state: FSMContext):
     try:
         worker = await WorkersModel.get_by_telegram_id(message.from_user.id)
         await message.answer("Ищу задания...", reply_markup=main_meun_markup)
-        # categories = await JobCategoriesModel.get_all()
         orders = await get_orders_by_worker(worker, max_distance=1500)
         await state.update_data(categories=worker.categories.all())
         await state.update_data(orders=orders)
