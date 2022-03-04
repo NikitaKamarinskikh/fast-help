@@ -182,7 +182,8 @@ async def save_worker_data(worker_telegram_id: int, state: FSMContext):
         "user": user,
         "name": state_data.get("worker_name"),
         "location": location,
-        "phone": state_data.get("phone")
+        "phone": state_data.get("phone"),
+        "is_privacy_policy_confirmed": True
     }
     if state_data.get("additional_contacts"):
         worker_data["additional_contacts"] = state_data.get("additional_contacts")
