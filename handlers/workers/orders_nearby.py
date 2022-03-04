@@ -49,6 +49,7 @@ def split_categories_by_orders(orders: list, worker_categories: list) -> Categor
             total_500_meters += 1
         elif order.distance <= 1000:
             categories_data_1000[order.category.name] += 1
+            # categories_data_500[order.category.name] += 1
             total_1000_meters += 1
         elif order.distance <= 1500:
             categories_data_1500[order.category.name] += 1
@@ -61,6 +62,7 @@ def split_categories_by_orders(orders: list, worker_categories: list) -> Categor
 @dp.callback_query_handler(orders_at_longer_distance_callback.filter(), state=ChoseOrderStates.chose_order)
 async def orders_at_longer_distance(callback: types.CallbackQuery, callback_data: dict, state: FSMContext):
     await callback.answer()
+    state_data = await state.get_data()
     distance = int(callback_data.get("distance"))
     user = await BotUsersModel.get_by_telegram_id(callback.from_user.id)
     worker = await WorkersModel.get_by_telegram_id(callback.from_user.id)
@@ -92,6 +94,16 @@ async def orders_at_longer_distance(callback: types.CallbackQuery, callback_data
     #                     reply_markup=yes_or_no_markup("update_balance")
     #                 )
     #             return
+    categories_data = state_data.get("categories")
+
+    if distance == 1000:
+        if categories_data.total_1000_meters <= 0:
+            await callback.message.answer("Задания на данную дистанцию отсутствуют")
+            return
+    if distance == 1500:
+        if categories_data.total_1500_meters <= 0:
+            await callback.message.answer("Задания на данную дистанцию отсутствуют")
+            return
 
     await callback.message.answer(
         text=f"Вы уверены, что хотите задания на {distance}м?",
@@ -158,9 +170,8 @@ async def tasks_nearby(message: types.Message, state: FSMContext):
         await state.update_data(categories=worker.categories.all())
         await state.update_data(orders=orders)
 
-        print("start splitting categories", datetime.now().time())
         categories = split_categories_by_orders(orders, worker.categories.all())
-        print("finish splitting categories", datetime.now().time())
+
         await state.update_data(categories=categories)
         await message.answer(
             text=f"Количество заданий в 500м от вас: {categories.total_500_meters}",

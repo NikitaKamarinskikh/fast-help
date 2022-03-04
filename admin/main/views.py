@@ -44,7 +44,7 @@ def notify_user_about_success_transaction(user_telegram_id: int, text: str, repl
 
 def notify_referrer(referrer_telegram_id: int, bonus: int, new_referrer_balance: int):
     text = f"Вы получаете бонус в размере {bonus} монет за пополнение одного из приглашенных вами пользователя. " \
-           f"Ваш баланс: {new_referrer_balance} монет"
+           f"Ткущее количество монет: {new_referrer_balance}"
     url = f'https://api.telegram.org/bot{bot_token}/sendMessage?chat_id=' \
           f'{referrer_telegram_id}&text={text}'
     r = post(url)
@@ -60,7 +60,7 @@ def process_pay_notification(request):
         has_order = data.get("has_order")
         coins = int(data.get("coins"))
         distance = data.get("distance")
-        amount_rub = int(data.get("amount_rub"))
+        amount = int(data.get("Amount"))
         data.get("with_bonus")
 
         transaction = get_transaction_by_id(transaction_id)
@@ -83,7 +83,7 @@ def process_pay_notification(request):
             notify_user_about_success_transaction(user.telegram_id, text, reply_markup)
 
             if user.referrer:
-                bonus = count_bonus(amount_rub)
+                bonus = count_bonus(amount)
                 referrer = get_user_by_id(user.referrer.pk)
                 new_referrer_balance = referrer.coins + bonus
                 referrer.coins = new_referrer_balance

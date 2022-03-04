@@ -85,8 +85,8 @@ async def get_candidates_by_filters(order: object, excepted_users_telegram_ids: 
 
 async def get_orders_by_worker(worker: object, max_distance: int = 500) -> list:
     candidates = list()
-    worker_coordinates_list = worker.location.split()
-    worker_coordinates = (float(worker_coordinates_list[0]), float(worker_coordinates_list[1]))
+    # worker_coordinates_list = worker.location.split()
+    # worker_coordinates = (float(worker_coordinates_list[0]), float(worker_coordinates_list[1]))
     # print("start_getting_orders", datetime.now().time())
     orders = await OrdersModel.get_not_completed_by_categories(worker.categories.all())
     # print("finish_getting_orders", datetime.now().time())
