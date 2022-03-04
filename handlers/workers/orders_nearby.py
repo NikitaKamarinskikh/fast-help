@@ -46,15 +46,18 @@ def split_categories_by_orders(orders: list, worker_categories: list) -> Categor
     for order in orders:
         if order.distance <= 500:
             categories_data_500[order.category.name] += 1
+            categories_data_1000[order.category.name] += 1
+            categories_data_1500[order.category.name] += 1
             total_500_meters += 1
         elif order.distance <= 1000:
+            categories_data_1500[order.category.name] += 1
             categories_data_1000[order.category.name] += 1
-            # categories_data_500[order.category.name] += 1
             total_1000_meters += 1
         elif order.distance <= 1500:
             categories_data_1500[order.category.name] += 1
             total_1500_meters += 1
-
+    total_1000_meters += total_500_meters
+    total_1500_meters += total_1000_meters
     return Categories(total_500_meters, total_1000_meters, total_1500_meters, categories_data_500,
                       categories_data_1000, categories_data_1500)
 
@@ -143,8 +146,9 @@ async def show_longer_distance_orders(callback: types.CallbackQuery, callback_da
             orders_at_longer_distance_access_time=get_orders_at_longer_distance_access_time(),
             max_distance=1000
         )
+        print(categories.data_1000)
         await callback.message.answer(
-            text=f"Количество заданий в 1000м от вас: {categories.total_1000_meters + categories.total_500_meters}",
+            text=f"Количество заданий в 1000м от вас: {categories.total_1000_meters}",
             reply_markup=orders_nearby_markup(categories.data_1000, distance)
         )
     elif distance == 1500:
