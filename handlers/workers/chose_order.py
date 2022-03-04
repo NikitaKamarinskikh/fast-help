@@ -12,7 +12,9 @@ from models import OrdersModel
 
 def get_orders_by_category_name_and_max_distance(orders: list, category_name: str, max_distance_in_meters: int = 500):
     candidates = list()
+    print(max_distance_in_meters)
     for order in orders:
+        print(order.distance)
         if order.category.name == category_name and order.distance <= max_distance_in_meters:
             candidates.append(order)
     return candidates
@@ -55,7 +57,10 @@ async def get_orders_nearby_by_category(callback: types.CallbackQuery, callback_
     orders = state_data.get("orders")
     category_name = callback_data.get("category_name")
     distance = int(callback_data.get("distance"))
+    print(category_name, distance)
+    print(orders)
     orders = get_orders_by_category_name_and_max_distance(orders, category_name, distance)
+    print(orders)
     if len(orders):
         await state.update_data(category_orders=orders, voice_messages_ids=[])
         await callback.message.answer(
