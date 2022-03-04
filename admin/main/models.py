@@ -38,6 +38,7 @@ class BotUsers(BaseUser):
                                  blank=True, null=True)
     coins = models.BigIntegerField("Количество монет", default=0)
 
+
     class Meta:
         verbose_name = "Пользователь бота"
         verbose_name_plural = "Пользователи бота"

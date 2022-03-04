@@ -11,9 +11,15 @@ class BotUsersModel:
 
     @staticmethod
     @sync_to_async
+    def get_by_telegram_id_or_none(telegram_id: int):
+        return BotUsers.objects.filter(telegram_id=telegram_id).first()
+
+    @staticmethod
+    @sync_to_async
     def create_user(telegram_id: int, username: str, referrer: object) -> object:
         try:
             user = BotUsers.objects.get(telegram_id=telegram_id)
+            setattr(user, "already_existed", True)
         except:
             data = {
                 "telegram_id": telegram_id,
@@ -23,6 +29,7 @@ class BotUsersModel:
             if referrer:
                 data["referrer"] = referrer
             user = BotUsers.objects.create(**data)
+            setattr(user, "already_existed", False)
         return user
 
     @staticmethod

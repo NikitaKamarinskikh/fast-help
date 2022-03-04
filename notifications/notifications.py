@@ -14,8 +14,8 @@ async def send_message(user_telegram_id: int, text: str, reply_markup=None):
             text=text,
             reply_markup=reply_markup
         )
-    except:
-        ...
+    except Exception as e:
+        print(e)
 
 
 async def send_voice(user_telegram_id: int, voice_file_id: str):
@@ -129,4 +129,8 @@ async def notify_customer_about_new_feedback(order: object, feedback_value: int)
         text
     )
 
+
+async def notify_referrer_about_new_referral(referrer: object):
+    text = f"Зарегистрирован реферал.\nБаланс: {referrer.coins}"
+    await send_message(referrer.telegram_id, text)
 
