@@ -125,7 +125,7 @@ async def get_description_by_voice(message: types.Message, state: FSMContext):
     voice_id = message.voice.file_id
     await state.update_data(order_voice_description=voice_id)
     await message.answer(
-        text="Укажите дату и время начала задания. Необходимый формат: дд.мм.гггг чч:мм (например 07.11.2022 15:30 )",
+        text="Укажите дату и время начала задания. Необходимый формат: дд.мм.гггг чч:мм (например 07.11.2022 15:30)",
         reply_markup=now_markup("order_start_date")
     )
     await CreateOrderStates.get_order_start_date.set()

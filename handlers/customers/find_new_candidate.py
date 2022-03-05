@@ -28,6 +28,7 @@ async def finish_order_execution(callback: types.CallbackQuery, callback_data: d
 @dp.callback_query_handler(find_new_candidate_callback.filter(option="use_current"))
 async def use_current_candidate(callback: types.CallbackQuery, callback_data: dict):
     await callback.answer()
+    await callback.message.delete()
     customer = await CustomersModel.get_by_telegram_id(callback.from_user.id)
     orders = await OrdersModel.get_by_filters(customer=customer, status=OrderStatuses.in_progress)
     await callback.message.answer(
@@ -39,6 +40,7 @@ async def use_current_candidate(callback: types.CallbackQuery, callback_data: di
 @dp.callback_query_handler(find_new_candidate_callback.filter(option="find_new"))
 async def find_new_candidate(callback: types.CallbackQuery, callback_data: dict):
     await callback.answer()
+    await callback.message.delete()
     order_id = int(callback_data.get("order_id"))
     order = await OrdersModel.get_by_id(order_id)
     await OrdersModel.update(order.pk, status=OrderStatuses.waiting_for_start)
