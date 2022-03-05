@@ -11,10 +11,10 @@ def referral_markup():
             text="Получить ссылку",
             callback_data=referral_callback.new("get_link"),
         ),
-        InlineKeyboardButton(
-            text="Назад",
-            callback_data=referral_callback.new("back"),
-        ),
+        # InlineKeyboardButton(
+        #     text="Назад",
+        #     callback_data=referral_callback.new("back"),
+        # ),
     )
     return markup
 
