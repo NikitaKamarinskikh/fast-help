@@ -1,3 +1,4 @@
+from common.rating import count_rating
 from loader import dp
 from aiogram import types
 from keyboards.inline.rating import rating_callback
@@ -14,13 +15,8 @@ async def leave_feedback_by_worker(callback: types.CallbackQuery, callback_data:
     order_id = int(callback_data.get("order_id"))
     order = await OrdersModel.get_by_id(order_id)
     customer = await CustomersModel.get_by_id(customer_id)
-    current_completed_orders_quantity = customer.completed_orders_quantity
-    current_rating = customer.rating + value
-    new_completed_orders_quantity = current_completed_orders_quantity + 1
-    print(new_completed_orders_quantity, current_rating, round(current_rating / new_completed_orders_quantity, 1))
-    await CustomersModel.update_by_id(customer_id, completed_orders_quantity=new_completed_orders_quantity,
-                                      rating=round(current_rating / new_completed_orders_quantity, 1))
+    await CustomersModel.update_by_id(customer_id, completed_orders_quantity=customer.completed_orders_quantity + 1,
+                                      rating=count_rating(customer.rating, customer.completed_orders_quantity,
+                                                          value))
     await notify_customer_about_new_feedback(order, value)
     await callback.message.answer("Заказчик получил уведомление")
-
-

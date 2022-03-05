@@ -10,6 +10,7 @@ from loader import dp
 from aiogram import types
 from models import CustomersModel, OrdersModel, WorkersModel
 from states.customers.update_order import UpdateOrderStates
+from common.rating import count_rating
 from notifications import notify_worker_about_completed_order, notify_worker_about_new_feedback
 
 
@@ -61,12 +62,9 @@ async def old_candidate_rating(callback: types.CallbackQuery, callback_data: dic
     worker_id = int(callback_data.get("worker_id"))
     order = await OrdersModel.get_by_id(order_id)
     worker = await WorkersModel.get_by_id(worker_id)
-    current_completed_orders_quantity = worker.completed_orders_quantity
-    current_rating = worker.rating + value
-    new_completed_orders_quantity = current_completed_orders_quantity + 1
-    await WorkersModel.update_worker_by_id(worker_id, completed_orders_quantity=new_completed_orders_quantity,
-                                           rating=round(current_rating / new_completed_orders_quantity, 1))
-    print(new_completed_orders_quantity, current_rating, round(current_rating / new_completed_orders_quantity, 1))
+    await WorkersModel.update_worker_by_id(worker_id, completed_orders_quantity=worker.completed_orders_quantity + 1,
+                                           rating=count_rating(worker.rating, worker.completed_orders_quantity,
+                                                               value))
     await notify_worker_about_new_feedback(order, value)
     await callback.message.answer("Исполнитель получил уведомление о вашй оценке")
     await callback.message.answer(
