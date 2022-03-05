@@ -55,6 +55,14 @@ class OrdersModel:
         order.save()
         return order
 
+    # @staticmethod
+    # @sync_to_async
+    # def remove_candidates(order_id: int):
+    #     order = Orders.objects.get(pk=order_id)
+    #     order.candidates.remove()
+    #     order.save()
+    #     return order
+
 
 class OrderCandidatesModel:
 

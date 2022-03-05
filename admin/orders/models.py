@@ -10,7 +10,7 @@ class Orders(TimeBasedModel):
     category = models.ForeignKey(JobCategories, verbose_name="Категория", on_delete=models.CASCADE)
     worker = models.ForeignKey(Workers, verbose_name="Исполнитель", null=True, blank=True, on_delete=models.CASCADE)
     candidates = models.ManyToManyField(Workers, verbose_name="Кандидаты", related_name="order_candidates", blank=True)
-    status = models.CharField("Статус", max_length=120, default=OrderStatuses.waiting_for_payment)
+    status = models.CharField("Статус", max_length=120, default=OrderStatuses.waiting_for_start)
     customer_name = models.CharField("Имя для обращения к заказчику", max_length=255)
     location = models.CharField("Координаты", max_length=255)
     city = models.CharField("Город", default="Неизвестный", max_length=255)

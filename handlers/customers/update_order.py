@@ -54,8 +54,12 @@ async def update_order(state_data: dict):
     update_data = {
         "start_date": state_data.get("order_start_date_time"),
         "execution_time": execution_time,
-        "status": OrderStatuses.waiting_for_start
+        "status": OrderStatuses.waiting_for_start,
+        "worker": None
     }
+    order.candidates.clear()
+    order.save()
+    await OrderTimestampsModel.delete_by_order(order)
     if not state_data.get("update_time_only"):
         await OrdersModel.update(order_id, **update_data)
         candidates = await get_candidates_by_filters(order, [])

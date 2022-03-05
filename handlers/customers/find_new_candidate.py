@@ -66,6 +66,7 @@ async def old_candidate_rating(callback: types.CallbackQuery, callback_data: dic
     new_completed_orders_quantity = current_completed_orders_quantity + 1
     await WorkersModel.update_worker_by_id(worker_id, completed_orders_quantity=new_completed_orders_quantity,
                                            rating=round(current_rating / new_completed_orders_quantity, 1))
+    print(new_completed_orders_quantity, current_rating, round(current_rating / new_completed_orders_quantity, 1))
     await notify_worker_about_new_feedback(order, value)
     await callback.message.answer("Исполнитель получил уведомление о вашй оценке")
     await callback.message.answer(
