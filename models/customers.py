@@ -34,4 +34,8 @@ class CustomersModel:
         except:
             return Customers.objects.create(user=user, is_privacy_policy_confirmed=True)
 
+    @staticmethod
+    @sync_to_async
+    def reset_privacy_policy() -> None:
+        Customers.objects.filter().update(is_privacy_policy_confirmed=False)
 

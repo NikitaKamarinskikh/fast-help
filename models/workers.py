@@ -54,8 +54,13 @@ class WorkersModel:
 
     @staticmethod
     @sync_to_async
-    def delete_all():
+    def delete_all() -> None:
         Workers.objects.all().delete()
+
+    @staticmethod
+    @sync_to_async
+    def reset_privacy_policy() -> None:
+        Workers.objects.filter().update(is_privacy_policy_confirmed=False)
 
         # candidates = list()
         # workers = Workers.objects.filter(**filters)
