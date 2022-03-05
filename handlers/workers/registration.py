@@ -166,6 +166,11 @@ async def get_phone(message: types.Message, state: FSMContext):
                              "свой номер телефона")
 
 
+@dp.message_handler(state=WorkerRegistrationStates.get_phone)
+async def get_phone_by_message(message: types.Message):
+    await message.answer("Чтобы отправить номер телефона, воспользуйтесь кнопкой ниже")
+
+
 async def save_worker_data(worker_telegram_id: int, state: FSMContext):
     """
     {'categories_list': <QuerySet [<JobCategories: Уборка>, <JobCategories: Животные>, <JobCategories: Переезд>,

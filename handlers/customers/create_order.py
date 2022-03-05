@@ -75,6 +75,11 @@ async def get_phone(message: types.Message, state: FSMContext):
                              "свой номер телефона")
 
 
+@dp.message_handler(state=CreateOrderStates.get_phone)
+async def get_phone_by_message(message: types.Message):
+    await message.answer("Чтобы отправить номер телефона, воспользуйтесь кнопкой ниже")
+
+
 @dp.callback_query_handler(yes_or_no_callback.filter(question="can_write"), state=CreateOrderStates.cat_write)
 async def can_write(callback: types.CallbackQuery, callback_data: dict, state: FSMContext):
     await callback.answer()

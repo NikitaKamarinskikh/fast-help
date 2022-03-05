@@ -6,16 +6,19 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponseNotFound
 from keyboards.inline.send_order_to_workers import send_order_to_workers_markup
 from admin.main.models import BotUsers
+from admin.orders.models import Orders
 from admin.transactions.models import Transactions
-from data.config import REFERRER_BONUS_PERCENT
+from data.config import REFERRER_BONUS_PERCENT, OrderStatuses
 
 env = Env()
 env.read_env()
 bot_token = env.str("BOT_TOKEN")
 
 
-def update_order():
-    ...
+def set_order_waiting_for_start_status(order_id: int):
+    order = Orders.objects.get(pk=order_id)
+    order.status = OrderStatuses.waiting_for_start
+    order.save()
 
 
 def count_bonus(sum_: int):
@@ -56,7 +59,7 @@ def process_pay_notification(request):
         user_id = 1  # request.POST.get("AccountId")
         transaction_id = request.POST.get("InvoiceId")
         data = json.loads(request.POST.get("Data"))
-        order_id = data.get("order_id")
+        order_id = int(data.get("order_id"))
         has_order = data.get("has_order")
         coins = int(data.get("coins"))
         distance = data.get("distance")
@@ -73,6 +76,7 @@ def process_pay_notification(request):
             text = "Оплата принята"
             if has_order:
                 reply_markup = send_order_to_workers_markup(order_id, distance)
+                set_order_waiting_for_start_status(order_id)
                 text += "\nЧобы отправить задание исполнителям, нажмите на прикрепленную кнопку"
             else:
                 current_user_coins = user.coins
@@ -92,9 +96,10 @@ def process_pay_notification(request):
 
         return HttpResponse({"code": 0})
     return HttpResponseNotFound()
-"""
-<WSGIRequest: POST '/get_transaction'>
 
+
+"""
+<WSGIRequest: POST '/get_transaction'>order_id
 reques.post = <QueryDict: {'TransactionId': ['1037510691'], 'Amount': ['1.00'], 'Currency': ['RUB'], 
 'PaymentAmount': ['1.00'], 'PaymentCurrency': ['RUB'], 
 'OperationType': ['Payment'], 'InvoiceId': ['23'], 
@@ -110,7 +115,6 @@ reques.post = <QueryDict: {'TransactionId': ['1037510691'], 'Amount': ['1.00'], 
 'AuthCode': ['A1B2C3'], 'Token': ['tk_b08211a708dc17f0cd498da774ad0'], 'TestMode': ['1'], 
 'Status': ['Completed'], 'GatewayName': ['Test'], 'Data': ['{"order_id": 11, "has_order": true}'], 
 'TotalFee': ['0.00'], 'CardProduct': ['TNW'], 'PaymentMethod': ['']}>
-
-
 {'_encoding': 'utf-8', '_mutable': False}
 """
+

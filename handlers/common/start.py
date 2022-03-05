@@ -33,7 +33,7 @@ async def bot_start(message: types.Message):
     else:
         referrer = await get_referrer_by_message_args(message.get_args(), message.from_user.id)
         user = await BotUsersModel.create_user(message.from_user.id, message.from_user.username, referrer)
-        if not user.already_existed:
+        if not user.already_existed and referrer:
             referrer = await BotUsersModel.add_coins(referrer.telegram_id, REFERRER_COINS)
             await notify_referrer_about_new_referral(referrer)
         await message.answer(
