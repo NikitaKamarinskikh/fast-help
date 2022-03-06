@@ -29,27 +29,3 @@ def get_payment_link(amount_rub: int, description: str, user_id: int, invoice_id
         return result.get("Model").get("Url")
     return False
 
-# print(res)
-# print(res.text)
-"""
-{
-"Model":{"Id":"hISaCsNcf0Va9jBC", 
-    "Number":1,"Amount":1.0, 
-"Currency":"RUB","CurrencyCode":0, 
-"Email":null,
-"Phone":"",
-"Description":"Тестовый запрос",
-"RequireConfirmation":false,
-"Url":"https://orders.cloudpayments.ru/d/hISaCsNcf0Va9jBC",
-"CultureName":"ru-RU",
-"CreatedDate":"\/Date(1645936146259)\/","CreatedDateIso":"2022-02-27T07:29:06", 
-"PaymentDate":null,
-"PaymentDateIso":null,
-"StatusCode":0,
-"Status":"Created",
-"InternalId":13807724},
-"Success":true,
-"Message":null
-}
-"""
-# print(res.json())

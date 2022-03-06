@@ -15,7 +15,7 @@ async def send_oder_order_to_workers(callback: types.CallbackQuery, callback_dat
     await callback.message.answer(f"order_id: {order_id}")
     order = await OrdersModel.get_by_id(order_id)
     await callback.message.answer("Ищу исполнителей...")
-    candidates = await get_candidates_by_filters(order, [])
+    candidates = await get_candidates_by_filters(order, callback.from_user.id)
     await notify_workers_about_new_order(candidates, order)
     await callback.message.answer("Ваш закза отправлен исполнителям рядом")
 
