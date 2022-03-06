@@ -33,6 +33,12 @@ def get_transaction_by_id(transaction_id: int):
     return Transactions.objects.get(pk=transaction_id)
 
 
+def send_message(user_telegram_id):
+    url = f'https://api.telegram.org/bot{bot_token}/sendMessage?chat_id=' \
+          f'{user_telegram_id}&text=При обработке платежа возникла ошибка'
+    r = post(url)
+
+
 def notify_user_about_success_transaction(user_telegram_id: int, text: str, reply_markup=None):
     if reply_markup:
         url = f'https://api.telegram.org/bot{bot_token}/sendMessage?chat_id=' \
@@ -55,45 +61,53 @@ def notify_referrer(referrer_telegram_id: int, bonus: int, new_referrer_balance:
 
 @csrf_exempt
 def process_pay_notification(request):
-    if request.method == 'POST':
-        user_id = request.POST.get("AccountId")
-        transaction_id = request.POST.get("InvoiceId")
-        data = json.loads(request.POST.get("Data"))
-        order_id = int(data.get("order_id"))
-        has_order = data.get("has_order")
-        coins = int(data.get("coins"))
-        distance = data.get("distance")
-        amount = int(data.get("Amount"))
-        data.get("with_bonus")
+    if request.method == 'GET': # 'POST':
+        try:
+            user_id = 5 # request.POST.get("AccountId")
+            transaction_id = 10 # request.POST.get("InvoiceId")
+            # data = json.loads(request.POST.get("Data"))
+            order_id = 38 # int(data.get("order_id"))
+            has_order = True # data.get("has_order")
+            coins = 100 # int(data.get("coins"))
+            distance = 1000 # data.get("distance")
+            amount = 100 # int(data.get("Amount"))
+            with_bonus = False # data.get("with_bonus")
 
-        transaction = get_transaction_by_id(transaction_id)
-        user = get_user_by_id(user_id)
-        reply_markup = None
+            transaction = get_transaction_by_id(transaction_id)
+            user = get_user_by_id(user_id)
+            reply_markup = None
 
-        if not transaction.is_paid:
-            transaction.is_paid = True
-            transaction.save()
-            text = "Оплата принята"
-            if has_order:
-                reply_markup = send_order_to_workers_markup(order_id, distance)
-                set_order_waiting_for_start_status(order_id)
-                text += "\nЧобы отправить задание исполнителям, нажмите на прикрепленную кнопку"
-            else:
-                current_user_coins = user.coins
-                new_user_coins = current_user_coins + coins
-                user.coins = new_user_coins
-                user.save()
-                text += f"\nВаш баланс {new_user_coins} монет"
-            notify_user_about_success_transaction(user.telegram_id, text, reply_markup)
+            if not transaction.is_paid:
+                transaction.is_paid = True
+                transaction.save()
+                text = "Оплата принята"
+                if has_order:
+                    reply_markup = send_order_to_workers_markup(order_id, distance)
+                    set_order_waiting_for_start_status(order_id)
+                    text += "\nЧобы отправить задание исполнителям, нажмите на прикрепленную кнопку"
+                else:
+                    current_user_coins = user.coins
+                    new_user_coins = current_user_coins + coins
+                    user.coins = new_user_coins
+                    user.save()
+                    text += f"\nВаш баланс {new_user_coins} монет"
 
-            if user.referrer:
-                bonus = count_bonus(amount)
-                referrer = get_user_by_id(user.referrer.pk)
-                new_referrer_balance = referrer.coins + bonus
-                referrer.coins = new_referrer_balance
-                referrer.save()
-                notify_referrer(referrer.telegram_id, bonus, new_referrer_balance)
+                notify_user_about_success_transaction(user.telegram_id, text, reply_markup)
 
+                if user.referrer:
+                    bonus = count_bonus(amount)
+                    referrer = get_user_by_id(user.referrer.pk)
+                    new_referrer_balance = referrer.coins + bonus
+                    referrer.coins = new_referrer_balance
+                    referrer.save()
+                    notify_referrer(referrer.telegram_id, bonus, new_referrer_balance)
+        except Exception as e:
+            try:
+                send_message(user.telegram_id)
+            except:
+                ...
+            with open("test.txt", "w") as f:
+                f.write(str(e))
         return HttpResponse({"code": 0})
     return HttpResponseNotFound()
 

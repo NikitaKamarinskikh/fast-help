@@ -34,7 +34,7 @@ async def get_candidates_by_filters(order: object, excepted_user_telegram_id: in
     f = open(f"result_{filename}", "r")
     for worker in workers:
         distance = int(f.readline())
-        if distance <= 500 and worker.user.telegram_id != excepted_user_telegram_id:
+        if distance <= 500 and int(worker.user.telegram_id) != excepted_user_telegram_id:
             setattr(worker, "distance", distance)
             candidates.append(worker)
     f.close()
@@ -47,7 +47,7 @@ async def get_orders_by_worker(worker: object, max_distance: int = 500) -> list:
     candidates = list()
     orders = await OrdersModel.get_not_completed_by_categories(worker.categories.all())
     filename = f"{worker.user.telegram_id}_order_coordinates.txt"
-    worker_telegram_id = worker.user.telegram_id
+    worker_telegram_id = int(worker.user.telegram_id)
     with open(filename, "w") as f:
         for order in orders:
             f.write(f"{worker.location} {order.location}\n")
@@ -57,7 +57,7 @@ async def get_orders_by_worker(worker: object, max_distance: int = 500) -> list:
     f = open(f"result_{filename}", "r")
     for order in orders:
         distance = int(f.readline())
-        if distance <= max_distance and order.customer.user.telegram_id != worker_telegram_id:
+        if distance <= max_distance and int(order.customer.user.telegram_id) != worker_telegram_id:
             setattr(order, "distance", distance)
             candidates.append(order)
     f.close()
