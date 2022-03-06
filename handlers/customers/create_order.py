@@ -1,10 +1,10 @@
-import json
+import time as time_m
 from datetime import datetime, time
 from aiogram.dispatcher import FSMContext
 from aiogram import types
+from loader import dp
 from keyboards.default.main import main_markup
 from keyboards.inline.balance import coins_sum_markup, coins_sum_callback
-from loader import dp
 from keyboards.inline.categories import create_categories_markup, get_category_callback
 from keyboards.inline.yes_or_no import yes_or_no_markup, yes_or_no_callback
 from keyboards.inline.skip import skip_markup, skip_callback
@@ -15,9 +15,7 @@ from keyboards.default.get_location import get_location_markup
 from keyboards.default.get_phone import get_phone_markup
 from states.customers.create_order import CreateOrderStates
 from models import JobCategoriesModel, CustomersModel, OrdersModel, BotUsersModel, TransactionsModel
-from data.config import MainMenuCommands
-from common import parse_date, correct_time, get_candidates_by_filters
-from notifications import notify_workers_about_new_order
+from common import parse_date, correct_time
 from payments.payments import get_payment_link
 
 
@@ -187,13 +185,14 @@ async def get_order_start_date_now(callback: types.CallbackQuery, state: FSMCont
 
 async def create_order(customer_telegram_id: int, state: FSMContext):
     state_data = await state.get_data()
-    print(state_data)
+    # print(state_data)
     execution_time_str = state_data.get("order_execution_time")
     hours, minutes = execution_time_str.split(":")
-    execution_time = time(int(hours), int(minutes), 0)
     customer = await CustomersModel.get_by_telegram_id(customer_telegram_id)
     category = await JobCategoriesModel.get_by_id(state_data.get("category_id"))
     location = f"{state_data.get('location').latitude} {state_data.get('location').longitude}"
+    execution_time = time(int(hours), int(minutes), 0)
+
     order_data = {
         "customer": customer,
         "category": category,
@@ -339,6 +338,3 @@ async def get_coins(callback: types.CallbackQuery, callback_data: dict, state: F
         text=f"ID транзакции: {transaction.pk}\nСсылка на оплату: {payment_link}"
     )
     await state.finish()
-
-
-

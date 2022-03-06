@@ -65,7 +65,9 @@ async def update_order(state_data: dict):
         candidates = await get_candidates_by_filters(order, [])
         await notify_workers_about_new_order(candidates, order)
     else:
-        timestamp_seconds = get_order_finish_time_in_seconds(execution_time)
+        timestamp_seconds = get_order_finish_time_in_seconds(order, from_now=True,
+                                                             seconds=int(hours) + int(minutes) * 60)
+
         await OrdersModel.update(order_id, execution_time=execution_time, status=OrderStatuses.in_progress)
         order = await OrdersModel.get_by_id(order_id)
         await OrderTimestampsModel.set_timestamp(order, timestamp_seconds)

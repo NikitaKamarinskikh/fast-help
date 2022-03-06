@@ -1,4 +1,4 @@
-from time import time
+import time
 from aiogram import types
 from keyboards.inline.customer_orders import orders_markup, orders_callback
 from loader import dp
@@ -70,10 +70,15 @@ async def chose_candidate(callback: types.CallbackQuery, callback_data: dict):
     )
 
 
-def get_order_finish_time_in_seconds(order_time: time) -> int:
-    hours = int(order_time.strftime("%H")) * 60
-    minutes = int(order_time.strftime("%M"))
-    return int(time()) + (hours + minutes) * 60
+def get_order_finish_time_in_seconds(order: object, from_now: bool = False, seconds: int = 0) -> int:
+    hours = int(order.execution_time.strftime("%H")) * 60
+    minutes = int(order.execution_time.strftime("%M"))
+    # t = datetime.strptime(state_data.get("order_start_date_time"), "%Y-%m-%d %H:%M")
+    t = order.start_date
+    state_date_in_seconds = int(time.mktime(t.timetuple()))
+    if from_now:
+        return int(time.time()) + seconds
+    return state_date_in_seconds + ((hours + minutes) * 60)
 
 
 @dp.callback_query_handler(confirm_candidate_callback.filter())
@@ -88,7 +93,7 @@ async def confirm_chosen_candidate(callback: types.CallbackQuery, callback_data:
         order = await OrdersModel.get_by_id(order_id)
         await OrdersModel.update(order_id, worker=worker, status=OrderStatuses.in_progress)
         await notify_worker_about_being_chosen_as_implementer(worker, order)
-        timestamp_seconds = get_order_finish_time_in_seconds(order.execution_time)
+        timestamp_seconds = get_order_finish_time_in_seconds(order)
         await OrderTimestampsModel.set_timestamp(order, timestamp_seconds)
         worker_data = f"{worker.name} {worker.rating}/{worker.completed_orders_quantity}\n" \
                       f"Телефон: {worker.phone}\n"
