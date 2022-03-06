@@ -220,6 +220,7 @@ async def get_order_execution_time_callback(callback: types.CallbackQuery, callb
     await state.update_data(order_execution_time=execution_time.replace("-", ":"))
     try:
         order = await create_order(callback.from_user.id, state)
+        await state.update_data(order_id=order.pk)
         await callback.message.answer(
             text="Оплатите сумму 30 рублей. Для передачи вашего заказа исполнителям в радиусе 500м. "
                  "Или 50 руб в радиусе 1 км. Или пополните счет для оплаты и получите бонусы.",
@@ -242,12 +243,12 @@ async def get_order_execution_time(message: types.Message, state: FSMContext):
         await state.update_data(order_execution_time=order_execution_time)
         try:
             order = await create_order(message.from_user.id, state)
+            await state.update_data(order_id=order.pk)
             await message.answer(
                 text="Оплатите сумму 30 рублей. Для передачи вашего заказа исполнителям в радиусе 500м. "
                      "Или 50 руб в радиусе 1 км. Или пополните счет для оплаты и получите бонусы.",
                 reply_markup=chose_payment_markup(order.pk, True)
             )
-            await state.update_data(order_id=order.pk)
             await CreateOrderStates.get_payment.set()
         except Exception as e:
             print(e)
@@ -306,6 +307,8 @@ async def get_payment(callback: types.CallbackQuery, callback_data: dict, state:
 @dp.callback_query_handler(chose_payment_callback.filter(with_bonus="True"), state=CreateOrderStates.get_payment)
 async def get_payment_with_bonus(callback: types.CallbackQuery, callback_data: dict, state: FSMContext):
     await callback.answer()
+    state_data = await state.get_data()
+    order_id = state_data.get("order_id")
     await callback.message.answer(
         text="Выберите один из вариантов",
         reply_markup=coins_sum_markup()
@@ -320,7 +323,6 @@ async def get_coins(callback: types.CallbackQuery, callback_data: dict, state: F
     coins = int(callback_data.get("coins"))
     amount = int(callback_data.get("amount_rub"))
     distance = 500
-
     bot_user = await BotUsersModel.get_by_telegram_id(callback.from_user.id)
     transaction = await TransactionsModel.create(bot_user, amount)
     payment_link = get_payment_link(
