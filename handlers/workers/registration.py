@@ -127,12 +127,17 @@ async def get_category_id(callback: types.CallbackQuery, callback_data: dict, st
 @dp.callback_query_handler(confirm_callback.filter(), state=WorkerRegistrationStates.get_category)
 async def get_category(callback: types.CallbackQuery, state: FSMContext):
     await callback.answer()
-    await callback.message.answer(
-        text="Отправьте вашу локацию ( регистрироваться лучше там где вы проводите большую часть дня, "
-             "для того чтобы вам приходили уведомления о заданиях рядом)",
-        reply_markup=get_location_markup
-    )
-    await WorkerRegistrationStates.get_location.set()
+    state_data = await state.get_data()
+    categories = state_data.get("categories")
+    if len(categories):
+        await callback.message.answer(
+            text="Отправьте вашу локацию ( регистрироваться лучше там где вы проводите большую часть дня, "
+                 "для того чтобы вам приходили уведомления о заданиях рядом)",
+            reply_markup=get_location_markup
+        )
+        await WorkerRegistrationStates.get_location.set()
+    else:
+        await callback.message.answer("Необходимо выбрать минимум 1 категорию")
 
 
 @dp.message_handler(content_types=types.ContentTypes.LOCATION, state=WorkerRegistrationStates.get_location)
