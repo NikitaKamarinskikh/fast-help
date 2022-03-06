@@ -86,6 +86,7 @@ def process_pay_notification(request):
                 transaction.is_paid = True
                 transaction.save()
                 if has_order:
+                    # if with_bonus
                     reply_markup = send_order_to_workers_markup(order_id, distance)
                     set_order_waiting_for_start_status(order_id)
                 else:

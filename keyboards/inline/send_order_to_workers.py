@@ -8,7 +8,7 @@ def send_order_to_workers_markup(order_id: int, distance: int):
     markup = InlineKeyboardMarkup(row_width=1)
     markup.add(
         InlineKeyboardButton(
-            text="Отправить задания исполнителям",
+            text="Отправить задание исполнителям",
             callback_data=send_order_to_workers_callback.new(order_id, distance),
         )
     )

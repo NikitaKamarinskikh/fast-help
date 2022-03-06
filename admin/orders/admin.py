@@ -5,7 +5,7 @@ from .models import Orders, OrderCandidates, OrdersTimestamps
 @admin.register(Orders)
 class OrdersAdmin(admin.ModelAdmin):
     list_display = ["customer", "category", "worker", "status"]
-    search_fields = ["customer_phone"]
+    search_fields = ["customer_phone", "pk"]
 
     class Meta:
         model = Orders

@@ -32,6 +32,7 @@ async def send_voice(user_telegram_id: int, voice_file_id: str):
 async def notify_workers_about_new_order(workers: list, order: object):
     for worker in workers:
         text = f"Появилось задание!\n" \
+               f"" \
                f"Удаленность: {worker.distance}м\n" \
                f"Имя: {order.customer_name}\n"
         if order.description:
