@@ -1,4 +1,3 @@
-import time as time_m
 from datetime import datetime, time
 from aiogram.dispatcher import FSMContext
 from aiogram import types
@@ -102,7 +101,7 @@ async def has_additional_contacts_skip(callback: types.CallbackQuery, callback_d
     await state.update_data(additional_contacts=None)
     await callback.message.answer(
         text="Напишите описание задачи или опишите голосом",
-        reply_markup=skip_markup("order_description")
+        reply_markup=types.ReplyKeyboardRemove()
     )
     await CreateOrderStates.get_order_description.set()
 
@@ -185,7 +184,6 @@ async def get_order_start_date_now(callback: types.CallbackQuery, state: FSMCont
 
 async def create_order(customer_telegram_id: int, state: FSMContext):
     state_data = await state.get_data()
-    # print(state_data)
     execution_time_str = state_data.get("order_execution_time")
     hours, minutes = execution_time_str.split(":")
     customer = await CustomersModel.get_by_telegram_id(customer_telegram_id)
@@ -276,10 +274,6 @@ async def get_payment(callback: types.CallbackQuery, callback_data: dict, state:
         coins = 30
     else:
         coins = 50
-    await callback.message.answer(
-        text=f"order_id=: {order_id}, amount: {amount}"
-    )
-
     payment_link = get_payment_link(
         amount_rub=amount,
         description=f"Оплата {amount}р для размещения задания на расстоянии {distance}м",
@@ -294,11 +288,8 @@ async def get_payment(callback: types.CallbackQuery, callback_data: dict, state:
         }
     )
 
-    # await callback.message.answer(
-    #     text=f"ID транзакции: {transaction.pk}\nСсылка на оплату: {payment_link}"
-    # )
     await callback.message.answer(
-        text=f"Ссылка на оплату: {payment_link}"
+        text=f"Номер задания: {order_id}\nСсылка на оплату: {payment_link}"
     )
     await state.finish()
 
@@ -307,8 +298,8 @@ async def get_payment(callback: types.CallbackQuery, callback_data: dict, state:
 @dp.callback_query_handler(chose_payment_callback.filter(with_bonus="True"), state=CreateOrderStates.get_payment)
 async def get_payment_with_bonus(callback: types.CallbackQuery, callback_data: dict, state: FSMContext):
     await callback.answer()
-    state_data = await state.get_data()
-    order_id = state_data.get("order_id")
+    # state_data = await state.get_data()
+    # order_id = state_data.get("order_id")
     await callback.message.answer(
         text="Выберите один из вариантов",
         reply_markup=coins_sum_markup()
@@ -339,10 +330,7 @@ async def get_coins(callback: types.CallbackQuery, callback_data: dict, state: F
         }
     )
 
-    # await callback.message.answer(
-    #     text=f"ID транзакции: {transaction.pk}\nСсылка на оплату: {payment_link}"
-    # )
     await callback.message.answer(
-        text=f"Ссылка на оплату: {payment_link}"
+        text=f"Номер задания: {order_id}\nСсылка на оплату: {payment_link}"
     )
     await state.finish()

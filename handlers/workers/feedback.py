@@ -6,7 +6,7 @@ from models import CustomersModel, OrdersModel
 from notifications import notify_customer_about_new_feedback
 
 
-@dp.callback_query_handler(rating_callback.filter(user_role="worker"))
+@dp.callback_query_handler(rating_callback.filter(user_role="worker"), state="*")
 async def leave_feedback_by_worker(callback: types.CallbackQuery, callback_data: dict):
     await callback.answer(cache_time=100)
     await callback.message.delete()
