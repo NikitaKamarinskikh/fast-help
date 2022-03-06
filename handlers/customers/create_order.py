@@ -293,8 +293,11 @@ async def get_payment(callback: types.CallbackQuery, callback_data: dict, state:
         }
     )
 
+    # await callback.message.answer(
+    #     text=f"ID транзакции: {transaction.pk}\nСсылка на оплату: {payment_link}"
+    # )
     await callback.message.answer(
-        text=f"ID транзакции: {transaction.pk}\nСсылка на оплату: {payment_link}"
+        text=f"Ссылка на оплату: {payment_link}"
     )
     await state.finish()
 
@@ -334,7 +337,10 @@ async def get_coins(callback: types.CallbackQuery, callback_data: dict, state: F
         }
     )
 
+    # await callback.message.answer(
+    #     text=f"ID транзакции: {transaction.pk}\nСсылка на оплату: {payment_link}"
+    # )
     await callback.message.answer(
-        text=f"ID транзакции: {transaction.pk}\nСсылка на оплату: {payment_link}"
+        text=f"Ссылка на оплату: {payment_link}"
     )
     await state.finish()
