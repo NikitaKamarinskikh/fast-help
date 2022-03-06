@@ -112,7 +112,7 @@ async def has_additional_contacts(message: types.Message, state: FSMContext):
     additional_contacts: str = message.text
     await message.answer(
         text="Напишите описание задачи или опишите голосом",
-        reply_markup=skip_markup("order_description")
+        reply_markup=types.ReplyKeyboardRemove()
     )
     await CreateOrderStates.get_order_description.set()
     await state.update_data(additional_contacts=additional_contacts)
@@ -129,16 +129,16 @@ async def get_description_by_voice(message: types.Message, state: FSMContext):
     await CreateOrderStates.get_order_start_date.set()
 
 
-@dp.callback_query_handler(skip_callback.filter(question="order_description"),
-                           state=CreateOrderStates.get_order_description)
-async def has_additional_contacts_skip(callback: types.CallbackQuery, callback_data: dict, state: FSMContext):
-    await callback.answer()
-    await state.update_data(order_description=None)
-    await callback.message.answer(
-        text="Укажите дату и время начала задания. Необходимый формат: дд.мм.гггг чч:мм (например 07.11.2022 15:30 )",
-        reply_markup=now_markup("order_start_date")
-    )
-    await CreateOrderStates.get_order_start_date.set()
+# @dp.callback_query_handler(skip_callback.filter(question="order_description"),
+#                            state=CreateOrderStates.get_order_description)
+# async def has_additional_contacts_skip(callback: types.CallbackQuery, callback_data: dict, state: FSMContext):
+#     await callback.answer()
+#     await state.update_data(order_description=None)
+#     await callback.message.answer(
+#         text="Укажите дату и время начала задания. Необходимый формат: дд.мм.гггг чч:мм (например 07.11.2022 15:30 )",
+#         reply_markup=now_markup("order_start_date")
+#     )
+#     await CreateOrderStates.get_order_start_date.set()
 
 
 @dp.message_handler(state=CreateOrderStates.get_order_description)
