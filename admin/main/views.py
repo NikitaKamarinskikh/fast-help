@@ -63,14 +63,14 @@ def notify_referrer(referrer_telegram_id: int, bonus: int, new_referrer_balance:
 def process_pay_notification(request):
     if request.method == 'GET': # 'POST':
         try:
-            user_id = 5 # request.POST.get("AccountId")
-            transaction_id = 10 # request.POST.get("InvoiceId")
-            # data = json.loads(request.POST.get("Data"))
-            order_id = 38 # int(data.get("order_id"))
-            has_order = True # data.get("has_order")
-            coins = 100 # int(data.get("coins"))
-            distance = 1000 # data.get("distance")
-            amount = 100 # int(data.get("Amount"))
+            user_id = request.POST.get("AccountId")
+            transaction_id = request.POST.get("InvoiceId")
+            data = json.loads(request.POST.get("Data"))
+            order_id = int(data.get("order_id"))
+            has_order = data.get("has_order")
+            coins = int(data.get("coins"))
+            distance = data.get("distance")
+            amount = int(data.get("Amount"))
             with_bonus = False # data.get("with_bonus")
 
             transaction = get_transaction_by_id(transaction_id)
