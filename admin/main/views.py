@@ -61,7 +61,7 @@ def notify_referrer(referrer_telegram_id: int, bonus: int, new_referrer_balance:
 
 @csrf_exempt
 def process_pay_notification(request):
-    if request.method == 'GET': # 'POST':
+    if request.method == 'POST':
         try:
             user_id = request.POST.get("AccountId")
             transaction_id = request.POST.get("InvoiceId")
@@ -71,7 +71,7 @@ def process_pay_notification(request):
             coins = int(data.get("coins"))
             distance = data.get("distance")
             amount = int(data.get("Amount"))
-            with_bonus = False # data.get("with_bonus")
+            with_bonus = data.get("with_bonus")
 
             transaction = get_transaction_by_id(transaction_id)
             user = get_user_by_id(user_id)
