@@ -66,7 +66,7 @@ def process_pay_notification(request):
         user = get_user_by_id(user_id)
         try:
             transaction_id = request.POST.get("InvoiceId")
-            amount = int(request.POST.get("Amount"))
+            amount = float(request.POST.get("Amount"))
             data = json.loads(request.POST.get("Data"))
             order_id = int(data.get("order_id"))
             has_order = data.get("has_order")
