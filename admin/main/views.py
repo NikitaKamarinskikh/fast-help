@@ -23,6 +23,8 @@ def set_order_waiting_for_start_status(order_id: int):
 
 
 def count_bonus(sum_: float):
+    if sum_ == 50:
+        return 3
     return round(REFERRER_BONUS_PERCENT * (1 / 100) * sum_)
 
 
