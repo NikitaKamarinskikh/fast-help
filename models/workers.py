@@ -62,6 +62,10 @@ class WorkersModel:
     def reset_privacy_policy() -> None:
         Workers.objects.filter().update(is_privacy_policy_confirmed=False)
 
+    @staticmethod
+    @sync_to_async
+    def get_all():
+        return Workers.objects.all()
         # candidates = list()
         # workers = Workers.objects.filter(**filters)
         # for worker in workers:

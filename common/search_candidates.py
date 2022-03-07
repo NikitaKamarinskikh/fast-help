@@ -64,3 +64,18 @@ async def get_orders_by_worker(worker: object, max_distance: int = 500) -> list:
     os.remove(filename)
     os.remove(f"result_{filename}")
     return candidates
+
+#
+# async def get_workers_nearby(customer: object) -> list:
+#     candidates = list()
+#     workers = await WorkersModel.get_all()
+#     filename = f"{customer.user.telegram_id}_workers_nearby_coordinates.txt"
+#     customer_telegram_id = int(workers.user.telegram_id)
+#     with open(filename, "w") as f:
+#         for worker in workers:
+#             f.write(f"{worker.location} {order.location}\n")
+#
+#     return candidates
+
+
+

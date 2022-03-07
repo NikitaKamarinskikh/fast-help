@@ -17,6 +17,7 @@ async def workers_nearby(message: types.Message):
     try:
         customer = await CustomersModel.get_by_telegram_id(message.from_user.id)
         categories: list = await JobCategoriesModel.get_all()
+        # workers1 = await WorkersModel.get_by_category()
         await message.answer(
             text="Выберите категорию",
             reply_markup=create_categories_markup(categories)
