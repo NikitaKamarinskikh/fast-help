@@ -187,6 +187,7 @@ async def create_order(customer_telegram_id: int, state: FSMContext):
     order_data = {
         "customer": customer,
         "category": category,
+        "category_name": category.name,
         "customer_name": state_data.get("customer_name"),
         "location": location,
         "customer_phone": state_data.get("phone"),

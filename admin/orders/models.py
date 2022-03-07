@@ -8,6 +8,7 @@ from data.config import OrderStatuses
 class Orders(TimeBasedModel):
     customer = models.ForeignKey(Customers, verbose_name="Заказчик", on_delete=models.CASCADE)
     category = models.ForeignKey(JobCategories, verbose_name="Категория", on_delete=models.CASCADE)
+    category_name = models.CharField("Название категории", max_length=255, null=True, blank=True)
     worker = models.ForeignKey(Workers, verbose_name="Исполнитель", null=True, blank=True, on_delete=models.CASCADE)
     candidates = models.ManyToManyField(Workers, verbose_name="Кандидаты", related_name="order_candidates", blank=True)
     status = models.CharField("Статус", max_length=120, default=OrderStatuses.waiting_for_payment)

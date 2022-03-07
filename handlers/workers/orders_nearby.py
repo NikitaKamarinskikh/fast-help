@@ -49,7 +49,7 @@ def split_categories_by_orders(orders: list, worker_categories: list) -> Categor
 
     for order in orders:
         # print("start get category name", datetime.now())
-        order_category_name = order.category.name
+        order_category_name = order.category_name
         # print("finish get category name", datetime.now())
         if order.distance <= 500:
             categories_data_500[order_category_name] += 1

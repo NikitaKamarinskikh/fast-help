@@ -74,9 +74,13 @@ async def dev(message: types.Message, state: FSMContext):
     # await message.answer("finish making workers")
     # state_data = await state.get_data()
     # print(state_data)
+
+
+
     execution_time = time(int(10), int(20), 0)
     customer = await CustomersModel.get_by_telegram_id(message.from_user.id)
     category = await JobCategoriesModel.get_by_id(1)
+    category_name = category.name
     location = f"54.983357  82.805794"
     order_data = {
         "customer": customer,
@@ -87,6 +91,7 @@ async def dev(message: types.Message, state: FSMContext):
         "start_date": datetime.now(),
         "execution_time": execution_time,
         "allow_to_write_in_telegram": False,
+        "category_name": category_name,
         "status": OrderStatuses.waiting_for_start
     }
 
@@ -94,6 +99,8 @@ async def dev(message: types.Message, state: FSMContext):
     for i in range(1, 20000):
         await OrdersModel.create(**order_data)
     await message.answer("finish making orders")
+
+
 
     # order = await OrdersModel.get_by_id(14)
     # await message.answer(
