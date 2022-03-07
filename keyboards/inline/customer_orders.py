@@ -9,7 +9,8 @@ confirm_finish_order_callback = CallbackData("confirm_finish_order", "order_id",
 find_new_candidate_callback = CallbackData("find_new_candidate", "option", "order_id")
 
 
-def orders_status_markup(waiting_for_start_orders_quantity: int, in_progress_orders_quantity: int):
+def orders_status_markup(waiting_for_start_orders_quantity: int, in_progress_orders_quantity: int,
+                         executable_quantity: int):
     markup = InlineKeyboardMarkup(row_width=1)
     markup.add(
         InlineKeyboardButton(
@@ -19,6 +20,10 @@ def orders_status_markup(waiting_for_start_orders_quantity: int, in_progress_ord
         InlineKeyboardButton(
             text=f"Найден [{in_progress_orders_quantity}]",
             callback_data=orders_status_callback.new(OrderStatuses.in_progress),
+        ),
+        InlineKeyboardButton(
+            text=f"Выполняемые [{executable_quantity}]",
+            callback_data=orders_status_callback.new("executable"),
         ),
     )
     return markup

@@ -4,6 +4,7 @@ from .respond_to_order import dp
 from .change_data import dp
 from .feedback import dp
 from .chose_order import dp
+from .my_orders import dp
 
 
 __all__ = ["dp"]
