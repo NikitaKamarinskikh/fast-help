@@ -12,9 +12,9 @@ from models import OrdersModel
 
 def get_orders_by_category_name_and_max_distance(orders: list, category_name: str, max_distance_in_meters: int = 500):
     candidates = list()
-    print(max_distance_in_meters)
+    # print(max_distance_in_meters)
     for order in orders:
-        print(order.distance)
+        # print(order.distance)
         if order.category.name == category_name and order.distance <= max_distance_in_meters:
             candidates.append(order)
     return candidates
@@ -57,17 +57,14 @@ async def get_orders_nearby_by_category(callback: types.CallbackQuery, callback_
     orders = state_data.get("orders")
     category_name = callback_data.get("category_name")
     distance = int(callback_data.get("distance"))
-    print(category_name, distance)
-    print(orders)
     orders = get_orders_by_category_name_and_max_distance(orders, category_name, distance)
-    print(orders)
     if len(orders):
         await state.update_data(category_orders=orders, voice_messages_ids=[])
+        if orders[0].voice_description:
+            await send_voice(callback, state, orders[0])
         await callback.message.answer(
             **(await get_message_content(orders[0], len(orders), 0))
         )
-        if orders[0].voice_description:
-            await send_voice(callback, state, orders[0])
     else:
         await callback.message.answer("Задания отсутствуют")
 
@@ -75,9 +72,8 @@ async def get_orders_nearby_by_category(callback: types.CallbackQuery, callback_
 @dp.callback_query_handler(chose_order_pagination_callback.filter(), state=ChoseOrderStates.chose_order)
 async def move_candidate(callback: types.CallbackQuery, callback_data: dict, state: FSMContext):
     await callback.answer()
-    print("start_await state.get_data()", datetime.now().time())
+    await callback.message.delete()  # Возможно его нужно будет убрать
     state_data = await state.get_data()
-    print("finish_await state.get_data()", datetime.now().time())
     voice_messages_ids = state_data.get("voice_messages_ids")
     for message_id in voice_messages_ids:
         await bot.delete_message(chat_id=callback.from_user.id, message_id=message_id)
@@ -85,11 +81,11 @@ async def move_candidate(callback: types.CallbackQuery, callback_data: dict, sta
     order_number = int(callback_data.get("order_number"))
     orders = state_data.get("category_orders")
     order = orders[int(order_number)]
-    await callback.message.edit_text(
-        **(await get_message_content(order, len(orders), order_number))
-    )
     if orders[int(order_number)].voice_description:
         await send_voice(callback, state, orders[int(order_number)])
+    await callback.message.answer(
+        **(await get_message_content(order, len(orders), order_number))
+    )
 
 
 
