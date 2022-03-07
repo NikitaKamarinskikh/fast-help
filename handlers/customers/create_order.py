@@ -1,6 +1,9 @@
 from datetime import datetime, time
 from aiogram.dispatcher import FSMContext
 from aiogram import types
+
+from data.config import OrderStatuses
+from keyboards.inline.send_order_to_workers import send_order_to_workers_markup
 from loader import dp
 from keyboards.default.main import main_markup
 from keyboards.inline.balance import coins_sum_markup, coins_sum_callback
@@ -9,7 +12,9 @@ from keyboards.inline.yes_or_no import yes_or_no_markup, yes_or_no_callback
 from keyboards.inline.skip import skip_markup, skip_callback
 from keyboards.inline.now import now_markup, now_callback
 from keyboards.inline.order_execution_time import order_execution_time_markup, order_execution_time_callback
-from keyboards.inline.payments import chose_payment_markup, chose_payment_callback
+from keyboards.inline.payments import chose_payment_markup, chose_payment_callback, payment_method_markup, \
+    payment_method_callback
+from keyboards.inline.distance import order_distance_markup, order_distance_callback
 from keyboards.default.get_location import get_location_markup
 from keyboards.default.get_phone import get_phone_markup
 from states.customers.create_order import CreateOrderStates
@@ -128,18 +133,6 @@ async def get_description_by_voice(message: types.Message, state: FSMContext):
     await CreateOrderStates.get_order_start_date.set()
 
 
-# @dp.callback_query_handler(skip_callback.filter(question="order_description"),
-#                            state=CreateOrderStates.get_order_description)
-# async def has_additional_contacts_skip(callback: types.CallbackQuery, callback_data: dict, state: FSMContext):
-#     await callback.answer()
-#     await state.update_data(order_description=None)
-#     await callback.message.answer(
-#         text="Укажите дату и время начала задания. Необходимый формат: дд.мм.гггг чч:мм (например 07.11.2022 15:30 )",
-#         reply_markup=now_markup("order_start_date")
-#     )
-#     await CreateOrderStates.get_order_start_date.set()
-
-
 @dp.message_handler(state=CreateOrderStates.get_order_description)
 async def get_task_description(message: types.Message, state: FSMContext):
     task_description: str = message.text
@@ -216,22 +209,11 @@ async def get_order_execution_time_callback(callback: types.CallbackQuery, callb
     await callback.answer()
     execution_time = callback_data.get("time")
     await state.update_data(order_execution_time=execution_time.replace("-", ":"))
-    try:
-        order = await create_order(callback.from_user.id, state)
-        await state.update_data(order_id=order.pk)
-        await callback.message.answer(
-            text="Оплатите сумму 30 рублей. Для передачи вашего заказа исполнителям в радиусе 500м. "
-                 "Или 50 руб в радиусе 1 км. Или пополните счет для оплаты и получите бонусы.",
-            reply_markup=chose_payment_markup(order.pk, True)
-        )
-        await CreateOrderStates.get_payment.set()
-    except Exception as e:
-        print(e)
-        await callback.message.answer(
-            text="При создании заказа возникла непредвиденная ошибка",
-            reply_markup=main_markup
-        )
-        await state.finish()
+    await callback.message.answer(
+        text="Выберите дистанцию для размещения задания",
+        reply_markup=order_distance_markup()
+    )
+    await CreateOrderStates.get_distance.set()
 
 
 @dp.message_handler(state=CreateOrderStates.get_order_execution_time)
@@ -239,26 +221,87 @@ async def get_order_execution_time(message: types.Message, state: FSMContext):
     order_execution_time: str = message.text
     if correct_time(order_execution_time):
         await state.update_data(order_execution_time=order_execution_time)
-        try:
-            order = await create_order(message.from_user.id, state)
-            await state.update_data(order_id=order.pk)
-            await message.answer(
-                text="Оплатите сумму 30 рублей. Для передачи вашего заказа исполнителям в радиусе 500м. "
-                     "Или 50 руб в радиусе 1 км. Или пополните счет для оплаты и получите бонусы.",
-                reply_markup=chose_payment_markup(order.pk, True)
-            )
-            await CreateOrderStates.get_payment.set()
-        except Exception as e:
-            print(e)
-            await message.answer(
-                text="При создании заказа возникла непредвиденная ошибка",
-                reply_markup=main_markup
-            )
-            await state.finish()
+        await message.answer(
+            text="Выберите дистанцию для размещения задания",
+            reply_markup=order_distance_markup()
+        )
+        await CreateOrderStates.get_distance.set()
     else:
         await message.answer(
             text="Время указано в неправильном формате, либо выходит за границы допустимого. Попробуйте еще раз"
         )
+
+
+@dp.callback_query_handler(order_distance_callback.filter(), state=CreateOrderStates.get_distance)
+async def get_distance(callback: types.CallbackQuery, callback_data: dict, state: FSMContext):
+    await callback.answer()
+    distance = int(callback_data.get("distance"))
+    await state.update_data(distance=distance)
+    user = await BotUsersModel.get_by_telegram_id(callback.from_user.id)
+    use_coins_button = False
+    if distance == 500:
+        if user.coins >= 30:
+            use_coins_button = True
+    if distance == 1000:
+        if user.coins >= 50:
+            use_coins_button = True
+    await callback.message.answer(
+        text="Выберите способ оплаты",
+        reply_markup=payment_method_markup(use_coins_button)
+    )
+    await CreateOrderStates.get_payment_method.set()
+
+
+@dp.callback_query_handler(payment_method_callback.filter(), state=CreateOrderStates.get_payment_method)
+async def get_payment_method(callback: types.CallbackQuery, callback_data: dict, state: FSMContext):
+    await callback.answer()
+    state_data = await state.get_data()
+    distance = state_data.get("distance")
+    method = callback_data.get("method")  # one_time, coins, with_bonus
+    order = await create_order(callback.from_user.id, state)
+    bot_user = await BotUsersModel.get_by_telegram_id(callback.from_user.id)
+    if method == "one_time":
+        if distance == 500:
+            coins, amount = 30, 30
+        if distance == 1000:
+            coins, amount = 50, 50
+        transaction = await TransactionsModel.create(bot_user, amount)
+        payment_link = get_payment_link(
+            amount_rub=amount,
+            description=f"Оплата {amount}р для размещения задания на расстоянии {distance}м",
+            user_id=bot_user.pk,
+            invoice_id=transaction.pk,
+            json_data={
+                "order_id": order.pk,
+                "has_order": True,
+                "coins": coins,
+                "with_bonus": False,
+                "distance": distance,
+            }
+        )
+        await callback.message.answer(
+            text=f"Номер задания: {order.pk}\nСсылка на оплату: {payment_link}"
+        )
+        await state.finish()
+    elif method == "coins":
+        if distance == 500:
+            coins, amount = 30, 30
+        if distance == 1000:
+            coins, amount = 50, 50
+        await BotUsersModel.remove_coins(callback.from_user.id, coins)
+        await callback.message.answer(
+            text="Чтобы отправить уведомление исполнителям, нажмите на прикрепленную кнопку",
+            reply_markup=send_order_to_workers_markup(order.pk, distance)
+        )
+        await OrdersModel.update(order.pk, status=OrderStatuses.waiting_for_start)
+        await state.finish()
+    else:
+        await state.update_data(order_id=order.pk)
+        await callback.message.answer(
+            text="Выберите один из вариантов",
+            reply_markup=coins_sum_markup()
+        )
+        await CreateOrderStates.get_payment.set()
 
 
 # Единоразово
@@ -294,18 +337,6 @@ async def get_payment(callback: types.CallbackQuery, callback_data: dict, state:
     await state.finish()
 
 
-# С бонусами
-@dp.callback_query_handler(chose_payment_callback.filter(with_bonus="True"), state=CreateOrderStates.get_payment)
-async def get_payment_with_bonus(callback: types.CallbackQuery, callback_data: dict, state: FSMContext):
-    await callback.answer()
-    # state_data = await state.get_data()
-    # order_id = state_data.get("order_id")
-    await callback.message.answer(
-        text="Выберите один из вариантов",
-        reply_markup=coins_sum_markup()
-    )
-
-
 @dp.callback_query_handler(coins_sum_callback.filter(), state=CreateOrderStates.get_payment)
 async def get_coins(callback: types.CallbackQuery, callback_data: dict, state: FSMContext):
     await callback.answer()
@@ -313,7 +344,7 @@ async def get_coins(callback: types.CallbackQuery, callback_data: dict, state: F
     order_id = state_data.get("order_id")
     coins = int(callback_data.get("coins"))
     amount = int(callback_data.get("amount_rub"))
-    distance = 500
+    distance = int(state_data.get("distance"))
     bot_user = await BotUsersModel.get_by_telegram_id(callback.from_user.id)
     transaction = await TransactionsModel.create(bot_user, amount)
     payment_link = get_payment_link(
