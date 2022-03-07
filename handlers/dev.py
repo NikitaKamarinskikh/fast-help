@@ -3,6 +3,7 @@ from datetime import time, datetime
 from aiogram import types
 from aiogram.dispatcher import FSMContext
 
+from data.config import OrderStatuses
 from handlers.workers.registration import get_category_by_id
 from loader import dp
 from models import BotUsersModel, JobCategoriesModel, CustomersModel
@@ -47,7 +48,8 @@ async def dev(message: types.Message, state: FSMContext):
     # execution_time_in_seconds = (hours + minutes) * 60
     # print(hours, minutes, execution_time_in_seconds)
     # await OrdersModel.delete_all()
-    await WorkersModel.delete_all()
+    # return
+    # await WorkersModel.delete_all()
     # await message.answer("start making workers")
     # user = await BotUsersModel.get_by_telegram_id(message.from_user.id)
     # worker_data = {
@@ -72,26 +74,26 @@ async def dev(message: types.Message, state: FSMContext):
     # await message.answer("finish making workers")
     # state_data = await state.get_data()
     # print(state_data)
+    execution_time = time(int(10), int(20), 0)
+    customer = await CustomersModel.get_by_telegram_id(message.from_user.id)
+    category = await JobCategoriesModel.get_by_id(1)
+    location = f"54.983357  82.805794"
+    order_data = {
+        "customer": customer,
+        "category": category,
+        "customer_name": "test",
+        "location": location,
+        "customer_phone": "79237343772",
+        "start_date": datetime.now(),
+        "execution_time": execution_time,
+        "allow_to_write_in_telegram": False,
+        "status": OrderStatuses.waiting_for_start
+    }
 
-    # execution_time = time(int(10), int(20), 0)
-    # customer = await CustomersModel.get_by_telegram_id(message.from_user.id)
-    # category = await JobCategoriesModel.get_by_id(3)
-    # location = f"54.983357  82.805794"
-    # order_data = {
-    #     "customer": customer,
-    #     "category": category,
-    #     "customer_name": "test",
-    #     "location": location,
-    #     "customer_phone": "79237343772",
-    #     "start_date": datetime.now(),
-    #     "execution_time": execution_time,
-    #     "allow_to_write_in_telegram": False
-    # }
-    #
-    # await message.answer("start making orders")
-    # for i in range(1, 20000):
-    #     await OrdersModel.create(**order_data)
-    # await message.answer("finish making orders")
+    await message.answer("start making orders")
+    for i in range(1, 20000):
+        await OrdersModel.create(**order_data)
+    await message.answer("finish making orders")
 
     # order = await OrdersModel.get_by_id(14)
     # await message.answer(

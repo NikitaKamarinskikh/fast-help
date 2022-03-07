@@ -16,6 +16,8 @@ from states.common.confirm_privacy_policy import ConfirmPrivacyPolicy
 from common import get_orders_by_worker
 from states.workers.chose_order import ChoseOrderStates
 
+from admin.orders.models import Orders
+
 
 @dataclass
 class Categories:
@@ -43,19 +45,26 @@ def split_categories_by_orders(orders: list, worker_categories: list) -> Categor
         categories_data_1000[category.name] = 0
         categories_data_1500[category.name] = 0
     total_500_meters, total_1000_meters, total_1500_meters = 0, 0, 0
+    print("start loop", datetime.now())
+
     for order in orders:
+        # print("start get category name", datetime.now())
+        order_category_name = order.category.name
+        # print("finish get category name", datetime.now())
         if order.distance <= 500:
-            categories_data_500[order.category.name] += 1
-            categories_data_1000[order.category.name] += 1
-            categories_data_1500[order.category.name] += 1
+            categories_data_500[order_category_name] += 1
+            categories_data_1000[order_category_name] += 1
+            categories_data_1500[order_category_name] += 1
             total_500_meters += 1
         elif order.distance <= 1000:
-            categories_data_1500[order.category.name] += 1
-            categories_data_1000[order.category.name] += 1
+            categories_data_1500[order_category_name] += 1
+            categories_data_1000[order_category_name] += 1
             total_1000_meters += 1
         elif order.distance <= 1500:
-            categories_data_1500[order.category.name] += 1
+            categories_data_1500[order_category_name] += 1
             total_1500_meters += 1
+    print("finish loop", datetime.now())
+
     total_1000_meters += total_500_meters
     total_1500_meters += total_1000_meters
     return Categories(total_500_meters, total_1000_meters, total_1500_meters, categories_data_500,
@@ -170,11 +179,15 @@ async def tasks_nearby(message: types.Message, state: FSMContext):
     try:
         worker = await WorkersModel.get_by_telegram_id(message.from_user.id)
         await message.answer("Ищу задания...", reply_markup=main_meun_markup)
+        print("start getting orders", datetime.now())
         orders = await get_orders_by_worker(worker, max_distance=1500)
+        print("finish getting orders", datetime.now())
         await state.update_data(categories=worker.categories.all())
         await state.update_data(orders=orders)
 
+        print("start splitting orders", datetime.now())
         categories = split_categories_by_orders(orders, worker.categories.all())
+        print("finish splitting orders", datetime.now())
 
         await state.update_data(categories=categories)
         await message.answer(
