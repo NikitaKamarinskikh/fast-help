@@ -66,18 +66,18 @@ def notify_referrer(referrer_telegram_id: int, bonus: int, new_referrer_balance:
 
 @csrf_exempt
 def process_pay_notification(request):
-    if request.method == 'POST':
-        user_id = request.POST.get("AccountId")
+    if request.method == 'GET':
+        user_id = 5 # request.POST.get("AccountId")
         user = get_user_by_id(user_id)
         try:
-            transaction_id = request.POST.get("InvoiceId")
-            amount = float(request.POST.get("Amount"))
-            data = json.loads(request.POST.get("Data"))
-            order_id = int(data.get("order_id"))
-            has_order = data.get("has_order")
-            coins = int(data.get("coins"))
-            distance = data.get("distance")
-            with_bonus = data.get("with_bonus")
+            transaction_id = 14 # request.POST.get("InvoiceId")
+            amount = 50 # float(request.POST.get("Amount"))
+            # data = json.loads(request.POST.get("Data"))
+            order_id = 44 # int(data.get("order_id"))
+            has_order = True # data.get("has_order")
+            coins = 30 # int(data.get("coins"))
+            distance = 500 # data.get("distance")
+            with_bonus = False # data.get("with_bonus")
 
             transaction = get_transaction_by_id(transaction_id)
             reply_markup = None

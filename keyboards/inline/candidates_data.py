@@ -1,10 +1,10 @@
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils.callback_data import CallbackData
-from data.config import InlineKeyboardAnswers
 
 candidate_callback = CallbackData("candidate_data", "candidate_id", "order_id", "candidate_number")
 candidate_pagination_callback = CallbackData("candidate_pagination", "candidate_id", "order_id", "candidate_number",
                                              "direction")
+show_order_candidates_callback = CallbackData("show_order_candidates", "order_id")
 
 
 def candidates_markup(candidate: object, candidate_number: int, candidates_quantity: int, order_id: int):
@@ -37,3 +37,17 @@ def candidates_markup(candidate: object, candidate_number: int, candidates_quant
         )
     )
     return markup
+
+
+def show_order_candidates_markup(order_id: int):
+    markup = InlineKeyboardMarkup(row_width=1)
+    markup.add(
+        InlineKeyboardButton(
+            text="Перейти к заданию",
+            callback_data=show_order_candidates_callback.new(order_id),
+        )
+    )
+    return markup
+
+
+

@@ -2,7 +2,8 @@ import time
 from aiogram import types
 from keyboards.inline.customer_orders import orders_markup, orders_callback
 from loader import dp
-from keyboards.inline.candidates_data import candidates_markup, candidate_callback, candidate_pagination_callback
+from keyboards.inline.candidates_data import candidates_markup, candidate_callback, candidate_pagination_callback, \
+    show_order_candidates_callback
 from keyboards.inline.confirm_candidate import confirm_candidate_markup, confirm_candidate_callback
 from models import CustomersModel, OrdersModel, OrderCandidatesModel, WorkersModel, OrderTimestampsModel
 from notifications import notify_worker_about_being_chosen_as_implementer
@@ -33,6 +34,21 @@ async def get_message_content(order_id: int, candidate_number: int):
 
 @dp.callback_query_handler(orders_callback.filter(order_status=OrderStatuses.waiting_for_start))
 async def show_order_candidates(callback: types.CallbackQuery, callback_data: dict):
+    await callback.answer()
+    order_id = int(callback_data.get("order_id"))
+    order = await OrdersModel.get_by_id(order_id)
+    if not order.worker:
+        await callback.message.answer(
+            **(await get_message_content(order_id, 0))
+        )
+    else:
+        await callback.message.answer(
+            text="Иполнитель уже выбран"
+        )
+
+
+@dp.callback_query_handler(show_order_candidates_callback.filter())
+async def show_order_candidates_by_callback(callback: types.CallbackQuery, callback_data: dict):
     await callback.answer()
     order_id = int(callback_data.get("order_id"))
     order = await OrdersModel.get_by_id(order_id)

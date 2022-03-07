@@ -2,6 +2,7 @@ from keyboards.inline.rating import rating_markup
 from loader import bot
 from keyboards.inline.respond_to_order import respond_markup
 from keyboards.inline.complete_order import is_order_completed_markup
+from keyboards.inline.candidates_data import show_order_candidates_markup
 from common.search_candidates import get_distance_between_two_points_in_meters
 from models import OrdersModel
 from data.config import OrderStatuses
@@ -75,7 +76,8 @@ async def notify_customer_about_new_response(order: object, worker: object):
         text = f"На ваш заказ \"{order.description}\" откликнулся {worker.name}"
     else:
         text = f"На ваш заказ в категории {order.category.name} откликнулся {worker.name}"
-    await send_message(order.customer.user.telegram_id, text)
+
+    await send_message(order.customer.user.telegram_id, text, show_order_candidates_markup(order.pk))
 
 
 async def notify_customer_about_completed_order(order):
