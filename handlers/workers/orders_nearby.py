@@ -16,8 +16,6 @@ from states.common.confirm_privacy_policy import ConfirmPrivacyPolicy
 from common import get_orders_by_worker
 from states.workers.chose_order import ChoseOrderStates
 
-from admin.orders.models import Orders
-
 
 @dataclass
 class Categories:

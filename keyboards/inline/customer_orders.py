@@ -1,8 +1,10 @@
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.utils import callback_data
 from aiogram.utils.callback_data import CallbackData
 from data.config import OrderStatuses
 
 orders_callback = CallbackData("orders_callback", "order_id", "order_status")
+customer_orders_pagination_callback = CallbackData("customer_orders_pagination", "offset", "direction")
 orders_status_callback = CallbackData("order_status", "status")
 order_manage_callback = CallbackData("order_manage", "order_id", "option")
 confirm_finish_order_callback = CallbackData("confirm_finish_order", "order_id", "choice")
@@ -29,15 +31,31 @@ def orders_status_markup(waiting_for_start_orders_quantity: int, in_progress_ord
     return markup
 
 
-def orders_markup(orders: list, order_satus: str):
-    markup = InlineKeyboardMarkup(row_width=1)
-    for order in enumerate(orders):
+def orders_markup(orders: list, order_satus: str, offset: int = 0, max_buttons: int = 10):
+    markup = InlineKeyboardMarkup(row_width=2)
+    x = 0
+    for i in range(offset, len(orders)):
+        if x == max_buttons:
+            break
         markup.add(
             InlineKeyboardButton(
-                text=f"{order[0] + 1}. {order[1].category.name}",
-                callback_data=orders_callback.new(order[1].pk, order_satus),
+                text=f"{i + 1}. {orders[i].category.name}",
+                callback_data=orders_callback.new(orders[i].pk, order_satus),
             )
         )
+        x += 1
+
+    if offset != 0:
+        markup.add(InlineKeyboardButton(text="<<",
+                                        callback_data=customer_orders_pagination_callback.new(offset, "left")))
+        if len(orders) - offset > max_buttons:
+            markup.insert(InlineKeyboardButton(text=">>",
+                                               callback_data=customer_orders_pagination_callback.new(offset, "right")))
+    else:
+        if len(orders) > offset:
+            markup.add(InlineKeyboardButton(text=">>",
+                                            callback_data=customer_orders_pagination_callback.new(offset, "right")))
+
     return markup
 
 
@@ -84,6 +102,3 @@ def find_new_candidate_markup(order_id: int):
         )
     )
     return markup
-
-
-

@@ -75,8 +75,6 @@ async def dev(message: types.Message, state: FSMContext):
     # state_data = await state.get_data()
     # print(state_data)
 
-
-
     execution_time = time(int(10), int(20), 0)
     customer = await CustomersModel.get_by_telegram_id(message.from_user.id)
     category = await JobCategoriesModel.get_by_id(1)

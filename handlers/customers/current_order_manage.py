@@ -3,9 +3,12 @@ from keyboards.inline.rating import rating_markup
 from loader import dp
 from data.config import OrderStatuses
 from keyboards.inline.customer_orders import orders_markup, orders_callback, orders_status_callback, \
-    order_manage_markup, order_manage_callback, confirm_finish_order_markup, confirm_finish_order_callback
+    order_manage_markup, order_manage_callback, confirm_finish_order_markup, confirm_finish_order_callback, \
+    customer_orders_pagination_callback
 from models import OrdersModel, CustomersModel, OrderTimestampsModel
 from notifications import notify_worker_about_completed_order
+
+MAX_OFFSET = 10
 
 
 async def get_order_data(order_id: int):
@@ -34,6 +37,22 @@ async def show_in_progress_orders(callback: types.CallbackQuery, callback_data: 
         await callback.message.answer(
             "Задания отсутствуют"
         )
+
+
+@dp.callback_query_handler(customer_orders_pagination_callback.filter())
+async def show_in_progress_orders_pagination(callback: types.CallbackQuery, callback_data: dict):
+    await callback.answer()
+    offset = int(callback_data.get("offset"))
+    direction = callback_data.get("direction")
+    if direction == "right":
+        offset += MAX_OFFSET
+    else:
+        offset -= MAX_OFFSET
+    customer = await CustomersModel.get_by_telegram_id(callback.from_user.id)
+    orders = await OrdersModel.get_by_filters(customer=customer, status=OrderStatuses.waiting_for_start)
+    await callback.message.edit_reply_markup(
+        reply_markup=orders_markup(orders, OrderStatuses.waiting_for_start, offset=offset)
+    )
 
 
 @dp.callback_query_handler(orders_callback.filter(order_status=OrderStatuses.in_progress))
