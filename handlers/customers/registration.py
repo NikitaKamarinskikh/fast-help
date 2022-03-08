@@ -23,6 +23,10 @@ async def start_making_order(message: types.Message):
             categories: list = await JobCategoriesModel.get_all()
             await message.answer(
                 text="Выберите категорию в которой нужен помощник",
+                reply_markup=types.ReplyKeyboardRemove()
+            )
+            await message.answer(
+                text="Категории",
                 reply_markup=create_categories_markup(categories)
             )
             await CreateOrderStates.get_category.set()
@@ -88,6 +92,10 @@ async def confirm_privacy_policy(callback: types.CallbackQuery, state: FSMContex
     categories: list = await JobCategoriesModel.get_all()
     await callback.message.answer(
         text="Выберите категорию в которой нужен помощник",
+        reply_markup=types.ReplyKeyboardRemove()
+    )
+    await callback.message.answer(
+        text="Категории",
         reply_markup=create_categories_markup(categories)
     )
     await CreateOrderStates.get_category.set()
