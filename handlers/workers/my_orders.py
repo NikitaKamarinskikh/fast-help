@@ -33,7 +33,7 @@ async def show_in_progress_orders(callback: types.CallbackQuery, callback_data: 
     )
     worker = await WorkersModel.get_by_telegram_id(callback.from_user.id)
     worker_orders = await OrdersModel.get_by_filters(worker=worker, status=OrderStatuses.in_progress)
-    await ExecutableOrdersStates.get_ordeer.set()
+    await ExecutableOrdersStates.get_order.set()
 
     if len(worker_orders):
         await state.update_data(executable_orders=worker_orders, voice_messages_ids=[])
@@ -58,7 +58,7 @@ async def send_voice(callback, state, order):
     await state.update_data(voice_messages_ids=[voice_message.message_id])
 
 
-@dp.callback_query_handler(executable_orders_pagination_callback.filter(), state=ExecutableOrdersStates.get_ordeer)
+@dp.callback_query_handler(executable_orders_pagination_callback.filter(), state=ExecutableOrdersStates.get_order)
 async def move_orders_to(callback: types.CallbackQuery, callback_data: dict, state: FSMContext):
     await callback.answer()
     state_data = await state.get_data()

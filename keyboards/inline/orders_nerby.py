@@ -66,12 +66,12 @@ def chose_order_markup(order_number: int, orders_quantity: int, order_id: int):
             callback_data=respond_callback.new(order_id),
         )
     )
-    markup.add(
-        InlineKeyboardButton(
-            text="Назад",
-            callback_data=back_to_orders_callback.new(),
-        ),
-    )
+    # markup.add(
+    #     InlineKeyboardButton(
+    #         text="Назад",
+    #         callback_data=back_to_orders_callback.new(),
+    #     ),
+    # )
     return markup
 
 

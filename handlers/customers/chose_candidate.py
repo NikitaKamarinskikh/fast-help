@@ -47,7 +47,7 @@ async def show_order_candidates(callback: types.CallbackQuery, callback_data: di
         )
 
 
-@dp.callback_query_handler(show_order_candidates_callback.filter())
+@dp.callback_query_handler(show_order_candidates_callback.filter(), state="*")
 async def show_order_candidates_by_callback(callback: types.CallbackQuery, callback_data: dict):
     await callback.answer()
     order_id = int(callback_data.get("order_id"))
