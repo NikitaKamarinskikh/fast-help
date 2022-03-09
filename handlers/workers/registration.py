@@ -93,7 +93,8 @@ async def get_name(message: types.Message, state: FSMContext):
     await state.update_data(worker_name=name)
     await state.update_data(categories=set())
     await message.answer(
-        text="Выберите категории в которых вы хотите оказывать помощь",
+        text="Выберите категории в которых вы хотите оказывать помощь, "
+             "после этого подтвердите нажатием кнопки \"подтвердить\"",
         reply_markup=create_categories_markup(categories, confirm_button=True)
     )
     await WorkerRegistrationStates.get_category.set()
@@ -115,7 +116,8 @@ async def get_category_id(callback: types.CallbackQuery, callback_data: dict, st
     categories.add(category_id)
     await state.update_data(categories=categories)
 
-    text = "Выберите категории в которых вы хотите оказывать помощь\nВыбранные категории:\n"
+    text = "Выберите категории в которых вы хотите оказывать помощь, после этого подтвердите " \
+           "нажатием кнопки \"подтвердить\" \nВыбранные категории:\n"
     for category in enumerate(categories):
         text += f"{category[0] + 1}) {get_category_by_id(categories_list, int(category[1])).name}\n"
     await callback.message.edit_text(
