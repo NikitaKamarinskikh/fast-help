@@ -1,4 +1,5 @@
 from aiogram import types
+from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.builtin import CommandStart
 from loader import dp
 from keyboards.default.start import start_keyboard
@@ -21,7 +22,8 @@ async def get_referrer_by_message_args(message_args, user_telegram_id: int):
 
 
 @dp.message_handler(CommandStart(), state="*")
-async def bot_start(message: types.Message):
+async def bot_start(message: types.Message, state: FSMContext):
+    await state.finish()
     customer = await CustomersModel.get_or_none(message.from_user.id)
     worker = await WorkersModel.get_or_none(message.from_user.id)
     # bot_user = await BotUsersModel.get_by_telegram_id_or_none(message.from_user.id)
