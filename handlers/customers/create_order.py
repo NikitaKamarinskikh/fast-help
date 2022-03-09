@@ -291,6 +291,10 @@ async def get_payment_method(callback: types.CallbackQuery, callback_data: dict,
             coins, amount = 50, 50
         await BotUsersModel.remove_coins(callback.from_user.id, coins)
         await callback.message.answer(
+            text="Задание успешно сохраено",
+            reply_markup=main_markup
+        )
+        await callback.message.answer(
             text="Чтобы отправить уведомление исполнителям, нажмите на прикрепленную кнопку",
             reply_markup=send_order_to_workers_markup(order.pk, distance)
         )
