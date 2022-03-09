@@ -49,14 +49,12 @@ def notify_user_about_success_transaction(user_telegram_id: int, new_user_coins:
                               f'reply_markup={main_markup}'
     r = post(success_transaction_url)
     response = json.loads(r.content.decode('utf-8'))
-    logging.info(response)
     if reply_markup:
         url = f'https://api.telegram.org/bot{bot_token}/sendMessage?chat_id=' \
               f'{user_telegram_id}&text=Чтобы отправить уведомление исполнителям, нажмите на прикрепленную кнопку&' \
               f'reply_markup={reply_markup}'
         r = post(url)
         response = json.loads(r.content.decode('utf-8'))
-        logging.info(response)
 
 
 def notify_referrer(referrer_telegram_id: int, bonus: int, new_referrer_balance: int):

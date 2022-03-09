@@ -13,8 +13,8 @@ async def get_referrer_by_message_args(message_args, user_telegram_id: int):
     if message_args:
         try:
             referrer_telegram_id = int(message_args)
-            # if referrer_telegram_id != user_telegram_id:
-            referrer = await BotUsersModel.get_by_telegram_id(referrer_telegram_id)
+            if referrer_telegram_id != user_telegram_id:
+                referrer = await BotUsersModel.get_by_telegram_id(referrer_telegram_id)
         except Exception as e:
             print(e)
     return referrer

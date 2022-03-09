@@ -1,5 +1,7 @@
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils.callback_data import CallbackData
+
+from data.config import distances
 from keyboards.inline.respond_to_order import respond_callback
 
 chose_payment_callback = CallbackData("chose_payment", "order_id", "distance", "amount", "with_bonus", "has_order")
@@ -10,12 +12,14 @@ def chose_payment_markup(order_id: int, has_order: bool = False):
     markup = InlineKeyboardMarkup(row_width=1)
     markup.add(
         InlineKeyboardButton(
-            text=f"Единоразово 500м",
-            callback_data=chose_payment_callback.new(order_id, 500, 30, "False", has_order),
+            text=f"Единоразово {distances.short.meters}м",
+            callback_data=chose_payment_callback.new(order_id, distances.short.meters, distances.short.customer_price,
+                                                     "False", has_order),
         ),
         InlineKeyboardButton(
             text=f"Единоразово 1000м",
-            callback_data=chose_payment_callback.new(order_id, 1000, 50, "False", has_order),
+            callback_data=chose_payment_callback.new(order_id, distances.middle.meters, distances.middle.customer_price,
+                                                     "False", has_order),
         ),
         InlineKeyboardButton(
             text=f"Пополнить с бонусами",

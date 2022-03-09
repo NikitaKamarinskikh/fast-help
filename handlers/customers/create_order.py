@@ -2,7 +2,7 @@ from datetime import datetime, time
 from aiogram.dispatcher import FSMContext
 from aiogram import types
 
-from data.config import OrderStatuses
+from data.config import OrderStatuses, distances
 from keyboards.inline.send_order_to_workers import send_order_to_workers_markup
 from loader import dp
 from keyboards.default.main import main_markup
@@ -240,11 +240,11 @@ async def get_distance(callback: types.CallbackQuery, callback_data: dict, state
     await state.update_data(distance=distance)
     user = await BotUsersModel.get_by_telegram_id(callback.from_user.id)
     use_coins_button = False
-    if distance == 500:
-        if user.coins >= 30:
+    if distance == distances.short.meters:
+        if user.coins >= distances.short.customer_price:
             use_coins_button = True
-    if distance == 1000:
-        if user.coins >= 50:
+    if distance == distances.middle.meters:
+        if user.coins >= distances.middle.customer_price:
             use_coins_button = True
     await callback.message.answer(
         text="Выберите способ оплаты",
@@ -262,10 +262,12 @@ async def get_payment_method(callback: types.CallbackQuery, callback_data: dict,
     order = await create_order(callback.from_user.id, state)
     bot_user = await BotUsersModel.get_by_telegram_id(callback.from_user.id)
     if method == "one_time":
-        if distance == 500:
-            coins, amount = 30, 30
-        if distance == 1000:
-            coins, amount = 50, 50
+        coins = distances.get_customer_price_by_distance(distance)
+        amount = coins
+        # if distance == 500:
+        #     coins, amount = 30, 30
+        # if distance == 1000:
+        #     coins, amount = 50, 50
         transaction = await TransactionsModel.create(bot_user, amount)
         payment_link = get_payment_link(
             amount_rub=amount,
@@ -285,10 +287,12 @@ async def get_payment_method(callback: types.CallbackQuery, callback_data: dict,
         )
         await state.finish()
     elif method == "coins":
-        if distance == 500:
-            coins, amount = 30, 30
-        if distance == 1000:
-            coins, amount = 50, 50
+        coins = distances.get_customer_price_by_distance(distance)
+        # amount = coins
+        # if distance == 500:
+        #     coins, amount = 30, 30
+        # if distance == 1000:
+        #     coins, amount = 50, 50
         await BotUsersModel.remove_coins(callback.from_user.id, coins)
         await callback.message.answer(
             text="Задание успешно сохраено",
@@ -318,10 +322,11 @@ async def get_payment(callback: types.CallbackQuery, callback_data: dict, state:
     order_id = int(callback_data.get("order_id"))
     bot_user = await BotUsersModel.get_by_telegram_id(callback.from_user.id)
     transaction = await TransactionsModel.create(bot_user, amount)
-    if distance == 500:
-        coins = 30
-    else:
-        coins = 50
+    coins = distances.get_customer_price_by_distance(distance)
+    # if distance == 500:
+    #     coins = 30
+    # else:
+    #     coins = 50
     payment_link = get_payment_link(
         amount_rub=amount,
         description=f"Оплата {amount}р для размещения задания на расстоянии {distance}м",

@@ -34,7 +34,7 @@ async def get_candidates_by_filters(order: object, excepted_user_telegram_id: in
     f = open(f"result_{filename}", "r")
     for worker in workers:
         distance = int(f.readline())
-        if distance <= 500:  # and int(worker.user.telegram_id) != excepted_user_telegram_id:
+        if distance <= order.distance:  # and int(worker.user.telegram_id) != excepted_user_telegram_id:
             setattr(worker, "distance", distance)
             candidates.append(worker)
     f.close()

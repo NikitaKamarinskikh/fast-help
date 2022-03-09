@@ -131,8 +131,8 @@ async def get_category(callback: types.CallbackQuery, state: FSMContext):
     categories = state_data.get("categories")
     if len(categories):
         await callback.message.answer(
-            text="Отправьте вашу локацию ( регистрироваться лучше там где вы проводите большую часть дня, "
-                 "для того чтобы вам приходили уведомления о заданиях рядом)",
+            text="Отправьте вашу локацию (регистрироваться лучше там, где вы проводите большую часть дня, "
+                 "для того, чтобы вам приходили уведомления о заданиях рядом)",
             reply_markup=get_location_markup
         )
         await WorkerRegistrationStates.get_location.set()
@@ -177,12 +177,6 @@ async def get_phone_by_message(message: types.Message):
 
 
 async def save_worker_data(worker_telegram_id: int, state: FSMContext):
-    """
-    {'categories_list': <QuerySet [<JobCategories: Уборка>, <JobCategories: Животные>, <JobCategories: Переезд>,
-    <JobCategories: Грузоперевозки>]>, 'worker_name': 'Никита', 'categories': {'2', '4'},
-    'location': <Location {"latitude": 54.983381, "longitude": 82.805789}>, 'phone': '79237343772',
-    'additional_contacts': 'Доп контакт'}
-    """
     state_data = await state.get_data()
     categories_list = state_data.get("categories_list")
     user = await BotUsersModel.get_by_telegram_id(worker_telegram_id)

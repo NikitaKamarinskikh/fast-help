@@ -137,3 +137,6 @@ async def notify_referrer_about_new_referral(referrer: object):
     text = f"Зарегистрирован реферал.\nБаланс: {referrer.coins}"
     await send_message(referrer.telegram_id, text)
 
+
+
+

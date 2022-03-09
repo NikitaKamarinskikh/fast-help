@@ -15,6 +15,7 @@ from models import WorkersModel, JobCategoriesModel, BotUsersModel
 from states.common.confirm_privacy_policy import ConfirmPrivacyPolicy
 from common import get_orders_by_worker
 from states.workers.chose_order import ChoseOrderStates
+from data.config import distances
 
 
 @dataclass
@@ -28,24 +29,24 @@ class Categories:
 
 
 def has_enough_coins(coins: int, distance: int) -> bool:
-    if distance == 1000:
-        if coins >= 10:
+    if distance == distances.middle.meters:
+        if coins >= distances.middle.worker_price:
             return True
 
-    if distance == 1500:
-        if coins >= 20:
+    if distance == distances.long.meters:
+        if coins >= distances.long.worker_price:
             return True
     return False
 
 
 def has_access_to_orders_at_longer_distance_by_time(worker: object, distance: int) -> bool:
-    if distance == 1500:
-        if worker.max_distance == 1500:
+    if distance == distances.long.meters:
+        if worker.max_distance == distances.long.meters:
             if worker.orders_at_longer_distance_access_time >= time.time():
                 return True
 
-    if distance == 1000:
-        if worker.max_distance >= 1000:
+    if distance == distances.middle.meters:
+        if worker.max_distance >= distances.middle.meters:
             if worker.orders_at_longer_distance_access_time >= time.time():
                 return True
     return False
@@ -90,10 +91,10 @@ def split_categories_by_orders(orders: list, worker_categories: list) -> Categor
 
 
 async def orders_exists(categories_data: Categories, distance: int):
-    if distance == 1000:
+    if distance == distances.middle.meters:
         if categories_data.total_1000_meters <= 0:
             return False
-    if distance == 1500:
+    if distance == distances.long.meters:
         if categories_data.total_1500_meters <= 0:
             return False
     return True
@@ -103,13 +104,13 @@ async def show_orders_at_longer_distance(callback: types.CallbackQuery, state: F
                                          remove_coins: bool = True):
     state_data = await state.get_data()
     categories = state_data.get("categories")
-    if distance == 1000:
+    if distance == distances.middle.meters:
         if remove_coins:
-            await BotUsersModel.remove_coins(callback.from_user.id, 10)
+            await BotUsersModel.remove_coins(callback.from_user.id, distances.middle.worker_price)
         worker = await WorkersModel.get_by_telegram_id(callback.from_user.id)
-        max_distance = 1000
-        if worker.max_distance == 1500:
-            max_distance = 1500
+        max_distance = distances.middle.meters
+        if worker.max_distance == distances.long.meters:
+            max_distance = distances.long.meters
         await WorkersModel.update_worker_by_id(
             worker.pk,
             orders_at_longer_distance_access_time=get_orders_at_longer_distance_access_time(),
@@ -119,14 +120,14 @@ async def show_orders_at_longer_distance(callback: types.CallbackQuery, state: F
             text=f"Количество заданий в 1000м от вас: {categories.total_1000_meters}",
             reply_markup=orders_nearby_markup(categories.data_1000, distance)
         )
-    elif distance == 1500:
+    elif distance == distances.long.meters:
         if remove_coins:
-            await BotUsersModel.remove_coins(callback.from_user.id, 20)
+            await BotUsersModel.remove_coins(callback.from_user.id, distances.long.worker_price)
         worker = await WorkersModel.get_by_telegram_id(callback.from_user.id)
         await WorkersModel.update_worker_by_id(
             worker.pk,
             orders_at_longer_distance_access_time=get_orders_at_longer_distance_access_time(),
-            max_distance=1500
+            max_distance=distances.long.meters
         )
         await callback.message.answer(
             text=f"Количество заданий в 1500м от вас: {categories.total_1500_meters}",
@@ -163,20 +164,16 @@ async def orders_at_longer_distance(callback: types.CallbackQuery, callback_data
     else:
         await callback.message.answer("Задания на данную дистанцию отсутствуют")
 
-    # --------------------
-
 
 @dp.callback_query_handler(confirm_show_longer_distance_orders_callback.filter(choice="no"),
                            state=ChoseOrderStates.chose_order)
 async def deny_showing_longer_distance_orders(callback: types.CallbackQuery, callback_data: dict, state: FSMContext):
     await callback.answer()
     state_data = await state.get_data()
-    # orders = state_data.get("orders")
     categories = state_data.get("categories")
-    # categories = split_categories_by_orders(orders, categories)
     await callback.message.answer(
         text=f"Количество заданий в 500м от вас: {categories.total_500_meters}",
-        reply_markup=orders_nearby_markup(categories.data_500, 500)
+        reply_markup=orders_nearby_markup(categories.data_500, distances.short.meters)
     )
 
 
@@ -196,7 +193,7 @@ async def tasks_nearby(message: types.Message, state: FSMContext):
         worker = await WorkersModel.get_by_telegram_id(message.from_user.id)
         await message.answer("Ищу задания...", reply_markup=main_meun_markup)
         print("start getting orders", datetime.now())
-        orders = await get_orders_by_worker(worker, max_distance=1500)
+        orders = await get_orders_by_worker(worker, max_distance=distances.long.meters)
         print("finish getting orders", datetime.now())
         await state.update_data(categories=worker.categories.all())
         await state.update_data(orders=orders)
@@ -208,11 +205,12 @@ async def tasks_nearby(message: types.Message, state: FSMContext):
         await state.update_data(categories=categories)
         await message.answer(
             text=f"Количество заданий в 500м от вас: {categories.total_500_meters}",
-            reply_markup=orders_nearby_markup(categories.data_500, 500)
+            reply_markup=orders_nearby_markup(categories.data_500, distances.short.meters)
         )
         await message.answer(
-            text="Можно открыть на 24 часа и откликнуться на задания в радиусе 1000м и 1500м, "
-                 "за 10 и 20 монет соотвественно.",
+            text=f"Можно открыть на 24 часа и откликнуться на задания в радиусе {distances.middle.meters}м "
+                 f"и {distances.long.meters}м, "
+                 f"за {distances.middle.worker_price} и {distances.long.worker_price} монет соотвественно.",
             reply_markup=orders_at_longer_distance_markup(categories.total_1000_meters, categories.total_1500_meters)
         )
         await ChoseOrderStates.chose_order.set()
