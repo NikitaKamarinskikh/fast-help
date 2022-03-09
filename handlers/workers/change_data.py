@@ -18,7 +18,7 @@ async def change_data(message: types.Message, state: FSMContext):
         )
         await WorkerRegistrationStates.get_name.set()
         await state.update_data(update=True)
-    except:
+    except Exception as e:
         await message.answer(
             text="Для того чтобы стать помощником понадобится заполнить небольшую анкету и "
                  "согласиться с хранением и обработкой данных",
