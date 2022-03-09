@@ -146,7 +146,7 @@ async def orders_at_longer_distance(callback: types.CallbackQuery, callback_data
     worker = await WorkersModel.get_by_telegram_id(callback.from_user.id)
     categories_data = state_data.get("categories")
 
-    if orders_exists(categories_data, distance):  # Если задания есть
+    if await orders_exists(categories_data, distance):  # Если задания есть
         if not has_access_to_orders_at_longer_distance_by_time(worker, distance):  # Если нет доступа по времени
             if not has_enough_coins(user.coins, distance):  # Если недостаточно монет
                 # Предложить пополнить баланс
