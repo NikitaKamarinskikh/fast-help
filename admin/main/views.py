@@ -69,7 +69,7 @@ def notify_referrer(referrer_telegram_id: int, bonus: int, new_referrer_balance:
 
 @csrf_exempt
 def process_pay_notification(request):
-    if request.method == 'GET':
+    if request.method == 'POST':
         user_id = request.POST.get("AccountId")
         user = get_user_by_id(user_id)
         try:
