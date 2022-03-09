@@ -20,7 +20,7 @@ async def get_referrer_by_message_args(message_args, user_telegram_id: int):
     return referrer
 
 
-@dp.message_handler(CommandStart())
+@dp.message_handler(CommandStart(), state="*")
 async def bot_start(message: types.Message):
     customer = await CustomersModel.get_or_none(message.from_user.id)
     worker = await WorkersModel.get_or_none(message.from_user.id)
