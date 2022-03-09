@@ -357,7 +357,7 @@ async def get_coins(callback: types.CallbackQuery, callback_data: dict, state: F
             "order_id": order_id,
             "has_order": True,
             "coins": coins,
-            "with_bonus": False,
+            "with_bonus": True,
             "distance": distance,
         }
     )

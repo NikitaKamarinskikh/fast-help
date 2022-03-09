@@ -1,4 +1,5 @@
 import json
+import logging
 from requests import post
 from environs import Env
 from django.shortcuts import render, HttpResponse
@@ -48,14 +49,14 @@ def notify_user_about_success_transaction(user_telegram_id: int, new_user_coins:
                               f'reply_markup={main_markup}'
     r = post(success_transaction_url)
     response = json.loads(r.content.decode('utf-8'))
-    print(response)
+    logging.debug(response)
     if reply_markup:
         url = f'https://api.telegram.org/bot{bot_token}/sendMessage?chat_id=' \
               f'{user_telegram_id}&text=Чтобы отправить уведомление исполнителям, нажмите на прикрепленную кнопку&' \
               f'reply_markup={reply_markup}'
         r = post(url)
         response = json.loads(r.content.decode('utf-8'))
-        print(response)
+        logging.debug(response)
 
 
 def notify_referrer(referrer_telegram_id: int, bonus: int, new_referrer_balance: int):
@@ -69,17 +70,17 @@ def notify_referrer(referrer_telegram_id: int, bonus: int, new_referrer_balance:
 @csrf_exempt
 def process_pay_notification(request):
     if request.method == 'GET':
-        user_id = 5 # request.POST.get("AccountId")
+        user_id = request.POST.get("AccountId")
         user = get_user_by_id(user_id)
         try:
-            transaction_id = 14 # request.POST.get("InvoiceId")
-            amount = 50 # float(request.POST.get("Amount"))
-            # data = json.loads(request.POST.get("Data"))
-            order_id = 44 # int(data.get("order_id"))
-            has_order = True # data.get("has_order")
-            coins = 30 # int(data.get("coins"))
-            distance = 500 # data.get("distance")
-            with_bonus = False # data.get("with_bonus")
+            transaction_id = request.POST.get("InvoiceId")
+            amount = float(request.POST.get("Amount"))
+            data = json.loads(request.POST.get("Data"))
+            order_id = int(data.get("order_id"))
+            has_order = data.get("has_order")
+            coins = int(data.get("coins"))
+            distance = data.get("distance")
+            with_bonus = data.get("with_bonus")
 
             transaction = get_transaction_by_id(transaction_id)
             reply_markup = None
@@ -88,7 +89,11 @@ def process_pay_notification(request):
                 transaction.is_paid = True
                 transaction.save()
                 if has_order:
-                    # if with_bonus
+                    if with_bonus:
+                        current_user_coins = user.coins
+                        new_user_coins = current_user_coins + coins
+                        user.coins = new_user_coins
+                        user.save()
                     reply_markup = send_order_to_workers_markup(order_id, distance)
                     set_order_waiting_for_start_status(order_id)
                 else:
@@ -107,6 +112,7 @@ def process_pay_notification(request):
                     referrer.save()
                     notify_referrer(referrer.telegram_id, bonus, new_referrer_balance)
         except Exception as e:
+            logging.exception(e)
             try:
                 send_message(user.telegram_id)
             except:
@@ -116,23 +122,3 @@ def process_pay_notification(request):
         return HttpResponse({"code": 0})
     return HttpResponseNotFound()
 
-
-"""
-<WSGIRequest: POST '/get_transaction'>order_id
-reques.post = <QueryDict: {'TransactionId': ['1037510691'], 'Amount': ['1.00'], 'Currency': ['RUB'], 
-'PaymentAmount': ['1.00'], 'PaymentCurrency': ['RUB'], 
-'OperationType': ['Payment'], 'InvoiceId': ['23'], 
-'AccountId': ['1'], 'SubscriptionId': [''], 'Name': [''], 
-'Email': [''], 'DateTime': ['2022-02-28 12:11:44'], 
-'IpAddress': ['212.164.64.214'], 'IpCountry': ['RU'], 
-'IpCity': ['Новосибирск'], 'IpRegion': ['Новосибирская область'], 
-'IpDistrict': ['Сибирский федеральный округ'], 'IpLatitude': ['55.03923'], 
-'IpLongitude': ['82.927818'], 'CardFirstSix': ['553691'], 
-'CardLastFour': ['9750'], 'CardType': ['MasterCard'], 
-'CardExpDate': ['11/22'], 'Issuer': ['TINKOFF BANK'], 
-'IssuerBankCountry': ['RU'], 'Description': ['Оплата 1р для размещения задания на расстоянии 500м'], 
-'AuthCode': ['A1B2C3'], 'Token': ['tk_b08211a708dc17f0cd498da774ad0'], 'TestMode': ['1'], 
-'Status': ['Completed'], 'GatewayName': ['Test'], 'Data': ['{"order_id": 11, "has_order": true}'], 
-'TotalFee': ['0.00'], 'CardProduct': ['TNW'], 'PaymentMethod': ['']}>
-{'_encoding': 'utf-8', '_mutable': False}
-"""
