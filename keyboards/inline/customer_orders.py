@@ -45,17 +45,17 @@ def orders_markup(orders: list, order_satus: str, offset: int = 0, max_buttons: 
         )
         x += 1
 
-    if offset != 0:
-        markup.add(InlineKeyboardButton(text="<<",
-                                        callback_data=customer_orders_pagination_callback.new(offset, "left")))
-        if len(orders) - offset > max_buttons:
-            markup.insert(InlineKeyboardButton(text=">>",
-                                               callback_data=customer_orders_pagination_callback.new(offset, "right")))
-    else:
-        if len(orders) > offset:
-            markup.add(InlineKeyboardButton(text=">>",
+    if len(orders) > max_buttons:
+        if offset != 0:
+            markup.add(InlineKeyboardButton(text="<<",
+                                            callback_data=customer_orders_pagination_callback.new(offset, "left")))
+            if len(orders) - offset > max_buttons:
+                markup.insert(InlineKeyboardButton(text=">>",
+                                                   callback_data=customer_orders_pagination_callback.new(offset, "right")))
+        else:
+            if len(orders) > offset:
+                markup.add(InlineKeyboardButton(text=">>",
                                             callback_data=customer_orders_pagination_callback.new(offset, "right")))
-
     return markup
 
 
