@@ -1,8 +1,10 @@
+import logging
 import time
 from dataclasses import dataclass
 from datetime import datetime
 from aiogram import types
 from aiogram.dispatcher import FSMContext
+from admin.workers.models import Workers
 from data.config import MainMenuCommands, Roles, DAY_IN_SECONDS
 from keyboards.inline.start_or_back import start_or_back_markup
 from keyboards.inline.orders_nerby import orders_nearby_markup, orders_nearby_callback, \
@@ -192,15 +194,11 @@ async def tasks_nearby(message: types.Message, state: FSMContext):
     try:
         worker = await WorkersModel.get_by_telegram_id(message.from_user.id)
         await message.answer("Ищу задания...", reply_markup=main_meun_markup)
-        print("start getting orders", datetime.now())
         orders = await get_orders_by_worker(worker, max_distance=distances.long.meters)
-        print("finish getting orders", datetime.now())
         await state.update_data(categories=worker.categories.all())
         await state.update_data(orders=orders)
 
-        print("start splitting orders", datetime.now())
         categories = split_categories_by_orders(orders, worker.categories.all())
-        print("finish splitting orders", datetime.now())
 
         await state.update_data(categories=categories)
         await message.answer(
@@ -214,15 +212,18 @@ async def tasks_nearby(message: types.Message, state: FSMContext):
             reply_markup=orders_at_longer_distance_markup(categories.total_1000_meters, categories.total_1500_meters)
         )
         await ChoseOrderStates.chose_order.set()
-    except Exception as e:
-        print(e, e.__class__)
+    except Workers.DoesNotExist:
         await message.answer(
             text="Для того чтобы стать помощником понадобится заполнить небольшую анкету и "
                  "согласиться с хранением и обработкой данных",
             reply_markup=start_or_back_markup(Roles.worker)
         )
         await ConfirmPrivacyPolicy.ask_to_confirm.set()
-
+    except Exception as e:
+        logging.error(e)
+        await message.answer(
+            "Возникла непредвиденная ошибка. Повторите попытку позже"
+        )
 
 
 

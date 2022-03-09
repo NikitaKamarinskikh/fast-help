@@ -22,12 +22,15 @@ def orders_status_markup(waiting_for_start_orders_quantity: int, in_progress_ord
         InlineKeyboardButton(
             text=f"Найден [{in_progress_orders_quantity}]",
             callback_data=orders_status_callback.new(OrderStatuses.in_progress),
-        ),
-        InlineKeyboardButton(
-            text=f"Выполняемые [{executable_quantity}]",
-            callback_data=orders_status_callback.new("executable"),
-        ),
+        )
     )
+    if executable_quantity > 0:
+        markup.add(
+            InlineKeyboardButton(
+                text=f"Выполняемые [{executable_quantity}]",
+                callback_data=orders_status_callback.new("executable"),
+            )
+        )
     return markup
 
 

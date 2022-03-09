@@ -1,6 +1,8 @@
+import logging
+
 from aiogram import types
 from aiogram.dispatcher import FSMContext
-
+from admin.customers.models import Customers
 from keyboards.default.main import main_markup
 from keyboards.inline.categories import create_categories_markup, get_category_callback
 from keyboards.inline.start_or_back import start_or_back_markup
@@ -23,13 +25,18 @@ async def workers_nearby(message: types.Message):
             reply_markup=create_categories_markup(categories)
         )
         await CreateOrderStates.get_possible_category.set()
-    except:
+    except Customers.DoesNotExist:
         await message.answer(
             text="Для того чтобы получить помощь понадобится заполнить небольшую анкету и согласиться с хранением "
                  "и обработкой данных и подписать договор оферту",
             reply_markup=start_or_back_markup(Roles.customer)
         )
         await ConfirmPrivacyPolicy.ask_to_confirm.set()
+    except Exception as e:
+        logging.error(e)
+        await message.answer(
+            "Возникла непредвиденная ошибка. Повторите попытку позже"
+        )
 
 
 @dp.callback_query_handler(get_category_callback.filter(), state=CreateOrderStates.get_possible_category)

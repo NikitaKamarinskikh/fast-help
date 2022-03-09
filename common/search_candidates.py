@@ -1,9 +1,7 @@
 import os
-from datetime import datetime
 from math import radians, sqrt, sin, cos, atan2
 
 from models import WorkersModel, OrdersModel
-from geopy.distance import geodesic
 
 
 def get_distance_between_two_points_in_meters(coordinates1: tuple, coordinates2: tuple) -> int:
@@ -26,15 +24,17 @@ def get_distance_between_two_points_in_meters(coordinates1: tuple, coordinates2:
 async def get_candidates_by_filters(order: object, excepted_user_telegram_id: int) -> list:
     workers = await WorkersModel.get_by_category(category=[order.category])
     candidates = list()
-    filename = f"{order.customer.user.telegram_id}_workers_coordinates.txt"
+    filename = f"{order.customer_telegram_id}_workers_coordinates.txt"
     with open(filename, "w") as f:
         for worker in workers:
             f.write(f"{order.location} {worker.location} \n")
-    os.system(f"./calc_distance {filename} result_{filename}")
+    code = os.system(f"./calc_distance {filename} result_{filename}")
+    print(code)
+    # code = subprocess.call(f"./calc_distance {filename} result_{filename}")
     f = open(f"result_{filename}", "r")
     for worker in workers:
         distance = int(f.readline())
-        if distance <= order.distance:  # and int(worker.user.telegram_id) != excepted_user_telegram_id:
+        if distance <= order.distance: # and int(worker.telegram_id) != excepted_user_telegram_id:
             setattr(worker, "distance", distance)
             candidates.append(worker)
     f.close()
@@ -52,30 +52,18 @@ async def get_orders_by_worker(worker: object, max_distance: int = 500) -> list:
         for order in orders:
             f.write(f"{worker.location} {order.location}\n")
 
-    os.system(f"./calc_distance {filename} result_{filename}")
-
+    # code = subprocess.call(f"./calc_distance {filename} result_{filename}")
+    code = os.system(f"./calc_distance {filename} result_{filename}")
     f = open(f"result_{filename}", "r")
     for order in orders:
         distance = int(f.readline())
-        if distance <= max_distance:  # and int(order.customer.user.telegram_id) != worker_telegram_id:
+        if distance <= max_distance: # and int(order.customer_telegram_id) != worker_telegram_id:
             setattr(order, "distance", distance)
             candidates.append(order)
     f.close()
     os.remove(filename)
     os.remove(f"result_{filename}")
     return candidates
-
-#
-# async def get_workers_nearby(customer: object) -> list:
-#     candidates = list()
-#     workers = await WorkersModel.get_all()
-#     filename = f"{customer.user.telegram_id}_workers_nearby_coordinates.txt"
-#     customer_telegram_id = int(workers.user.telegram_id)
-#     with open(filename, "w") as f:
-#         for worker in workers:
-#             f.write(f"{worker.location} {order.location}\n")
-#
-#     return candidates
 
 
 

@@ -187,6 +187,7 @@ async def create_order(customer_telegram_id: int, state: FSMContext):
     order_data = {
         "customer": customer,
         "category": category,
+        "customer_telegram_id": customer_telegram_id,
         "category_name": category.name,
         "customer_name": state_data.get("customer_name"),
         "location": location,
@@ -295,7 +296,7 @@ async def get_payment_method(callback: types.CallbackQuery, callback_data: dict,
         #     coins, amount = 50, 50
         await BotUsersModel.remove_coins(callback.from_user.id, coins)
         await callback.message.answer(
-            text="Задание успешно сохраено",
+            text=f"Задание успешно сохраено. Номер задания: {order.pk}",
             reply_markup=main_markup
         )
         await callback.message.answer(

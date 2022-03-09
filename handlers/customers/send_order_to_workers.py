@@ -13,7 +13,6 @@ async def send_oder_order_to_workers(callback: types.CallbackQuery, callback_dat
     await callback.answer(cache_time=100)
     await callback.message.delete()
     order_id = int(callback_data.get("order_id"))
-    await callback.message.answer(f"order_id: {order_id}")
     order = await OrdersModel.get_by_id(order_id)
     await callback.message.answer("Ищу исполнителей...")
     candidates = await get_candidates_by_filters(order, callback.from_user.id)

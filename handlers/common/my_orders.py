@@ -1,4 +1,8 @@
+import logging
+
 from aiogram import types
+
+from admin.customers.models import Customers
 from keyboards.inline.customer_orders import orders_markup, orders_callback, orders_status_callback, \
     orders_status_markup
 from loader import dp
@@ -18,22 +22,28 @@ async def chose_orders_status(message: types.Message):
         in_progress_orders_quantity = get_orders_quantity_by_order_status(orders, OrderStatuses.in_progress)
         waiting_for_start_orders_quantity = get_orders_quantity_by_order_status(orders, OrderStatuses.waiting_for_start)
 
-        worker = await WorkersModel.get_by_telegram_id(message.from_user.id)
-        worker_orders = await OrdersModel.get_by_filters(worker=worker, status=OrderStatuses.in_progress)
+        worker = await WorkersModel.get_or_none(message.from_user.id)
+        worker_orders = []
+        if worker is not None:
+            worker_orders = await OrdersModel.get_by_filters(worker=worker, status=OrderStatuses.in_progress)
 
         await message.answer(
             text="Ваши задания, в которых осуществляется подбор исполнителей, и там где они найдены.",
             reply_markup=orders_status_markup(waiting_for_start_orders_quantity, in_progress_orders_quantity,
                                               len(worker_orders))
         )
-    except Exception as e:
-        print(e)
+    except Customers.DoesNotExist:
         await message.answer(
             text="Для того чтобы получить помощь понадобится заполнить небольшую анкету и согласиться с хранением "
                  "и обработкой данных и подписать договор оферту",
             reply_markup=start_or_back_markup(Roles.customer)
         )
         await ConfirmPrivacyPolicy.ask_to_confirm.set()
+    except Exception as e:
+        logging.error(e)
+        await message.answer(
+            "Возникла непредвиденная ошибка. Повторите попытку позже"
+        )
 
 
 @dp.callback_query_handler(orders_status_callback.filter(status=OrderStatuses.waiting_for_start))
