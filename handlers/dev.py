@@ -1,9 +1,9 @@
 from datetime import time, datetime
-
+from loader import bot
 from aiogram import types
 from aiogram.dispatcher import FSMContext
 
-from data.config import OrderStatuses
+from data.config import OrderStatuses, env
 from handlers.workers.registration import get_category_by_id
 from loader import dp
 from models import BotUsersModel, JobCategoriesModel, CustomersModel
@@ -12,7 +12,7 @@ from keyboards.default.main import main_markup
 from models import *
 
 from notifications import notify_customer_about_completed_order
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, ContentTypes
 from aiogram.utils.callback_data import CallbackData
 
 balance_callback = CallbackData("balance", "option")
@@ -39,8 +39,44 @@ def dev_markup():
     return markup
 
 
+def get_invoice_data(chat_id) -> dict:
+    return {
+        "chat_id": chat_id,
+        "title": "test_title",
+        "description": "test_description",
+        "payload": "test_payload",
+        "provider_token": env.str("YOOKASSA_TOKEN"),
+        "currency": "RUB",
+        "start_parameter": "test",
+        "prices": [{
+            "label": "Руб",
+            "amount": 10000
+        }]
+    }
+
+
 @dp.message_handler(commands=["dev"], state="*")
 async def dev(message: types.Message, state: FSMContext):
+    await bot.send_invoice(
+        **(get_invoice_data(message.from_user.id))
+    )
+
+
+@dp.pre_checkout_query_handler()
+async def process_pre_checkout_query_handler(pre_checkout_query: types.PreCheckoutQuery):
+    await bot.answer_pre_checkout_query(pre_checkout_query.id, ok=True)
+
+
+@dp.message_handler(content_types=ContentTypes.SUCCESSFUL_PAYMENT)
+async def process_success_payment(message: types.Message):
+    if message.successful_payment.invoice_payload == "test_payload":
+        await message.answer("payload прошел")
+    await message.answer(
+        text="Оплата прошла"
+    )
+
+
+
     # order = await OrdersModel.get_by_id(161158)
     # print(order.execution_time)
     # hours = int(order.execution_time.strftime("%H")) * 60
@@ -75,29 +111,29 @@ async def dev(message: types.Message, state: FSMContext):
     # state_data = await state.get_data()
     # print(state_data)
 
-    execution_time = time(int(10), int(20), 0)
-    customer = await CustomersModel.get_by_telegram_id(message.from_user.id)
-    category = await JobCategoriesModel.get_by_id(1)
-    category_name = category.name
-    location = f"54.983357  82.805794"
-    order_data = {
-        "customer": customer,
-        "customer_telegram_id": message.from_user.id,
-        "category": category,
-        "customer_name": category.name,
-        "location": location,
-        "customer_phone": "79237343772",
-        "start_date": datetime.now(),
-        "execution_time": execution_time,
-        "allow_to_write_in_telegram": False,
-        "category_name": category_name,
-        "status": OrderStatuses.waiting_for_start
-    }
-
-    await message.answer("start making orders")
-    for i in range(1, 80000):
-        await OrdersModel.create(**order_data)
-    await message.answer("finish making orders")
+    # execution_time = time(int(10), int(20), 0)
+    # customer = await CustomersModel.get_by_telegram_id(message.from_user.id)
+    # category = await JobCategoriesModel.get_by_id(1)
+    # category_name = category.name
+    # location = f"54.983357  82.805794"
+    # order_data = {
+    #     "customer": customer,
+    #     "customer_telegram_id": message.from_user.id,
+    #     "category": category,
+    #     "customer_name": category.name,
+    #     "location": location,
+    #     "customer_phone": "79237343772",
+    #     "start_date": datetime.now(),
+    #     "execution_time": execution_time,
+    #     "allow_to_write_in_telegram": False,
+    #     "category_name": category_name,
+    #     "status": OrderStatuses.waiting_for_start
+    # }
+    #
+    # await message.answer("start making orders")
+    # for i in range(1, 80000):
+    #     await OrdersModel.create(**order_data)
+    # await message.answer("finish making orders")
 
 
 
