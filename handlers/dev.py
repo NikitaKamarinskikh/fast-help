@@ -82,8 +82,9 @@ async def dev(message: types.Message, state: FSMContext):
     location = f"54.983357  82.805794"
     order_data = {
         "customer": customer,
+        "customer_telegram_id": message.from_user.id,
         "category": category,
-        "customer_name": "test",
+        "customer_name": category.name,
         "location": location,
         "customer_phone": "79237343772",
         "start_date": datetime.now(),
@@ -94,7 +95,7 @@ async def dev(message: types.Message, state: FSMContext):
     }
 
     await message.answer("start making orders")
-    for i in range(1, 20000):
+    for i in range(1, 80000):
         await OrdersModel.create(**order_data)
     await message.answer("finish making orders")
 
