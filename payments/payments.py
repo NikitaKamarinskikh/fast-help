@@ -31,10 +31,6 @@ def get_payment_link(amount_rub: int, description: str, user_id: int, invoice_id
     return False
 
 
-def from_rub_to_kopecks(amount_rub: int):
-    return int(str(amount_rub) + "00")
-
-
 def get_invoice_data(chat_id: int, title: str, description: str, payload: str,
                      amount_rub: int) -> dict:
     return {
@@ -55,18 +51,17 @@ def get_invoice_data(chat_id: int, title: str, description: str, payload: str,
 
 async def send_invoice(chat_id: int, title: str, description: str, payload: str,
                        amount_rub: int):
-    try:
-        await bot.send_invoice(
-            chat_id=chat_id,
-            title=title,
-            description=description,
-            payload=payload,
-            provider_token=env.str("YOOKASSA_TOKEN"),
-            currency="RUB",
-            prices=[{
-                "label": "Руб",
-                "amount": amount_rub * 1000
-            }]
-        )
-    except Exception as e:
-        print(e)
+
+    await bot.send_invoice(
+        chat_id=chat_id,
+        title=title,
+        description=description,
+        payload=payload,
+        provider_token=env.str("YOOKASSA_TOKEN"),
+        currency="RUB",
+        prices=[{
+            "label": "Руб",
+            "amount": amount_rub * 100
+        }]
+    )
+

@@ -302,36 +302,6 @@ async def get_payment_method(callback: types.CallbackQuery, callback_data: dict,
         await CreateOrderStates.get_payment.set()
 
 
-# Единоразово
-@dp.callback_query_handler(chose_payment_callback.filter(with_bonus="False"), state=CreateOrderStates.get_payment)
-async def get_payment(callback: types.CallbackQuery, callback_data: dict, state: FSMContext):
-    await callback.answer()
-    distance = int(callback_data.get("distance"))
-    amount = int(callback_data.get("amount"))
-    order_id = int(callback_data.get("order_id"))
-    bot_user = await BotUsersModel.get_by_telegram_id(callback.from_user.id)
-    transaction = await TransactionsModel.create(bot_user, amount)
-    coins = distances.get_customer_price_by_distance(distance)
-    payment_link = get_payment_link(
-        amount_rub=amount,
-        description=f"Оплата {amount}р для размещения задания на расстоянии {distance}м",
-        user_id=bot_user.pk,
-        invoice_id=transaction.pk,
-        json_data={
-            "order_id": order_id,
-            "has_order": True,
-            "coins": coins,
-            "with_bonus": False,
-            "distance": distance,
-        }
-    )
-
-    await callback.message.answer(
-        text=f"Номер задания: {order_id}\nСсылка на оплату: {payment_link}"
-    )
-    await state.finish()
-
-
 @dp.callback_query_handler(coins_sum_callback.filter(), state=CreateOrderStates.get_payment)
 async def get_coins(callback: types.CallbackQuery, callback_data: dict, state: FSMContext):
     await callback.answer()
@@ -342,21 +312,20 @@ async def get_coins(callback: types.CallbackQuery, callback_data: dict, state: F
     distance = int(state_data.get("distance"))
     bot_user = await BotUsersModel.get_by_telegram_id(callback.from_user.id)
     transaction = await TransactionsModel.create(bot_user, amount)
-    payment_link = get_payment_link(
-        amount_rub=amount,
-        description=f"Оплата {amount}р для размещения задания на расстоянии {distance}м",
-        user_id=bot_user.pk,
-        invoice_id=transaction.pk,
-        json_data={
-            "order_id": order_id,
-            "has_order": True,
-            "coins": coins,
-            "with_bonus": True,
-            "distance": distance,
-        }
-    )
 
-    await callback.message.answer(
-        text=f"Номер задания: {order_id}\nСсылка на оплату: {payment_link}"
-    )
+    description = f"Оплата {amount}р для размещения задания на расстоянии {distance}м"
+    payload = {
+        "order_id": order_id,
+        "has_order": True,
+        "coins": coins,
+        "with_bonus": False,
+        "distance": distance,
+        "transaction_id": transaction.pk
+    }
+
+    try:
+        await send_invoice(callback.from_user.id, f"Номер задания: {order_id}", description, str(payload), amount)
+    except:
+        await callback.message.answer("При создании платежа произошла ошибка. Повторите попытку позже")
+
     await state.finish()
