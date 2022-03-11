@@ -9,6 +9,12 @@ async def process_pre_checkout_query_handler(pre_checkout_query: types.PreChecko
 
 @dp.message_handler(content_types=types.ContentTypes.SUCCESSFUL_PAYMENT)
 async def process_success_payment(message: types.Message):
+    """
+    payload example
+    {'order_id': 144258, 'has_order': True, 'coins': 30, 'with_bonus': False,
+    'distance': 500, 'transaction_id': 33}
+    """
+    print(message.successful_payment.invoice_payload)
     if message.successful_payment.invoice_payload == "test_payload":
         await message.answer("payload прошел")
     await message.answer(

@@ -15,6 +15,8 @@ from notifications import notify_customer_about_completed_order
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, ContentTypes
 from aiogram.utils.callback_data import CallbackData
 
+from payments.payments import get_invoice_data
+
 balance_callback = CallbackData("balance", "option")
 
 
@@ -39,26 +41,14 @@ def dev_markup():
     return markup
 
 
-def get_invoice_data(chat_id) -> dict:
-    return {
-        "chat_id": chat_id,
-        "title": "test_title",
-        "description": "test_description",
-        "payload": "test_payload",
-        "provider_token": env.str("YOOKASSA_TOKEN"),
-        "currency": "RUB",
-        "start_parameter": "test",
-        "prices": [{
-            "label": "Руб",
-            "amount": 10000
-        }]
-    }
-
-
 @dp.message_handler(commands=["dev"], state="*")
 async def dev(message: types.Message, state: FSMContext):
+    test_payload = {
+        "param1": 1,
+        "param2": 2
+    }
     await bot.send_invoice(
-        **(get_invoice_data(message.from_user.id))
+        **(get_invoice_data(message.from_user.id, "title", "desc", str(test_payload), 30 * 100))
     )
 
 

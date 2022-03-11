@@ -20,7 +20,7 @@ from keyboards.default.get_phone import get_phone_markup
 from states.customers.create_order import CreateOrderStates
 from models import JobCategoriesModel, CustomersModel, OrdersModel, BotUsersModel, TransactionsModel
 from common import parse_date, correct_time
-from payments.payments import get_payment_link
+from payments.payments import get_payment_link, get_invoice_data, send_invoice
 
 
 @dp.callback_query_handler(get_category_callback.filter(), state=CreateOrderStates.get_category)
@@ -265,35 +265,23 @@ async def get_payment_method(callback: types.CallbackQuery, callback_data: dict,
     if method == "one_time":
         coins = distances.get_customer_price_by_distance(distance)
         amount = coins
-        # if distance == 500:
-        #     coins, amount = 30, 30
-        # if distance == 1000:
-        #     coins, amount = 50, 50
         transaction = await TransactionsModel.create(bot_user, amount)
-        payment_link = get_payment_link(
-            amount_rub=amount,
-            description=f"Оплата {amount}р для размещения задания на расстоянии {distance}м",
-            user_id=bot_user.pk,
-            invoice_id=transaction.pk,
-            json_data={
-                "order_id": order.pk,
-                "has_order": True,
-                "coins": coins,
-                "with_bonus": False,
-                "distance": distance,
-            }
-        )
-        await callback.message.answer(
-            text=f"Номер задания: {order.pk}\nСсылка на оплату: {payment_link}"
-        )
+        description = f"Оплата {amount}р для размещения задания на расстоянии {distance}м"
+        payload = {
+            "order_id": order.pk,
+            "has_order": True,
+            "coins": coins,
+            "with_bonus": False,
+            "distance": distance,
+            "transaction_id": transaction.pk
+        }
+        try:
+            await send_invoice(callback.from_user.id, f"Номер задания: {order.pk}", description, str(payload), amount)
+        except:
+            await callback.message.answer("При создании платежа произошла ошибка. Повторите попытку позже")
         await state.finish()
     elif method == "coins":
         coins = distances.get_customer_price_by_distance(distance)
-        # amount = coins
-        # if distance == 500:
-        #     coins, amount = 30, 30
-        # if distance == 1000:
-        #     coins, amount = 50, 50
         await BotUsersModel.remove_coins(callback.from_user.id, coins)
         await callback.message.answer(
             text=f"Задание успешно сохраено. Номер задания: {order.pk}",
@@ -324,10 +312,6 @@ async def get_payment(callback: types.CallbackQuery, callback_data: dict, state:
     bot_user = await BotUsersModel.get_by_telegram_id(callback.from_user.id)
     transaction = await TransactionsModel.create(bot_user, amount)
     coins = distances.get_customer_price_by_distance(distance)
-    # if distance == 500:
-    #     coins = 30
-    # else:
-    #     coins = 50
     payment_link = get_payment_link(
         amount_rub=amount,
         description=f"Оплата {amount}р для размещения задания на расстоянии {distance}м",
