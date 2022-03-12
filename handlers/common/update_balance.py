@@ -44,10 +44,11 @@ async def get_coins(callback: types.CallbackQuery, callback_data: dict, state: F
         "order_id": -1,
         "has_order": 0,
         "coins": coins,
-        "with_bonus": 1,
+        "with_bonus": 0,
         "distance": 0,
         "transaction_id": transaction.pk
     }
+    await state.finish()
     try:
         await send_invoice(callback.from_user.id, f"Пополнение баланса", description, str(payload), amount_rub)
     except:
@@ -68,16 +69,15 @@ async def get_amount_by_message(message: types.Message, state: FSMContext):
                 "order_id": -1,
                 "has_order": 0,
                 "coins": coins,
-                "with_bonus": 1,
+                "with_bonus": 0,
                 "distance": 0,
                 "transaction_id": transaction.pk
             }
+            await state.finish()
             try:
                 await send_invoice(message.from_user.id, f"Пополнение баланса", description, str(payload), amount_rub)
             except:
                 await message.answer("При создании платежа произошла ошибка. Повторите попытку позже")
-
-            await state.finish()
         else:
             await message.answer("Значение должно быть больше 0")
     except:

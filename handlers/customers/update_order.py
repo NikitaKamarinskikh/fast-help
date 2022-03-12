@@ -45,7 +45,7 @@ async def get_new_start_date_callback(callback: types.CallbackQuery, callback_da
     await UpdateOrderStates.get_execution_time.set()
 
 
-async def update_order(state_data: dict):
+async def update_order(state_data: dict, user_telegram_id: int):
     order_id = state_data.get("order_id")
     order = await OrdersModel.get_by_id(order_id)
     execution_time_str = state_data.get("order_execution_time")
@@ -62,7 +62,7 @@ async def update_order(state_data: dict):
     await OrderTimestampsModel.delete_by_order(order)
     if not state_data.get("update_time_only"):
         await OrdersModel.update(order_id, **update_data)
-        candidates = await get_candidates_by_filters(order, [])
+        candidates = await get_candidates_by_filters(order, user_telegram_id)
         await notify_workers_about_new_order(candidates, order)
     else:
         timestamp_seconds = get_order_finish_time_in_seconds(order, from_now=True,
@@ -80,7 +80,7 @@ async def update_order_execution_time_callback(callback: types.CallbackQuery, ca
     await state.update_data(order_execution_time=execution_time.replace("-", ":"))
     state_data = await state.get_data()
     try:
-        await update_order(state_data)
+        await update_order(state_data, callback.from_user.id)
         if state_data.get("update_time_only"):
             await callback.message.answer(
                 text="Время заказа успешно изменено"
@@ -107,7 +107,7 @@ async def update_order_execution_time(message: types.Message, state: FSMContext)
         await state.update_data(order_execution_time=order_execution_time)
         state_data = await state.get_data()
         try:
-            await update_order(state_data)
+            await update_order(state_data, message.from_user.id)
             if state_data.get("update_time_only"):
                 await message.answer(
                     text="Время заказа успешно изменено"

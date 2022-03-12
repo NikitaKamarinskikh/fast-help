@@ -3,6 +3,7 @@ from aiogram.dispatcher import FSMContext
 from aiogram import types
 
 from data.config import OrderStatuses, distances
+from handlers.payments.get_invoice import send_order_to_workers
 from keyboards.inline.send_order_to_workers import send_order_to_workers_markup
 from loader import dp
 from keyboards.default.main import main_markup
@@ -210,7 +211,14 @@ async def create_order(customer_telegram_id: int, state: FSMContext):
 async def get_order_execution_time_callback(callback: types.CallbackQuery, callback_data: dict, state: FSMContext):
     await callback.answer()
     execution_time = callback_data.get("time")
+    user = await BotUsersModel.get_by_telegram_id(callback.from_user.id)
     await state.update_data(order_execution_time=execution_time.replace("-", ":"))
+    await callback.message.answer(
+        text=f"Оплатите сумму {distances.short.customer_price} рублей "
+             f"для передачи вашего заказа исполнителям в радиусе {distances.short.meters}м. "
+             f"Или {distances.middle.customer_price} руб в радиусе {distances.middle.meters}м. "
+             f"Или пополните счет для оплаты и получите бонусы. На счету {user.coins} монет"
+    )
     await callback.message.answer(
         text="Выберите дистанцию для размещения задания",
         reply_markup=order_distance_markup()
@@ -221,8 +229,15 @@ async def get_order_execution_time_callback(callback: types.CallbackQuery, callb
 @dp.message_handler(state=CreateOrderStates.get_order_execution_time)
 async def get_order_execution_time(message: types.Message, state: FSMContext):
     order_execution_time: str = message.text
+    user = await BotUsersModel.get_by_telegram_id(message.from_user.id)
     if correct_time(order_execution_time):
         await state.update_data(order_execution_time=order_execution_time)
+        await message.answer(
+            text=f"Оплатите сумму {distances.short.customer_price} рублей "
+                 f"для передачи вашего заказа исполнителям в радиусе {distances.short.meters}м. "
+                 f"Или {distances.middle.customer_price} руб в радиусе {distances.middle.meters}м. "
+                 f"Или пополните счет для оплаты и получите бонусы. На счету {user.coins} монет"
+        )
         await message.answer(
             text="Выберите дистанцию для размещения задания",
             reply_markup=order_distance_markup()
@@ -264,7 +279,7 @@ async def get_payment_method(callback: types.CallbackQuery, callback_data: dict,
     bot_user = await BotUsersModel.get_by_telegram_id(callback.from_user.id)
     if method == "one_time":
         coins = distances.get_customer_price_by_distance(distance)
-        amount = coins + 100
+        amount = coins
         transaction = await TransactionsModel.create(bot_user, amount)
         description = f"Оплата {amount}р для размещения задания на расстоянии {distance}м"
         payload = {
@@ -279,21 +294,26 @@ async def get_payment_method(callback: types.CallbackQuery, callback_data: dict,
             await send_invoice(callback.from_user.id, f"Номер задания: {order.pk}", description, str(payload), amount)
         except Exception as e:
             print(e)
-            await callback.message.answer("При создании платежа произошла ошибка. Повторите попытку позже")
+            await callback.message.answer(
+                text="При создании платежа произошла ошибка. Повторите попытку позже",
+                reply_markup=main_markup
+            )
         await state.finish()
     elif method == "coins":
         coins = distances.get_customer_price_by_distance(distance)
         await BotUsersModel.remove_coins(callback.from_user.id, coins)
+        await OrdersModel.update(order.pk, status=OrderStatuses.waiting_for_start)
         await callback.message.answer(
-            text=f"Задание успешно сохраено. Номер задания: {order.pk}",
+            text=f"Номер задания: {order.pk}",
             reply_markup=main_markup
         )
-        await callback.message.answer(
-            text="Чтобы отправить уведомление исполнителям, нажмите на прикрепленную кнопку",
-            reply_markup=send_order_to_workers_markup(order.pk, distance)
-        )
-        await OrdersModel.update(order.pk, status=OrderStatuses.waiting_for_start)
         await state.finish()
+        await callback.message.answer("Ищу исполнителей...")
+        await send_order_to_workers(order.pk, callback.from_user.id)
+        await callback.message.answer(
+            text="Ваше задание отправлено исполнителям рядом",
+            reply_markup=main_markup
+        )
     else:
         await state.update_data(order_id=order.pk)
         await callback.message.answer(
@@ -309,26 +329,28 @@ async def get_coins(callback: types.CallbackQuery, callback_data: dict, state: F
     state_data = await state.get_data()
     order_id = state_data.get("order_id")
     coins = int(callback_data.get("coins"))
-    amount = int(callback_data.get("amount_rub")) + 100
+    amount = int(callback_data.get("amount_rub"))
     distance = int(state_data.get("distance"))
     bot_user = await BotUsersModel.get_by_telegram_id(callback.from_user.id)
     transaction = await TransactionsModel.create(bot_user, amount)
 
     description = f"Оплата {amount}р для размещения задания на расстоянии {distance}м"
     payload = {
-        "user_id": callback.from_user.id,
-        "amount": amount,
         "order_id": order_id,
         "has_order": 1,
         "coins": coins,
-        "with_bonus": 0,
+        "with_bonus": 1,
         "distance": distance,
         "transaction_id": transaction.pk
     }
 
     try:
         await send_invoice(callback.from_user.id, f"Номер задания: {order_id}", description, str(payload), amount)
-    except:
-        await callback.message.answer("При создании платежа произошла ошибка. Повторите попытку позже")
+    except Exception as e:
+        print(e)
+        await callback.message.answer(
+            text="При создании платежа произошла ошибка. Повторите попытку позже",
+            reply_markup=main_markup
+        )
 
     await state.finish()

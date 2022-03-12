@@ -2,6 +2,7 @@ import json
 
 import requests
 from requests.auth import HTTPBasicAuth
+from aiogram import types
 from environs import Env
 from loader import bot
 
@@ -33,35 +34,35 @@ def get_payment_link(amount_rub: int, description: str, user_id: int, invoice_id
 
 def get_invoice_data(chat_id: int, title: str, description: str, payload: str,
                      amount_rub: int) -> dict:
+    print(amount_rub)
     return {
         "chat_id": chat_id,
         "title": title,
         "description": description,
         "payload": payload,
         "provider_token": env.str("YOOKASSA_TOKEN"),
-        "currency": "RUB",
+        "currency": amount_rub,
         "start_parameter": "test",
         "prices": [{
             "label": "Руб",
             # "amount": from_rub_to_kopecks(amount_rub)
-            "amount": amount_rub
+            "amount": amount_rub * 100
         }]
     }
 
 
 async def send_invoice(chat_id: int, title: str, description: str, payload: str,
                        amount_rub: int):
-
+    if amount_rub < 100:
+        amount_rub += 100 - amount_rub
     await bot.send_invoice(
         chat_id=chat_id,
         title=title,
         description=description,
         payload=payload,
         provider_token=env.str("YOOKASSA_TOKEN"),
+        start_parameter="true",
         currency="RUB",
-        prices=[{
-            "label": "Руб",
-            "amount": amount_rub * 100
-        }]
+        prices=[types.LabeledPrice(label="руб", amount=amount_rub * 100)]
     )
 

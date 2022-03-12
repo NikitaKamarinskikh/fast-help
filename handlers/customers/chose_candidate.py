@@ -1,4 +1,5 @@
 import time
+from datetime import datetime
 from aiogram import types
 from keyboards.inline.customer_orders import orders_markup, orders_callback
 from loader import dp
@@ -89,12 +90,12 @@ async def chose_candidate(callback: types.CallbackQuery, callback_data: dict):
 def get_order_finish_time_in_seconds(order: object, from_now: bool = False, seconds: int = 0) -> int:
     hours = int(order.execution_time.strftime("%H")) * 60
     minutes = int(order.execution_time.strftime("%M"))
-    # t = datetime.strptime(state_data.get("order_start_date_time"), "%Y-%m-%d %H:%M")
-    t = order.start_date
-    state_date_in_seconds = int(time.mktime(t.timetuple()))
+    state_date_in_seconds = time.mktime(order.start_date.timetuple()) - (60 * 60)
     if from_now:
-        return int(time.time()) + seconds
-    return state_date_in_seconds + ((hours + minutes) * 60)
+        return int(datetime.today().timestamp()) + seconds
+    elif datetime.now().timestamp() > order.start_date.timestamp() - (4 * 60 * 60):
+        return int(datetime.now().timestamp()) + ((hours + minutes) * 60)
+    return int(state_date_in_seconds + ((hours + minutes) * 60))
 
 
 @dp.callback_query_handler(confirm_candidate_callback.filter())
