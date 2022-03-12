@@ -42,9 +42,9 @@ async def get_coins(callback: types.CallbackQuery, callback_data: dict, state: F
     description = f"Оплата {amount_rub}р для пополнения счета на {coins} монет"
     payload = {
         "order_id": -1,
-        "has_order": True,
+        "has_order": 0,
         "coins": coins,
-        "with_bonus": True,
+        "with_bonus": 1,
         "distance": 0,
         "transaction_id": transaction.pk
     }
@@ -66,9 +66,9 @@ async def get_amount_by_message(message: types.Message, state: FSMContext):
             description = f"Оплата {amount_rub}р для пополнения счета на {coins} монет"
             payload = {
                 "order_id": -1,
-                "has_order": True,
+                "has_order": 0,
                 "coins": coins,
-                "with_bonus": True,
+                "with_bonus": 1,
                 "distance": 0,
                 "transaction_id": transaction.pk
             }
@@ -77,25 +77,6 @@ async def get_amount_by_message(message: types.Message, state: FSMContext):
             except:
                 await message.answer("При создании платежа произошла ошибка. Повторите попытку позже")
 
-            # payment_link = get_payment_link(
-            #     amount_rub=amount_rub,
-            #     description=f"Оплата {amount_rub}р для пополнения счета на {amount_rub} монет",
-            #     user_id=bot_user.pk,
-            #     invoice_id=transaction.pk,
-            #     json_data={
-            #         "order_id": -1,
-            #         "has_order": False,
-            #         "coins": amount_rub,
-            #         "with_bonus": False,
-            #         "distance": 0,
-            #     }
-            # )
-            # if payment_link:
-            #     await message.answer(
-            #         text=f"Ссылка для оплаты:\n{payment_link}"
-            #     )
-            # else:
-            #     await message.answer("При создании ссылки на оплату возникла непредвиденная ошибка")
             await state.finish()
         else:
             await message.answer("Значение должно быть больше 0")

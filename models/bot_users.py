@@ -16,6 +16,11 @@ class BotUsersModel:
 
     @staticmethod
     @sync_to_async
+    def get_by_id(id_: int):
+        return BotUsers.objects.get(pk=id_)
+
+    @staticmethod
+    @sync_to_async
     def create_user(telegram_id: int, username: str, referrer: object) -> object:
         try:
             user = BotUsers.objects.get(telegram_id=telegram_id)

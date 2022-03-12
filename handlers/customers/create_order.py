@@ -264,20 +264,21 @@ async def get_payment_method(callback: types.CallbackQuery, callback_data: dict,
     bot_user = await BotUsersModel.get_by_telegram_id(callback.from_user.id)
     if method == "one_time":
         coins = distances.get_customer_price_by_distance(distance)
-        amount = coins
+        amount = coins + 100
         transaction = await TransactionsModel.create(bot_user, amount)
         description = f"Оплата {amount}р для размещения задания на расстоянии {distance}м"
         payload = {
             "order_id": order.pk,
-            "has_order": True,
+            "has_order": 1,
             "coins": coins,
-            "with_bonus": False,
+            "with_bonus": 0,
             "distance": distance,
             "transaction_id": transaction.pk
         }
         try:
             await send_invoice(callback.from_user.id, f"Номер задания: {order.pk}", description, str(payload), amount)
-        except:
+        except Exception as e:
+            print(e)
             await callback.message.answer("При создании платежа произошла ошибка. Повторите попытку позже")
         await state.finish()
     elif method == "coins":
@@ -308,17 +309,19 @@ async def get_coins(callback: types.CallbackQuery, callback_data: dict, state: F
     state_data = await state.get_data()
     order_id = state_data.get("order_id")
     coins = int(callback_data.get("coins"))
-    amount = int(callback_data.get("amount_rub"))
+    amount = int(callback_data.get("amount_rub")) + 100
     distance = int(state_data.get("distance"))
     bot_user = await BotUsersModel.get_by_telegram_id(callback.from_user.id)
     transaction = await TransactionsModel.create(bot_user, amount)
 
     description = f"Оплата {amount}р для размещения задания на расстоянии {distance}м"
     payload = {
+        "user_id": callback.from_user.id,
+        "amount": amount,
         "order_id": order_id,
-        "has_order": True,
+        "has_order": 1,
         "coins": coins,
-        "with_bonus": False,
+        "with_bonus": 0,
         "distance": distance,
         "transaction_id": transaction.pk
     }

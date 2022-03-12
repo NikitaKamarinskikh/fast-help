@@ -138,5 +138,16 @@ async def notify_referrer_about_new_referral(referrer: object):
     await send_message(referrer.telegram_id, text)
 
 
+async def notify_user_about_success_transaction(user_telegram_id: int, new_user_coins: int, reply_markup=None):
+    text = f"Оплата принята\nТекущее количество монет: {new_user_coins}"
+    await send_message(user_telegram_id, text)
+
+
+async def notify_referrer(referrer_telegram_id: int, bonus: int, new_referrer_balance: int):
+    text = f"Вы получаете бонус в размере {bonus} монет за пополнение одного из приглашенных вами пользователя. " \
+           f"Ткущее количество монет: {new_referrer_balance}"
+    await send_message(referrer_telegram_id, text)
+
+
 
 

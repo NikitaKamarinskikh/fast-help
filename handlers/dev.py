@@ -43,13 +43,13 @@ def dev_markup():
 
 @dp.message_handler(commands=["dev"], state="*")
 async def dev(message: types.Message, state: FSMContext):
-    test_payload = {
-        "param1": 1,
-        "param2": 2
-    }
-    await bot.send_invoice(
-        **(get_invoice_data(message.from_user.id, "title", "desc", str(test_payload), 30 * 100))
-    )
+    # test_payload = {
+    #     "param1": 1,
+    #     "param2": 2
+    # }
+    # await bot.send_invoice(
+    #     **(get_invoice_data(message.from_user.id, "title", "desc", str(test_payload), 30 * 100))
+    # )
 
 
 # @dp.pre_checkout_query_handler()
@@ -73,7 +73,7 @@ async def dev(message: types.Message, state: FSMContext):
     # minutes = int(order.execution_time.strftime("%M"))
     # execution_time_in_seconds = (hours + minutes) * 60
     # print(hours, minutes, execution_time_in_seconds)
-    # await OrdersModel.delete_all()
+    await OrdersModel.delete_all()
     # return
     # await WorkersModel.delete_all()
     # await message.answer("start making workers")
