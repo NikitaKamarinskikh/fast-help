@@ -41,12 +41,12 @@ def get_invoice_data(chat_id: int, title: str, description: str, payload: str,
         "description": description,
         "payload": payload,
         "provider_token": env.str("YOOKASSA_TOKEN"),
-        "currency": amount_rub,
+        "currency": "RUB",
         "start_parameter": "test",
         "prices": [{
             "label": "Руб",
             # "amount": from_rub_to_kopecks(amount_rub)
-            "amount": amount_rub * 100
+            "amount": amount_rub
         }]
     }
 

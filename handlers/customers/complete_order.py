@@ -13,7 +13,7 @@ from notifications import notify_worker_about_completed_order
 from states.customers.update_order import UpdateOrderStates
 
 
-@dp.callback_query_handler(is_order_competed_callback.filter(choice="yes"))
+@dp.callback_query_handler(is_order_competed_callback.filter(choice="yes"), state="*")
 async def confirm_order_complete(callback: types.CallbackQuery, callback_data: dict):
     await callback.answer(cache_time=10)
     await callback.message.delete()
@@ -28,7 +28,7 @@ async def confirm_order_complete(callback: types.CallbackQuery, callback_data: d
     await notify_worker_about_completed_order(order)
 
 
-@dp.callback_query_handler(is_order_competed_callback.filter(choice="no"))
+@dp.callback_query_handler(is_order_competed_callback.filter(choice="no"), state="*")
 async def deny_order_complete(callback: types.CallbackQuery, callback_data: dict):
     await callback.answer(cache_time=10)
     order_id = int(callback_data.get("order_id"))
@@ -43,13 +43,14 @@ async def deny_order_complete(callback: types.CallbackQuery, callback_data: dict
 @dp.callback_query_handler(order_complete_denied_callback.filter(action="add_time"))
 async def add_time_to_order_execution(callback: types.CallbackQuery, callback_data: dict, state: FSMContext):
     await callback.answer()
+    await callback.message.delete()
     order_id = int(callback_data.get("order_id"))
     await state.update_data(order_start_date_time=datetime.now().strftime("%Y-%m-%d %H:%M"))
     await state.update_data(update_time_only=True)
     await state.update_data(order_id=order_id)
     await callback.message.answer(
         text="Время на выполнение задания (выберите кнопкой или введите самостоятельно текстом "
-             "в формате чч:мм (например 2:05))",
+             "в формате чч:мм (например 2:05)) xxxx",
         reply_markup=update_order_execution_time_markup(order_id)
     )
     await UpdateOrderStates.get_execution_time.set()
@@ -58,6 +59,7 @@ async def add_time_to_order_execution(callback: types.CallbackQuery, callback_da
 @dp.callback_query_handler(order_complete_denied_callback.filter(action="find_new_candidate"))
 async def find_new_candidate(callback: types.CallbackQuery, callback_data: dict):
     await callback.answer()
+    await callback.message.delete()
     order_id = int(callback_data.get("order_id"))
     await callback.message.answer(
         text="Текущее задание отменится. Вы сможете оставить оценку исполнителю, а исполнитель вам. "

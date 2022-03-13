@@ -139,7 +139,7 @@ async def get_task_description(message: types.Message, state: FSMContext):
     task_description: str = message.text
     await state.update_data(order_description=task_description)
     await message.answer(
-        text="Укажите дату и время начала задания. Необходимый формат: дд.мм.гггг чч:мм (например 07.11.2022 15:30 )",
+        text="Укажите дату и время начала задания. Необходимый формат: дд.мм.гггг чч:мм (например 07.11.2022 15:30)",
         reply_markup=now_markup("order_start_date")
     )
     await CreateOrderStates.get_order_start_date.set()

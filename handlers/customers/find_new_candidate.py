@@ -68,7 +68,7 @@ async def old_candidate_rating(callback: types.CallbackQuery, callback_data: dic
     await notify_worker_about_new_feedback(order, value)
     await callback.message.answer("Исполнитель получил уведомление о вашй оценке")
     await callback.message.answer(
-        text="Укажите дату и время начала задания.",
+        text="Укажите дату и время начала задания. Необходимый формат: дд.мм.гггг чч:мм (например 07.11.2022 15:30)",
         reply_markup=update_order_start_date_markup()
     )
     await UpdateOrderStates.get_start_date.set()

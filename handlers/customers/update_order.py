@@ -18,11 +18,14 @@ from models import OrdersModel, OrderTimestampsModel
 async def get_order_start_date(message: types.Message, state: FSMContext):
     date_time_str: str = message.text
     order_start_date_time = parse_date(date_time_str)
+    state_data = await state.get_data()
+    order_id = int(state_data.get("order_id"))
     if order_start_date_time is not None:
         await state.update_data(order_start_date_time=order_start_date_time.strftime("%Y-%m-%d %H:%M"))
         await message.answer(
-            text="Время на выполнение задания (выберите кнопкой или введите самостоятельно текстом)",
-            reply_markup=update_order_execution_time_markup()
+            text="Время на выполнение задания (выберите кнопкой или введите самостоятельно текстом "
+                 "в формате чч:мм (например 2:05))",
+            reply_markup=update_order_execution_time_markup(order_id)
         )
         await UpdateOrderStates.get_execution_time.set()
     else:
@@ -73,33 +76,6 @@ async def update_order(state_data: dict, user_telegram_id: int):
         await OrderTimestampsModel.set_timestamp(order, timestamp_seconds)
 
 
-@dp.callback_query_handler(update_order_execution_time_callback.filter(), state=UpdateOrderStates.get_execution_time)
-async def update_order_execution_time_callback(callback: types.CallbackQuery, callback_data: dict, state: FSMContext):
-    await callback.answer()
-    execution_time = callback_data.get("time")
-    await state.update_data(order_execution_time=execution_time.replace("-", ":"))
-    state_data = await state.get_data()
-    try:
-        await update_order(state_data, callback.from_user.id)
-        if state_data.get("update_time_only"):
-            await callback.message.answer(
-                text="Время заказа успешно изменено"
-            )
-        else:
-            await callback.message.answer(
-                text="Заказ успешно обновлен и отправлен исполнителям рядом",
-                reply_markup=main_markup
-            )
-        await state.finish()
-    except Exception as e:
-        print(e)
-        await callback.message.answer(
-            text="При изменении заказа возникла непредвиденная ошибка",
-            reply_markup=main_markup
-        )
-        await state.finish()
-
-
 @dp.message_handler(state=UpdateOrderStates.get_execution_time)
 async def update_order_execution_time(message: types.Message, state: FSMContext):
     order_execution_time: str = message.text
@@ -131,4 +107,29 @@ async def update_order_execution_time(message: types.Message, state: FSMContext)
         )
 
 
+@dp.callback_query_handler(update_order_execution_time_callback.filter(), state=UpdateOrderStates.get_execution_time)
+async def update_order_execution_time_callback(callback: types.CallbackQuery, callback_data: dict, state: FSMContext):
+    await callback.answer()
+    execution_time = callback_data.get("time")
+    await state.update_data(order_execution_time=execution_time.replace("-", ":"))
+    state_data = await state.get_data()
+    try:
+        await update_order(state_data, callback.from_user.id)
+        if state_data.get("update_time_only"):
+            await callback.message.answer(
+                text="Время заказа успешно изменено"
+            )
+        else:
+            await callback.message.answer(
+                text="Заказ успешно обновлен и отправлен исполнителям рядом",
+                reply_markup=main_markup
+            )
+        await state.finish()
+    except Exception as e:
+        print(e)
+        await callback.message.answer(
+            text="При изменении заказа возникла непредвиденная ошибка",
+            reply_markup=main_markup
+        )
+        await state.finish()
 
