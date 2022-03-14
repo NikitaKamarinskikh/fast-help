@@ -1,4 +1,5 @@
 import time
+import logging
 from datetime import datetime, time
 from aiogram import types
 from aiogram.dispatcher import FSMContext
@@ -95,7 +96,7 @@ async def update_order_execution_time(message: types.Message, state: FSMContext)
                 )
             await state.finish()
         except Exception as e:
-            print(e)
+            logging.exception(e)
             await message.answer(
                 text="При изменении заказа возникла непредвиденная ошибка",
                 reply_markup=main_markup
@@ -126,7 +127,7 @@ async def update_order_execution_time_callback(callback: types.CallbackQuery, ca
             )
         await state.finish()
     except Exception as e:
-        print(e)
+        logging.exception(e)
         await callback.message.answer(
             text="При изменении заказа возникла непредвиденная ошибка",
             reply_markup=main_markup

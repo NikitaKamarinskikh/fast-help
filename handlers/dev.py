@@ -5,7 +5,7 @@ from aiogram.dispatcher import FSMContext
 
 from data.config import OrderStatuses, env
 from handlers.workers.registration import get_category_by_id
-from loader import dp
+from loader import dp, bot
 from models import BotUsersModel, JobCategoriesModel, CustomersModel
 from keyboards.default.start import start_keyboard
 from keyboards.default.main import main_markup
@@ -47,8 +47,12 @@ async def dev(message: types.Message, state: FSMContext):
         "param1": 1,
         "param2": 2
     }
+    # await bot.send_invoice(
+    #     **(get_invoice_data(message.from_user.id, "title", "desc", str(test_payload), 6000))
+    # )
+
     await bot.send_invoice(
-        **(get_invoice_data(message.from_user.id, "title", "desc", str(test_payload), 5000))
+        **(get_invoice_data(message.from_user.id, "title", "desc", str(test_payload), 5900))
     )
 
 

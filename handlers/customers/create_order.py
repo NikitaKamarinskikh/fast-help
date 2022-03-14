@@ -1,8 +1,8 @@
+import logging
 from datetime import datetime, time
 from aiogram.dispatcher import FSMContext
 from aiogram import types
-
-from data.config import OrderStatuses, distances
+from data.config import OrderStatuses, distances, PaymentMethods
 from handlers.payments.get_invoice import send_order_to_workers
 from keyboards.inline.send_order_to_workers import send_order_to_workers_markup
 from loader import dp
@@ -274,10 +274,10 @@ async def get_payment_method(callback: types.CallbackQuery, callback_data: dict,
     await callback.answer()
     state_data = await state.get_data()
     distance = state_data.get("distance")
-    method = callback_data.get("method")  # one_time, coins, with_bonus
+    method = callback_data.get("method")
     order = await create_order(callback.from_user.id, state)
     bot_user = await BotUsersModel.get_by_telegram_id(callback.from_user.id)
-    if method == "one_time":
+    if method == PaymentMethods.one_time:
         coins = distances.get_customer_price_by_distance(distance)
         amount = coins
         transaction = await TransactionsModel.create(bot_user, amount)
@@ -293,13 +293,13 @@ async def get_payment_method(callback: types.CallbackQuery, callback_data: dict,
         try:
             await send_invoice(callback.from_user.id, f"Номер задания: {order.pk}", description, str(payload), amount)
         except Exception as e:
-            print(e)
+            logging.exception(e)
             await callback.message.answer(
                 text="При создании платежа произошла ошибка. Повторите попытку позже",
                 reply_markup=main_markup
             )
         await state.finish()
-    elif method == "coins":
+    elif method == PaymentMethods.coins:
         coins = distances.get_customer_price_by_distance(distance)
         await BotUsersModel.remove_coins(callback.from_user.id, coins)
         await OrdersModel.update(order.pk, status=OrderStatuses.waiting_for_start)
@@ -347,7 +347,7 @@ async def get_coins(callback: types.CallbackQuery, callback_data: dict, state: F
     try:
         await send_invoice(callback.from_user.id, f"Номер задания: {order_id}", description, str(payload), amount)
     except Exception as e:
-        print(e)
+        logging.exception(e)
         await callback.message.answer(
             text="При создании платежа произошла ошибка. Повторите попытку позже",
             reply_markup=main_markup

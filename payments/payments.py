@@ -43,18 +43,12 @@ def get_invoice_data(chat_id: int, title: str, description: str, payload: str,
         "provider_token": env.str("YOOKASSA_TOKEN"),
         "currency": "RUB",
         "start_parameter": "test",
-        "prices": [{
-            "label": "Руб",
-            # "amount": from_rub_to_kopecks(amount_rub)
-            "amount": amount_rub
-        }]
+        "prices": [types.LabeledPrice(label="руб", amount=amount_rub)]
     }
 
 
 async def send_invoice(chat_id: int, title: str, description: str, payload: str,
                        amount_rub: int):
-    if amount_rub < 100:
-        amount_rub += 100 - amount_rub
     await bot.send_invoice(
         chat_id=chat_id,
         title=title,

@@ -33,7 +33,7 @@ async def workers_nearby(message: types.Message):
         )
         await ConfirmPrivacyPolicy.ask_to_confirm.set()
     except Exception as e:
-        logging.error(e)
+        logging.exception(e)
         await message.answer(
             "Возникла непредвиденная ошибка. Повторите попытку позже"
         )

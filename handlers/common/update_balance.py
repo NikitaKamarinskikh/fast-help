@@ -1,3 +1,4 @@
+import logging
 from aiogram.dispatcher import FSMContext
 from loader import dp
 from aiogram import types
@@ -51,7 +52,8 @@ async def get_coins(callback: types.CallbackQuery, callback_data: dict, state: F
     await state.finish()
     try:
         await send_invoice(callback.from_user.id, f"Пополнение баланса", description, str(payload), amount_rub)
-    except:
+    except Exception as e:
+        logging.exception(e)
         await callback.message.answer("При создании платежа произошла ошибка. Повторите попытку позже")
 
 
@@ -76,9 +78,10 @@ async def get_amount_by_message(message: types.Message, state: FSMContext):
             await state.finish()
             try:
                 await send_invoice(message.from_user.id, f"Пополнение баланса", description, str(payload), amount_rub)
-            except:
+            except Exception as e:
+                logging.exception(e)
                 await message.answer("При создании платежа произошла ошибка. Повторите попытку позже")
         else:
             await message.answer("Значение должно быть больше 0")
-    except:
+    except ValueError:
         await message.answer("Значение должно быть указано целым числом")

@@ -40,7 +40,7 @@ async def chose_orders_status(message: types.Message):
         )
         await ConfirmPrivacyPolicy.ask_to_confirm.set()
     except Exception as e:
-        logging.error(e)
+        logging.exception(e)
         await message.answer(
             "Возникла непредвиденная ошибка. Повторите попытку позже"
         )

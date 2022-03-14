@@ -1,7 +1,7 @@
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils.callback_data import CallbackData
 
-from data.config import distances
+from data.config import distances, PaymentMethods
 from keyboards.inline.respond_to_order import respond_callback
 
 chose_payment_callback = CallbackData("chose_payment", "order_id", "distance", "amount", "with_bonus", "has_order")
@@ -34,20 +34,20 @@ def payment_method_markup(use_coins_button: bool):
     markup.add(
         InlineKeyboardButton(
             text=f"Единоразово",
-            callback_data=payment_method_callback.new("one_time"),
+            callback_data=payment_method_callback.new(PaymentMethods.one_time),
         )
     )
     if use_coins_button:
         markup.add(
             InlineKeyboardButton(
                 text=f"Оплатить монетами",
-                callback_data=payment_method_callback.new("coins"),
+                callback_data=payment_method_callback.new(PaymentMethods.coins),
             )
         )
     markup.add(
         InlineKeyboardButton(
             text=f"Пополнить с бонусами",
-            callback_data=payment_method_callback.new("with_bonus"),
+            callback_data=payment_method_callback.new(PaymentMethods.with_bonus),
         )
     )
     return markup

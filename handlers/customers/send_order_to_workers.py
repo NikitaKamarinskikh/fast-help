@@ -1,5 +1,5 @@
+import logging
 from aiogram import types
-
 from common import get_candidates_by_filters
 from keyboards.default.main import main_markup
 from loader import dp

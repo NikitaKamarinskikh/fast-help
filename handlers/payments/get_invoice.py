@@ -59,11 +59,11 @@ async def process_success_payment(message: types.Message):
         transaction.save()
         if has_order:
             await set_order_waiting_for_start_status(order_id)
-            if with_bonus:
-                if distance == distances.short.meters:
-                    coins -= distances.short.customer_price
-                if distance == distances.middle.meters:
-                    coins -= distances.middle.customer_price
+            # if with_bonus:
+            if distance == distances.short.meters:
+                coins -= distances.short.customer_price
+            if distance == distances.middle.meters:
+                coins -= distances.middle.customer_price
 
         new_user_coins = user.coins + coins
         user = await BotUsersModel.add_coins(message.from_user.id, coins)
