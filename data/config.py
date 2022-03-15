@@ -72,8 +72,8 @@ class Distance:
 class Distances:
 
     def __init__(self):
-        self.short = Distance(SHORT_DISTANCE, 60, 0)
-        self.middle = Distance(MIDDLE_DISTANCE, 100, 10)
+        self.short = Distance(SHORT_DISTANCE, 30, 0)
+        self.middle = Distance(MIDDLE_DISTANCE, 50, 10)
         self.long = Distance(LONG_DISTANCE, 0, 20)
 
     def get_worker_price_by_distance(self, distance: int) -> int:

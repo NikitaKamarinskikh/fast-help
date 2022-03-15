@@ -52,7 +52,7 @@ async def dev(message: types.Message, state: FSMContext):
     # )
 
     await bot.send_invoice(
-        **(get_invoice_data(message.from_user.id, "title", "desc", str(test_payload), 5900))
+        **(get_invoice_data(message.from_user.id, "title", "desc", str(test_payload), 6000))
     )
 
 

@@ -42,7 +42,7 @@ async def get_name(message: types.Message, state: FSMContext):
     name: str = message.text
     await state.update_data(customer_name=name)
     await message.answer(
-        text="Отправьте вашу локацию ( регистрироваться лучше там где вы проводите большую часть дня, "
+        text="Отправьте вашу локацию (регистрироваться лучше там где вы проводите большую часть дня, "
              "для того чтобы вам приходили уведомления о заданиях рядом)",
         reply_markup=get_location_markup
     )
@@ -51,7 +51,7 @@ async def get_name(message: types.Message, state: FSMContext):
 
 @dp.message_handler(content_types=types.ContentTypes.LOCATION, state=CreateOrderStates.get_location)
 async def get_location(message: types.Message, state: FSMContext):
-    location = message.location  # {"latitude": 10.123123, "longitude": 23.44233}
+    location = message.location
     await state.update_data(location=location)
     await message.answer(
         text="Укажите телефон для исполнителей",
@@ -215,9 +215,11 @@ async def get_order_execution_time_callback(callback: types.CallbackQuery, callb
     user = await BotUsersModel.get_by_telegram_id(callback.from_user.id)
     await state.update_data(order_execution_time=execution_time.replace("-", ":"))
     await callback.message.answer(
-        text=f"Оплатите сумму {distances.short.customer_price} рублей "
+        text=f"Оплатите сумму {distances.short.customer_price * 2} рублей "
              f"для передачи вашего заказа исполнителям в радиусе {distances.short.meters}м. "
-             f"Или {distances.middle.customer_price} руб в радиусе {distances.middle.meters}м. "
+             f"Или {distances.middle.customer_price * 2} руб в радиусе {distances.middle.meters}м. "
+             f"В данный момент мы снизили стоимость размещения в 2 раза так, что вы сможете разместить "
+             f"2 задания за ту же цену."
              f"Или пополните счет для оплаты и получите бонусы. На счету {user.coins} монет"
     )
     await callback.message.answer(
@@ -234,9 +236,11 @@ async def get_order_execution_time(message: types.Message, state: FSMContext):
     if correct_time(order_execution_time):
         await state.update_data(order_execution_time=order_execution_time)
         await message.answer(
-            text=f"Оплатите сумму {distances.short.customer_price} рублей "
+            text=f"Оплатите сумму {distances.short.customer_price * 2} рублей "
                  f"для передачи вашего заказа исполнителям в радиусе {distances.short.meters}м. "
-                 f"Или {distances.middle.customer_price} руб в радиусе {distances.middle.meters}м. "
+                 f"Или {distances.middle.customer_price * 2} руб в радиусе {distances.middle.meters}м. "
+                 f"В данный момент мы снизили стоимость размещения в 2 раза так, что вы сможете разместить "
+                 f"2 задания за ту же цену."
                  f"Или пополните счет для оплаты и получите бонусы. На счету {user.coins} монет"
         )
         await message.answer(
@@ -281,13 +285,13 @@ async def get_payment_method(callback: types.CallbackQuery, callback_data: dict,
     bot_user = await BotUsersModel.get_by_telegram_id(callback.from_user.id)
     if method == PaymentMethods.one_time:
         coins = distances.get_customer_price_by_distance(distance)
-        amount = coins
+        amount = coins * 2
         transaction = await TransactionsModel.create(bot_user, amount)
         description = f"Оплата {amount}р для размещения задания на расстоянии {distance}м"
         payload = {
             "order_id": order.pk,
             "has_order": 1,
-            "coins": coins,
+            "coins": coins * 2,
             "with_bonus": 0,
             "distance": distance,
             "transaction_id": transaction.pk
