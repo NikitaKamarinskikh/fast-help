@@ -288,10 +288,6 @@ async def get_payment_method(callback: types.CallbackQuery, callback_data: dict,
         amount = coins * 2
         transaction = await TransactionsModel.create(bot_user, amount)
         description = f"Оплата {amount}р для размещения задания на расстоянии {distance}м"
-
-        await callback.message.answer(
-            text=f"сумма платежа в переменной: {amount}, стоимость размещения в монетах: {coins}"
-        )
         payload = {
             "order_id": order.pk,
             "has_order": 1,
