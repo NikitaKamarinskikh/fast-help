@@ -1,7 +1,7 @@
 import os
 from datetime import datetime
+from data.config import distances
 from math import radians, sqrt, sin, cos, atan2
-
 from models import WorkersModel, OrdersModel
 
 
@@ -22,6 +22,30 @@ def get_distance_between_two_points_in_meters(coordinates1: tuple, coordinates2:
     return round(distance)
 
 
+def worker_has_to_order_at_distance(worker: object, distance: int, order_distance: int):
+    if order_distance < distance:
+        return False
+
+    if distance <= distances.short.meters:
+        return True
+
+    print("middle distance check")
+    if distance <= distances.middle.meters:
+        print("middle")
+        if worker.max_distance >= distances.middle.meters:
+            print("meters check")
+            if worker.orders_at_longer_distance_access_time >= datetime.now().timestamp():
+                print("time check")
+                return True
+
+    if distance <= distances.long.meters:
+        if worker.max_distance == distances.long.meters:
+            if worker.orders_at_longer_distance_access_time >= datetime.now().timestamp():  # Возможно нужно изменить
+                return True
+
+    return False
+
+
 async def get_candidates_by_filters(order: object, excepted_user_telegram_id: int) -> list:
     workers = await WorkersModel.get_by_category(category=[order.category])
     candidates = list()
@@ -35,12 +59,15 @@ async def get_candidates_by_filters(order: object, excepted_user_telegram_id: in
     # print(code)
     # # code = subprocess.call(f"./calc_distance {filename} result_{filename}")
     # f = open(f"result_{filename}", "r")
+    excepted_user_telegram_id = str(excepted_user_telegram_id)
     for worker in workers:
         # distance = int(f.readline())
         worker_distance_list = worker.location.split()
         worker_distance = (float(worker_distance_list[0]), float(worker_distance_list[1]))
         distance = get_distance_between_two_points_in_meters(order_distance, worker_distance)
-        if distance <= order.distance: # and int(worker.telegram_id) != excepted_user_telegram_id:
+        print(distance, order.distance)
+        if worker_has_to_order_at_distance(worker, distance, order.distance):
+        # if distance <= order.distance: # and worker.telegram_id != excepted_user_telegram_id:
             setattr(worker, "distance", distance)
             candidates.append(worker)
     # f.close()

@@ -44,7 +44,7 @@ def has_enough_coins(coins: int, distance: int) -> bool:
 def has_access_to_orders_at_longer_distance_by_time(worker: object, distance: int) -> bool:
     if distance == distances.long.meters:
         if worker.max_distance == distances.long.meters:
-            if worker.orders_at_longer_distance_access_time >= time.time():
+            if worker.orders_at_longer_distance_access_time >= time.time():  # Возможно нужно изменить
                 return True
 
     if distance == distances.middle.meters:

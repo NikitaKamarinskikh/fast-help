@@ -192,6 +192,7 @@ async def create_order(customer_telegram_id: int, state: FSMContext):
         "category_name": category.name,
         "customer_name": state_data.get("customer_name"),
         "location": location,
+        "distance": state_data.get("distance"),
         "customer_phone": state_data.get("phone"),
         "start_date": state_data.get("order_start_date_time"),
         "execution_time": execution_time,
@@ -253,6 +254,7 @@ async def get_order_execution_time(message: types.Message, state: FSMContext):
 async def get_distance(callback: types.CallbackQuery, callback_data: dict, state: FSMContext):
     await callback.answer()
     distance = int(callback_data.get("distance"))
+    print(distance)
     await state.update_data(distance=distance)
     user = await BotUsersModel.get_by_telegram_id(callback.from_user.id)
     use_coins_button = False
