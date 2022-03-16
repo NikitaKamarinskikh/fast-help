@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Transactions
+from .models import Transactions, Withdrawals
 
 
 @admin.register(Transactions)
@@ -14,5 +14,19 @@ class TransactionsAdmin(admin.ModelAdmin):
 
     class Meta:
         model = Transactions
+
+
+@admin.register(Withdrawals)
+class WithdrawalsAdmin(admin.ModelAdmin):
+    search_fields = [
+        "bot_user__telegram_id",
+        "pk",
+    ]
+
+    list_display = ["user", "created_at", "coins_before", "coins", "coins_after"]
+
+    class Meta:
+        model = Withdrawals
+
 
 

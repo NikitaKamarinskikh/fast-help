@@ -12,4 +12,14 @@ class Transactions(TimeBasedModel):
         verbose_name_plural = "Транзакции"
 
 
+class Withdrawals(TimeBasedModel):
+    user = models.ForeignKey(BotUsers, verbose_name="Пользователь бота", on_delete=models.CASCADE)
+    coins_before = models.PositiveBigIntegerField("Монеты до")
+    coins = models.PositiveBigIntegerField("Монеты")
+    coins_after = models.PositiveBigIntegerField("Монетыпосле")
+
+    class Meta:
+        verbose_name = "Вывод средств"
+        verbose_name_plural = "Выводы средств"
+
 
