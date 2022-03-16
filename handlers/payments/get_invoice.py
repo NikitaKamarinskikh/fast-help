@@ -5,7 +5,7 @@ from common import get_candidates_by_filters
 from keyboards.default.main import main_markup
 from loader import dp, bot
 from data.config import REFERRER_BONUS_PERCENT, OrderStatuses
-from models import BotUsersModel, TransactionsModel, OrdersModel
+from models import BotUsersModel, TransactionsModel, OrdersModel, WithdrawalsModel
 from notifications.notifications import notify_referrer, notify_user_about_success_transaction, \
     notify_workers_about_new_order
 from data.config import distances
@@ -53,7 +53,7 @@ async def process_success_payment(message: types.Message):
     user = await BotUsersModel.get_by_telegram_id(message.from_user.id)
     transaction = await TransactionsModel.get_by_id(transaction_id)
     reply_markup = None
-
+    user_coins_before = user.coins
     if not transaction.is_paid:
         transaction.is_paid = True
         transaction.save()
@@ -64,10 +64,10 @@ async def process_success_payment(message: types.Message):
                 coins -= distances.short.customer_price
             if distance == distances.middle.meters:
                 coins -= distances.middle.customer_price
-
         new_user_coins = user.coins + coins
         user = await BotUsersModel.add_coins(message.from_user.id, coins)
         await notify_user_about_success_transaction(user.telegram_id, new_user_coins, reply_markup)
+        await WithdrawalsModel.create(user, user_coins_before, coins, user.coins)
 
         if user.referrer:
             bonus = count_bonus(amount)

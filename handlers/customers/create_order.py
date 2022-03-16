@@ -19,7 +19,7 @@ from keyboards.inline.distance import order_distance_markup, order_distance_call
 from keyboards.default.get_location import get_location_markup
 from keyboards.default.get_phone import get_phone_markup
 from states.customers.create_order import CreateOrderStates
-from models import JobCategoriesModel, CustomersModel, OrdersModel, BotUsersModel, TransactionsModel
+from models import JobCategoriesModel, CustomersModel, OrdersModel, BotUsersModel, TransactionsModel, WithdrawalsModel
 from common import parse_date, correct_time
 from payments.payments import get_payment_link, get_invoice_data, send_invoice
 
@@ -307,6 +307,8 @@ async def get_payment_method(callback: types.CallbackQuery, callback_data: dict,
         await state.finish()
     elif method == PaymentMethods.coins:
         coins = distances.get_customer_price_by_distance(distance)
+        await WithdrawalsModel.create(bot_user, bot_user.coins, coins, bot_user.coins - coins)
+
         await BotUsersModel.remove_coins(callback.from_user.id, coins)
         await OrdersModel.update(order.pk, status=OrderStatuses.waiting_for_start)
         await callback.message.answer(

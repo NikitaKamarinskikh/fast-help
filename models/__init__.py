@@ -7,6 +7,7 @@ from .bot_admins import BotAdminsModel
 from .documents import DocumentsModel
 from .timestamps import OrderTimestampsModel
 from .transactions import TransactionsModel
+from .withdrawals import WithdrawalsModel
 
 __all__ = [
     "JobCategoriesModel",
@@ -18,6 +19,8 @@ __all__ = [
     "BotAdminsModel",
     "DocumentsModel",
     "OrderTimestampsModel",
-    "TransactionsModel"
+    "TransactionsModel",
+    "WithdrawalsModel"
 ]
+
 

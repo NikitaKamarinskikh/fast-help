@@ -9,3 +9,6 @@ class WithdrawalsModel:
     def create(bot_user: object, coins_before: int, coins: int, coins_after: int) -> object:
         return Withdrawals.objects.create(user=bot_user, coins_before=coins_before,
                                           coins=coins, coins_after=coins_after)
+
+
+
