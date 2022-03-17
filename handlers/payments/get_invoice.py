@@ -49,7 +49,7 @@ async def process_success_payment(message: types.Message):
     coins = int(data.get("coins"))
     distance = int(data.get("distance"))
     with_bonus = data.get("with_bonus")
-    print(amount, transaction_id, order_id, has_order, coins, distance, with_bonus)
+
     user = await BotUsersModel.get_by_telegram_id(message.from_user.id)
     transaction = await TransactionsModel.get_by_id(transaction_id)
     reply_markup = None
@@ -66,8 +66,9 @@ async def process_success_payment(message: types.Message):
                 coins -= distances.middle.customer_price
         new_user_coins = user.coins + coins
         user = await BotUsersModel.add_coins(message.from_user.id, coins)
+        order = await OrdersModel.get_by_id(order_id)
         await notify_user_about_success_transaction(user.telegram_id, new_user_coins, reply_markup)
-        await WithdrawalsModel.create(user, user_coins_before, coins, user.coins)
+        await WithdrawalsModel.create(order, user, user_coins_before, coins, user.coins)
 
         if user.referrer:
             bonus = count_bonus(amount)

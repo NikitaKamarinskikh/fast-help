@@ -43,17 +43,19 @@ def dev_markup():
 
 @dp.message_handler(commands=["dev"], state="*")
 async def dev(message: types.Message, state: FSMContext):
-    test_payload = {
-        "param1": 1,
-        "param2": 2
-    }
+    ...
+
+    # test_payload = {
+    #     "param1": 1,
+    #     "param2": 2
+    # }
+    # # await bot.send_invoice(
+    # #     **(get_invoice_data(message.from_user.id, "title", "desc", str(test_payload), 6000))
+    # # )
+    #
     # await bot.send_invoice(
     #     **(get_invoice_data(message.from_user.id, "title", "desc", str(test_payload), 6000))
     # )
-
-    await bot.send_invoice(
-        **(get_invoice_data(message.from_user.id, "title", "desc", str(test_payload), 6000))
-    )
 
 
 # @dp.pre_checkout_query_handler()

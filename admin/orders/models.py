@@ -7,7 +7,7 @@ from data.config import OrderStatuses
 
 class Orders(TimeBasedModel):
     customer = models.ForeignKey(Customers, verbose_name="Заказчик", on_delete=models.CASCADE)
-    customer_telegram_id = models.CharField("ID заказчика в телеграмме", default=0)
+    customer_telegram_id = models.CharField("ID заказчика в телеграмме", default="", max_length=255)
     category = models.ForeignKey(JobCategories, verbose_name="Категория", on_delete=models.CASCADE)
     category_name = models.CharField("Название категории", max_length=255, null=True, blank=True)
     distance = models.PositiveIntegerField("Дистанция", default=500)
