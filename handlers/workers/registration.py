@@ -96,7 +96,7 @@ async def get_name(message: types.Message, state: FSMContext):
     await state.update_data(categories=set())
     await message.answer(
         text="Выберите категории в которых вы хотите оказывать помощь, "
-             "после этого подтвердите нажатием кнопки \"подтвердить\"",
+             "после этого подтвердите нажатием кнопки \"Подтвердить\"",
         reply_markup=create_categories_markup(categories, confirm_button=True)
     )
     await WorkerRegistrationStates.get_category.set()
@@ -160,6 +160,8 @@ async def get_location(message: types.Message, state: FSMContext):
 async def get_phone(message: types.Message, state: FSMContext):
     if message.contact.user_id == message.from_user.id:
         phone: str = message.contact.phone_number
+        if phone[0] != '+':
+            phone = f"+{phone}"
         await state.update_data(phone=phone)
         await message.answer(
             text="Телефон принят",

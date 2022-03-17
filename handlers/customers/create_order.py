@@ -64,6 +64,8 @@ async def get_location(message: types.Message, state: FSMContext):
 async def get_phone(message: types.Message, state: FSMContext):
     if message.contact.user_id == message.from_user.id:
         phone: str = message.contact.phone_number
+        if phone[0] != '+':
+            phone = f"+{phone}"
         await state.update_data(phone=phone)
         await message.answer(
             text="Телефон принят",

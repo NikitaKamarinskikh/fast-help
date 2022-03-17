@@ -6,7 +6,7 @@ confirm_callback = CallbackData("confirm", "choice")
 
 
 def create_categories_markup(categories: list, confirm_button=False):
-    markup = InlineKeyboardMarkup(row_width=1)
+    markup = InlineKeyboardMarkup(row_width=2)
     for category in categories:
         markup.insert(
             InlineKeyboardButton(
