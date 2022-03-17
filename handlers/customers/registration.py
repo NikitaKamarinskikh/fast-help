@@ -1,6 +1,8 @@
+import logging
+
 from aiogram.dispatcher import FSMContext
 from aiogram import types
-from admin.main.models import JobCategories
+from admin.customers.models import Customers
 from keyboards.default.start import start_keyboard
 from keyboards.inline.categories import create_categories_markup
 from loader import dp
@@ -37,13 +39,16 @@ async def start_making_order(message: types.Message):
                 reply_markup=start_or_back_markup(Roles.customer)
             )
             await ConfirmPrivacyPolicy.ask_to_confirm.set()
-    except JobCategories.DoesNotExist:
+    except Customers.DoesNotExist:
         await message.answer(
             text="Для того чтобы получить помощь понадобится заполнить небольшую анкету и согласиться с хранением "
                  "и обработкой данных и подписать договор оферту",
             reply_markup=start_or_back_markup(Roles.customer)
         )
         await ConfirmPrivacyPolicy.ask_to_confirm.set()
+    except Exception as e:
+        logging.exception(e)
+        await message.answer("При обработке запроса возникла непредвиденная ошибка")
 
 
 @dp.callback_query_handler(start_or_back_callback.filter(choice=InlineKeyboardAnswers.get_back, role=Roles.customer),

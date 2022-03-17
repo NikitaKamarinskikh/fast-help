@@ -308,7 +308,6 @@ async def get_payment_method(callback: types.CallbackQuery, callback_data: dict,
     elif method == PaymentMethods.coins:
         coins = distances.get_customer_price_by_distance(distance)
         await WithdrawalsModel.create(bot_user, bot_user.coins, coins, bot_user.coins - coins)
-
         await BotUsersModel.remove_coins(callback.from_user.id, coins)
         await OrdersModel.update(order.pk, status=OrderStatuses.waiting_for_start)
         await callback.message.answer(
