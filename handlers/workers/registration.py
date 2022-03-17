@@ -1,3 +1,5 @@
+import logging
+
 from aiogram.dispatcher import FSMContext
 from aiogram import types
 
@@ -133,8 +135,9 @@ async def get_category(callback: types.CallbackQuery, state: FSMContext):
     categories = state_data.get("categories")
     if len(categories):
         await callback.message.answer(
-            text="Отправьте вашу локацию (регистрироваться лучше там, где вы проводите большую часть дня, "
-                 "для того, чтобы вам приходили уведомления о заданиях рядом)",
+            text="❗️❗️❗️Кнопку ниже нажмите в том месте, в котором находитесь большую часть времени когда готовы "
+                 "взять задание (например у дома) . Бот не считывает вашу позицию постоянно, только в момент "
+                 "отправки точки. Точку получения заданий можно будет изменить в своей анкете. ❗️❗️❗",
             reply_markup=get_location_markup
         )
         await WorkerRegistrationStates.get_location.set()
@@ -214,7 +217,12 @@ async def has_additional_contacts_skip(callback: types.CallbackQuery, callback_d
     await callback.answer()
     state_data = await state.get_data()
     await state.update_data(additional_contacts=None)
-    await save_worker_data(callback.from_user.id, state)
+    try:
+        await save_worker_data(callback.from_user.id, state)
+    except Exception as e:
+        logging.exception(e)
+        await callback.message.answer("При создании учетной записи возникла непредвиденная ошибка")
+        return
     if state_data.get("update"):
         await callback.message.answer(
             text="Данные успешно изменены",
@@ -233,7 +241,13 @@ async def has_additional_contacts_skip(callback: types.CallbackQuery, callback_d
 async def has_additional_contacts(message: types.Message, state: FSMContext):
     additional_contacts: str = message.text
     await state.update_data(additional_contacts=additional_contacts)
-    await save_worker_data(message.from_user.id, state)
+    try:
+        await save_worker_data(message.from_user.id, state)
+    except Exception as e:
+        logging.exception(e)
+        await message.answer("При создании учетной записи возникла непредвиденная ошибка")
+        return
+
     state_data = await state.get_data()
     if state_data.get("update"):
         await message.answer(

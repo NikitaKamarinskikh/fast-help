@@ -23,7 +23,7 @@ class WithdrawalsAdmin(admin.ModelAdmin):
         "pk",
     ]
 
-    list_display = ["user", "created_at", "coins_before", "coins", "coins_after"]
+    list_display = ["order", "order_id", "user", "created_at", "coins_before", "coins", "coins_after"]
 
     class Meta:
         model = Withdrawals
