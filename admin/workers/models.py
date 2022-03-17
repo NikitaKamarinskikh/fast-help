@@ -5,7 +5,7 @@ from admin.main.models import JobCategories
 
 class Workers(TimeBasedModel):
     user = models.ForeignKey(BotUsers, verbose_name="Пользователь", on_delete=models.CASCADE)
-    telegram_id = models.PositiveBigIntegerField("ID в телеграмме", default=0)
+    telegram_id = models.CharField("ID в телеграмме", default="", max_length=255)
     name = models.CharField("Имя", max_length=255)
     location = models.CharField("Координаты", max_length=255)
     city = models.CharField("Город", default="Неизвестный", max_length=255)
