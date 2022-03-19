@@ -1,3 +1,5 @@
+import logging
+
 from aiogram import types
 from loader import dp
 from keyboards.inline.respond_to_order import respond_callback
@@ -24,7 +26,7 @@ async def respond_to_order(callback: types.CallbackQuery, callback_data: dict):
             await callback.message.answer("Вы уже откликнулись на этот заказ")
 
     except Exception as e:
-        print(e)
+        logging.exception(e)
         await callback.message.answer("К сожалению, заказ был удален, либо передан другому исполнителю")
 
 

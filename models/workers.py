@@ -66,10 +66,5 @@ class WorkersModel:
     @sync_to_async
     def get_all():
         return Workers.objects.all()
-        # candidates = list()
-        # workers = Workers.objects.filter(**filters)
-        # for worker in workers:
-        #     if category in worker.categories.all():
-        #         candidates.append(worker)
-        # return candidates
+
 

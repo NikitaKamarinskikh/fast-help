@@ -41,13 +41,6 @@ async def send_voice(callback, state, order):
     await state.update_data(voice_messages_ids=[voice_message.message_id])
 
 
-# @dp.callback_query_handler(yes_or_no_callback.filter(question="update_balance", choice="no"),
-#                            state=ChoseOrderStates.chose_order)
-# async def update_balance_by_callback(callback: types.CallbackQuery, callback_data: dict, state: FSMContext):
-#     await state.finish()
-#     await callback.message.answer("test")
-
-
 @dp.callback_query_handler(orders_nearby_callback.filter(), state=ChoseOrderStates.chose_order)
 async def get_orders_nearby_by_category(callback: types.CallbackQuery, callback_data: dict, state: FSMContext):
     await callback.answer()

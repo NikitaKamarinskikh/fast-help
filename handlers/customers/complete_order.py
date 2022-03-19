@@ -50,7 +50,7 @@ async def add_time_to_order_execution(callback: types.CallbackQuery, callback_da
     await state.update_data(order_id=order_id)
     await callback.message.answer(
         text="Время на выполнение задания (выберите кнопкой или введите самостоятельно текстом "
-             "в формате чч:мм (например 2:05)) xxxx",
+             "в формате чч:мм (например 2:05))",
         reply_markup=update_order_execution_time_markup(order_id)
     )
     await UpdateOrderStates.get_execution_time.set()
