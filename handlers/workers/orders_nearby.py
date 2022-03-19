@@ -13,7 +13,7 @@ from keyboards.inline.orders_nerby import orders_nearby_markup, orders_nearby_ca
 from keyboards.default.home import main_meun_markup
 from keyboards.inline.yes_or_no import yes_or_no_markup, yes_or_no_callback
 from loader import dp
-from models import WorkersModel, JobCategoriesModel, BotUsersModel
+from models import WorkersModel, JobCategoriesModel, BotUsersModel, WithdrawalsModel
 from states.common.confirm_privacy_policy import ConfirmPrivacyPolicy
 from common import get_orders_by_worker
 from states.workers.chose_order import ChoseOrderStates
@@ -106,8 +106,11 @@ async def show_orders_at_longer_distance(callback: types.CallbackQuery, state: F
                                          remove_coins: bool = True):
     state_data = await state.get_data()
     categories = state_data.get("categories")
+    user = await BotUsersModel.get_by_telegram_id(callback.from_user.id)
     if distance == distances.middle.meters:
         if remove_coins:
+            await WithdrawalsModel.create(None, user, user.coins, distances.middle.worker_price,
+                                          user.coins - distances.middle.worker_price)
             await BotUsersModel.remove_coins(callback.from_user.id, distances.middle.worker_price)
         worker = await WorkersModel.get_by_telegram_id(callback.from_user.id)
         max_distance = distances.middle.meters
@@ -124,6 +127,8 @@ async def show_orders_at_longer_distance(callback: types.CallbackQuery, state: F
         )
     elif distance == distances.long.meters:
         if remove_coins:
+            await WithdrawalsModel.create(None, user, user.coins, distances.long.worker_price,
+                                          user.coins - distances.long.worker_price)
             await BotUsersModel.remove_coins(callback.from_user.id, distances.long.worker_price)
         worker = await WorkersModel.get_by_telegram_id(callback.from_user.id)
         await WorkersModel.update_worker_by_id(
