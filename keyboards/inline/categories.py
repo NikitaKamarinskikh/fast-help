@@ -17,7 +17,7 @@ def create_categories_markup(categories: list, confirm_button=False):
     if confirm_button:
         markup.add(
             InlineKeyboardButton(
-                text="Подтвердить",
+                text="Подтвердить ✅",
                 callback_data=confirm_callback.new("yes"),
             )
         )
