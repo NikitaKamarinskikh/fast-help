@@ -6,6 +6,7 @@ from aiogram import types
 from aiogram.dispatcher import FSMContext
 from admin.workers.models import Workers
 from data.config import MainMenuCommands, Roles, DAY_IN_SECONDS
+from keyboards.default.get_location import get_location_markup
 from keyboards.inline.start_or_back import start_or_back_markup
 from keyboards.inline.orders_nerby import orders_nearby_markup, orders_nearby_callback, \
     orders_at_longer_distance_markup, orders_at_longer_distance_callback, confirm_show_longer_distance_orders_markup, \
@@ -15,6 +16,7 @@ from keyboards.inline.yes_or_no import yes_or_no_markup, yes_or_no_callback
 from loader import dp
 from models import WorkersModel, JobCategoriesModel, BotUsersModel, WithdrawalsModel
 from states.common.confirm_privacy_policy import ConfirmPrivacyPolicy
+from states.workers.orders_nearby import OrdersNearbyStates
 from common import get_orders_by_worker
 from states.workers.chose_order import ChoseOrderStates
 from data.config import distances
@@ -122,7 +124,7 @@ async def show_orders_at_longer_distance(callback: types.CallbackQuery, state: F
             max_distance=max_distance
         )
         await callback.message.answer(
-            text=f"Количество заданий в 1000м от вас: {categories.total_1000_meters}",
+            text=f"Количество заданий в {distances.middle.meters}м от вас: {categories.total_1000_meters}",
             reply_markup=orders_nearby_markup(categories.data_1000, distance)
         )
     elif distance == distances.long.meters:
@@ -137,7 +139,7 @@ async def show_orders_at_longer_distance(callback: types.CallbackQuery, state: F
             max_distance=distances.long.meters
         )
         await callback.message.answer(
-            text=f"Количество заданий в 1500м от вас: {categories.total_1500_meters}",
+            text=f"Количество заданий в {distances.long.meters}м от вас: {categories.total_1500_meters}",
             reply_markup=orders_nearby_markup(categories.data_1500, distance)
         )
 
@@ -196,10 +198,20 @@ async def show_longer_distance_orders(callback: types.CallbackQuery, callback_da
 
 @dp.message_handler(text=MainMenuCommands.tasks_nearby)
 async def tasks_nearby(message: types.Message, state: FSMContext):
+    await message.answer(
+        text="Отправьте вашу геолокацию",
+        reply_markup=get_location_markup
+    )
+    await OrdersNearbyStates.get_location.set()
+
+
+@dp.message_handler(content_types=types.ContentTypes.LOCATION, state=OrdersNearbyStates.get_location)
+async def search_tasks_nearby(message: types.Message, state: FSMContext):
     try:
+        location = message.location
         worker = await WorkersModel.get_by_telegram_id(message.from_user.id)
         await message.answer("Ищу задания...", reply_markup=main_meun_markup)
-        orders = await get_orders_by_worker(worker, max_distance=distances.long.meters)
+        orders = await get_orders_by_worker(worker, location, max_distance=distances.long.meters)
         await state.update_data(categories=worker.categories.all())
         await state.update_data(orders=orders)
 
@@ -225,7 +237,7 @@ async def tasks_nearby(message: types.Message, state: FSMContext):
         )
         await ConfirmPrivacyPolicy.ask_to_confirm.set()
     except Exception as e:
-        logging.error(e)
+        logging.exception(e)
         await message.answer(
             "Возникла непредвиденная ошибка. Повторите попытку позже"
         )
