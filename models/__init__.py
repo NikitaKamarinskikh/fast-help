@@ -8,6 +8,7 @@ from .documents import DocumentsModel
 from .timestamps import OrderTimestampsModel
 from .transactions import TransactionsModel
 from .withdrawals import WithdrawalsModel
+from .advertising_companies import AdvertisingCompaniesModel
 
 __all__ = [
     "JobCategoriesModel",
@@ -20,7 +21,8 @@ __all__ = [
     "DocumentsModel",
     "OrderTimestampsModel",
     "TransactionsModel",
-    "WithdrawalsModel"
+    "WithdrawalsModel",
+    "AdvertisingCompaniesModel"
 ]
 
 

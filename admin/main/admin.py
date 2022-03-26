@@ -32,3 +32,11 @@ class DocumentsAdmin(admin.ModelAdmin):
     class Meta:
         model = models.Documents
 
+
+@admin.register(models.AdvertisingCompanies)
+class AdvertisingCompaniesAdmin(admin.ModelAdmin):
+    list_display = ["name", "number", "referrals_quantity"]
+
+    class Meta:
+        model = models.AdvertisingCompanies
+

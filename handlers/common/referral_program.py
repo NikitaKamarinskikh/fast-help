@@ -2,7 +2,7 @@ from aiogram import types
 from loader import dp
 from keyboards.inline.balance import balance_callback
 from keyboards.inline.referral import referral_markup, referral_callback
-from data.config import MainMenuCommands
+from data.config import MainMenuCommands, REFERRER_COINS
 from models import BotUsersModel
 from data.config import MainMenuCommands
 
@@ -14,7 +14,7 @@ async def invite(message: types.Message):
     referrals_quantity = len(referrals)
     await message.answer(
         text="Реферальная программа. \n"
-             "За каждого приглашенного пользователя вы получаете 20 монет.\n"
+             f"За каждого приглашенного пользователя вы получаете {REFERRER_COINS} монет.\n"
              "Со всех внесенных пользователем платежей вы получаете 5%.\n"
              f"Количество ваших рефералов: {referrals_quantity}",
         reply_markup=referral_markup()
@@ -29,7 +29,7 @@ async def balance(callback: types.CallbackQuery):
     referrals_quantity = len(referrals)
     await callback.message.edit_text(
         text="Реферальная программа. \n"
-             "За каждого приглашенного пользователя вы получаете 20 монет.\n"
+             f"За каждого приглашенного пользователя вы получаете {REFERRER_COINS} монет.\n"
              "Со всех внесенных пользователем платежей вы получаете 5%.\n"
              f"Количество ваших рефералов: {referrals_quantity}",
         reply_markup=referral_markup()

@@ -71,6 +71,18 @@ class Documents(TimeBasedModel):
         verbose_name_plural = "Документы"
 
 
+class AdvertisingCompanies(TimeBasedModel):
+    name = models.CharField("Название", max_length=255)
+    number = models.CharField("Уникальный номер", max_length=255, unique=True)
+    referrals_quantity = models.PositiveBigIntegerField("Кол-во приведенных пользователей", default=0)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = "Рекламная компания"
+        verbose_name_plural = "Рекламные компании"
+
 
 
 
