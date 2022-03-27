@@ -33,19 +33,20 @@ async def bot_start(message: types.Message, state: FSMContext):
         )
     else:
         message_args = message.get_args()
-        print(message_args)
         referrer = None
         company = None
         if message_args.isdigit():  # Приведен пользователем
-            print("Приведен пользователем")
             referrer = await get_referrer_by_message_args(message.get_args(), message.from_user.id)
-        else:  # Пришел по ссылке от компани
+
+        user = await BotUsersModel.create_user(message.from_user.id, message.from_user.username, referrer)
+
+        if not message_args.isdigit():  # Пришел по ссылке от компании
             company_number = message.get_args().split("_")[-1]
             company = await AdvertisingCompaniesModel.get_by_number_or_none(company_number)
-            if company:
+            if company and not user.already_existed:
                 referrals_quantity = company.referrals_quantity + 1
                 await AdvertisingCompaniesModel.update(company_number, referrals_quantity=referrals_quantity)
-        user = await BotUsersModel.create_user(message.from_user.id, message.from_user.username, referrer)
+
         if not user.already_existed and referrer:
             referrer = await BotUsersModel.add_coins(referrer.telegram_id, REFERRER_COINS)
             await notify_referrer_about_new_referral(referrer)
@@ -54,6 +55,7 @@ async def bot_start(message: types.Message, state: FSMContext):
             text="Добро пожаловать\nВы ищите помощь или хотите стать помощником?",
             reply_markup=start_keyboard
         )
+
         if company is None and referrer:
             await BotUsersModel.add_coins(message.from_user.id, REFERRER_COINS)
             await message.answer(f"Вам зачислен бонус {REFERRER_COINS} монет!")
