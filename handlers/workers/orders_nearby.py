@@ -211,7 +211,8 @@ async def search_tasks_nearby(message: types.Message, state: FSMContext):
         location = message.location
         worker = await WorkersModel.get_by_telegram_id(message.from_user.id)
         await message.answer("Ищу задания...", reply_markup=main_meun_markup)
-        orders = await get_orders_by_worker(worker, location, max_distance=distances.long.meters)
+
+        orders = await get_orders_by_worker(worker, location, max_distance=distances.short.meters)
         await state.update_data(categories=worker.categories.all())
         await state.update_data(orders=orders)
 

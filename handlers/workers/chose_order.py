@@ -19,7 +19,7 @@ def get_orders_by_category_name_and_max_distance(orders: list, category_name: st
 
 
 async def get_message_content(order: object, orders_quantity: int, order_number: int):
-    text = f"Заказ {order_number + 1} из {orders_quantity}\n{order.customer_name} {order.customer_phone}\n"
+    text = f"Задание {order_number + 1} из {orders_quantity}\n{order.customer_name} {order.customer_phone}\n"
     if order.customer.user.username and order.allow_to_write_in_telegram:
         text += f"@{order.customer.user.username}\n"
     else:

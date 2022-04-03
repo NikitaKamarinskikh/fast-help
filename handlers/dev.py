@@ -1,4 +1,6 @@
 from datetime import time, datetime
+from random import random, randint
+
 from loader import bot
 from aiogram import types
 from aiogram.dispatcher import FSMContext
@@ -43,9 +45,9 @@ def dev_markup():
 
 @dp.message_handler(commands=["dev"], state="*")
 async def dev(message: types.Message, state: FSMContext):
-    bot_name = (await message.bot.get_me()).username
-    link = f"https://t.me/{bot_name}?start=c_123"
-    await message.answer(link)
+    # bot_name = (await message.bot.get_me()).username
+    # link = f"https://t.me/{bot_name}?start=c_123"
+    # await message.answer(link)
 
     # test_payload = {
     #     "param1": 1,
@@ -94,7 +96,7 @@ async def dev(message: types.Message, state: FSMContext):
     # }
     #
     # worker = await WorkersModel.create_worker(**worker_data)
-    #
+    # #
     # categories = list()
     # categories_list = await JobCategoriesModel.get_all()
     # for category_id in [1, 3, 4, 5, 6]:
@@ -109,29 +111,31 @@ async def dev(message: types.Message, state: FSMContext):
     # state_data = await state.get_data()
     # print(state_data)
 
-    # execution_time = time(int(10), int(20), 0)
-    # customer = await CustomersModel.get_by_telegram_id(message.from_user.id)
-    # category = await JobCategoriesModel.get_by_id(1)
-    # category_name = category.name
+    execution_time = time(int(10), int(20), 0)
+    customer = await CustomersModel.get_by_telegram_id(message.from_user.id)
+    category = await JobCategoriesModel.get_by_id(1)
+    category_name = category.name
     # location = f"54.983357  82.805794"
-    # order_data = {
-    #     "customer": customer,
-    #     "customer_telegram_id": message.from_user.id,
-    #     "category": category,
-    #     "customer_name": category.name,
-    #     "location": location,
-    #     "customer_phone": "79237343772",
-    #     "start_date": datetime.now(),
-    #     "execution_time": execution_time,
-    #     "allow_to_write_in_telegram": False,
-    #     "category_name": category_name,
-    #     "status": OrderStatuses.waiting_for_start
-    # }
-    #
-    # await message.answer("start making orders")
-    # for i in range(1, 80000):
-    #     await OrdersModel.create(**order_data)
-    # await message.answer("finish making orders")
+    location = f"{randint(25, 180)}  {randint(25, 180)}"
+
+    order_data = {
+        "customer": customer,
+        "customer_telegram_id": message.from_user.id,
+        "category": category,
+        "customer_name": category.name,
+        "location": location,
+        "customer_phone": "79237343772",
+        "start_date": datetime.now(),
+        "execution_time": execution_time,
+        "allow_to_write_in_telegram": False,
+        "category_name": category_name,
+        "status": OrderStatuses.waiting_for_start
+    }
+
+    await message.answer("start making orders")
+    for i in range(1, 80000):
+        await OrdersModel.create(**order_data)
+    await message.answer("finish making orders")
 
 
 

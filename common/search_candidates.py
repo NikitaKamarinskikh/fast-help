@@ -59,19 +59,34 @@ async def get_candidates_by_filters(order: object, excepted_user_telegram_id: in
     return candidates
 
 
+def is_close_distance(coordinates1: tuple, coordinates2: tuple):
+    if int(coordinates1[0]) != int(coordinates2[0]) or int(coordinates1[1]) != int(coordinates2[1]):
+        return False
+    return True
+
+
 async def get_orders_by_worker(worker: object, worker_location, max_distance: int = 500) -> list:
     candidates = list()
+    print("start getting orders at ", datetime.now())
     orders = await OrdersModel.get_not_completed_by_categories(worker.categories.all())
+    print("finish getting orders at ", datetime.now())
+
     worker_telegram_id = worker.user.telegram_id
     # worker_distance_list = worker.location.split()
     worker_distance = (float(worker_location.latitude), float(worker_location.longitude))
+    print("start filtering orders at ", datetime.now())
+    print(max_distance)
     for order in orders:
         order_distance_list = order.location.split()
         order_distance = (float(order_distance_list[0]), float(order_distance_list[1]))
+        # if is_close_distance(order_distance, worker_distance):
         distance = get_distance_between_two_points_in_meters(order_distance, worker_distance)
+        print(distance)
         if distance <= max_distance and order.customer_telegram_id != worker_telegram_id:
             setattr(order, "distance", distance)
             candidates.append(order)
+    print("finish filtering orders at ", datetime.now())
+    print(len(candidates))
     return candidates
 
 

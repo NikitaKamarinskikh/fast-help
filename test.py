@@ -1,6 +1,7 @@
 from math import radians, sqrt, sin, cos, atan2
 from geopy.distance import geodesic as get_distance_between_two_cords_geo
 from datetime import datetime
+import requests
 # from common import get_city_by_coordinates
 
 
