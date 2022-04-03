@@ -8,7 +8,7 @@ from keyboards.default.start import start_keyboard
 from keyboards.default.main import main_markup
 from models import BotUsersModel, WorkersModel, CustomersModel, AdvertisingCompaniesModel
 from notifications.notifications import notify_referrer_about_new_referral
-from data.config import REFERRER_COINS, REFERRAL_COINS
+from data.config import REFERRER_COINS, REFERRAL_COINS, START_PHOTO_FILE_ID
 
 
 async def get_referrer_by_message_args(message_args, user_telegram_id: int):
@@ -67,6 +67,7 @@ async def bot_start(message: types.Message, state: FSMContext):
             text="❗️Если вы не видите меню с кнопками сейчас или далее, то оно скорей всего скрыто, "
                  "чтобы его показать нажмите внизу символ с 4 квадратами внутри."
         )
+        await message.answer_photo(START_PHOTO_FILE_ID)
         if company is None and referrer:
             await BotUsersModel.add_coins(message.from_user.id, REFERRAL_COINS)
             await message.answer(f"Вам зачислен бонус {REFERRAL_COINS} монет!")
