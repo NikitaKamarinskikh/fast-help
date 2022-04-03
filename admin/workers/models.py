@@ -18,7 +18,7 @@ class Workers(TimeBasedModel):
     categories = models.ManyToManyField(JobCategories, verbose_name="Категории")
     is_privacy_policy_confirmed = models.BooleanField("Подтверждена ли политика конфиденциальности", default=False)
     orders_at_longer_distance_access_time = models.PositiveBigIntegerField(
-        "Срок окончания доступа к заданиям на больщей дистанции", default=0)
+        "Срок окончания доступа к заданиям на большей дистанции", default=0)
     max_distance = models.IntegerField("Максимальная дистанция для заказов в метрах", default=500)
 
     def __str__(self):

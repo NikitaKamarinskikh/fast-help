@@ -12,7 +12,8 @@ class Orders(TimeBasedModel):
     category_name = models.CharField("Название категории", max_length=255, null=True, blank=True)
     distance = models.PositiveIntegerField("Дистанция", default=500)
     worker = models.ForeignKey(Workers, verbose_name="Исполнитель", null=True, blank=True, on_delete=models.CASCADE)
-    candidates = models.ManyToManyField(Workers, verbose_name="Кандидаты", related_name="order_candidates", blank=True)
+    candidates = models.ManyToManyField(Workers, verbose_name="Кандидаты", related_name="order_candidates", blank=True,
+                                        limit_choices_to={'telegram_id': 0})
     status = models.CharField("Статус", max_length=120, default=OrderStatuses.waiting_for_payment)
     customer_name = models.CharField("Имя для обращения к заказчику", max_length=255)
     location = models.CharField("Координаты", max_length=255)

@@ -18,10 +18,10 @@ class Withdrawals(TimeBasedModel):
     user = models.ForeignKey(BotUsers, verbose_name="Пользователь бота", on_delete=models.CASCADE)
     coins_before = models.PositiveBigIntegerField("Монеты до")
     coins = models.PositiveBigIntegerField("Сколько монет списалось")
-    coins_after = models.PositiveBigIntegerField("Монетыпосле")
+    coins_after = models.PositiveBigIntegerField("Монеты после")
 
     class Meta:
-        verbose_name = "Вывод средств"
-        verbose_name_plural = "Выводы средств"
+        verbose_name = "Расход монет"
+        verbose_name_plural = "Расход монет"
 
 
