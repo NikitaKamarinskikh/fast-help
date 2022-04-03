@@ -2,12 +2,12 @@ from aiogram import types
 from loader import dp
 from keyboards.inline.balance import balance_callback
 from keyboards.inline.referral import referral_markup, referral_callback
-from data.config import MainMenuCommands, REFERRER_COINS
+from data.config import MainMenuCommands, REFERRER_COINS, REFERRAL_COINS
 from models import BotUsersModel
 from data.config import MainMenuCommands
 
 
-@dp.message_handler(text="Пригласить")
+@dp.message_handler(text=["Пригласить", MainMenuCommands.referral_program])
 async def invite(message: types.Message):
     bot_user = await BotUsersModel.get_by_telegram_id(message.from_user.id)
     referrals = await BotUsersModel.get_referrals(bot_user)
@@ -41,7 +41,9 @@ async def get_referral_link(callback: types.CallbackQuery):
     await callback.answer()
     bot_name = (await callback.message.bot.get_me()).username
     link = f"https://t.me/{bot_name}?start={callback.from_user.id}"
-    await callback.message.answer(f"Ваша реферальная ссылка:\n{link}")
+    await callback.message.answer("Просто скопируй сообщение ниже или перешли его тому с кем хочешь поделиться")
+    await callback.message.answer(f"Переходи по моей ссылке и получи {REFERRAL_COINS} бонусных монет "
+                                  f"для работы внутри бота:\n{link}")
 
 
 

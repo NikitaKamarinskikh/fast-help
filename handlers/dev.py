@@ -44,7 +44,7 @@ def dev_markup():
 @dp.message_handler(commands=["dev"], state="*")
 async def dev(message: types.Message, state: FSMContext):
     bot_name = (await message.bot.get_me()).username
-    link = f"https://t.me/{bot_name}?start=company_id_123"
+    link = f"https://t.me/{bot_name}?start=c_123"
     await message.answer(link)
 
     # test_payload = {

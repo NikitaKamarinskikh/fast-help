@@ -9,7 +9,8 @@ ADMINS = env.list("ADMINS")
 REFERRER_BONUS_PERCENT = 5
 DAY_IN_MINUTES = 1440
 DAY_IN_SECONDS = 86400
-REFERRER_COINS = 30
+REFERRER_COINS = 50
+REFERRAL_COINS = 100
 
 SHORT_DISTANCE = 500
 MIDDLE_DISTANCE = 1000
@@ -39,6 +40,7 @@ class MainMenuCommands:
     workers_nearby = "Исполнители рядом"
     my_orders = "Ваши задания"
     balance = "Баланс"
+    referral_program = "Реферальная программа"
 
 
 @dataclass
