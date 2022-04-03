@@ -43,17 +43,20 @@ def worker_has_to_order_at_distance(worker: object, distance: int, order_distanc
 
 
 async def get_candidates_by_filters(order: object, excepted_user_telegram_id: int) -> list:
-    workers = await WorkersModel.get_by_category(category=[order.category])
+    workers = await WorkersModel.get_by_category_and_coordinates(
+        category=[order.category],
+        order_latitude=order.latitude,
+        order_longitude=order.longitude,
+        customer_telegram_id=excepted_user_telegram_id
+    )
     candidates = list()
     order_distance_list = order.location.split()
     order_distance = (float(order_distance_list[0]), float(order_distance_list[1]))
-    excepted_user_telegram_id = str(excepted_user_telegram_id)
     for worker in workers:
         worker_distance_list = worker.location.split()
         worker_distance = (float(worker_distance_list[0]), float(worker_distance_list[1]))
         distance = get_distance_between_two_points_in_meters(order_distance, worker_distance)
-        if worker_has_to_order_at_distance(worker, distance, order.distance) \
-                and worker.telegram_id != excepted_user_telegram_id:
+        if worker_has_to_order_at_distance(worker, distance, order.distance):
             setattr(worker, "distance", distance)
             candidates.append(worker)
     return candidates

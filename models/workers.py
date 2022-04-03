@@ -1,4 +1,6 @@
 from asgiref.sync import sync_to_async
+from django.db.models import Q
+
 from admin.workers.models import Workers, BotUsers
 from admin.main.models import JobCategories
 
@@ -54,6 +56,21 @@ class WorkersModel:
 
     @staticmethod
     @sync_to_async
+    def get_by_category_and_coordinates(category: list,
+                                        order_latitude: int,
+                                        order_longitude: int,
+                                        customer_telegram_id):
+        latitude_range = [order_latitude - 1, order_latitude, order_latitude + 1]
+        longitude_range = [order_longitude - 1, order_longitude, order_longitude + 1]
+        return Workers.objects.filter(
+            ~Q(telegram_id=customer_telegram_id),
+            categories__in=category,
+            latitude__in=latitude_range,
+            longitude__in=longitude_range,
+        )
+
+    @staticmethod
+    @sync_to_async
     def delete_all() -> None:
         Workers.objects.all().delete()
 
@@ -66,5 +83,3 @@ class WorkersModel:
     @sync_to_async
     def get_all():
         return Workers.objects.all()
-
-

@@ -45,6 +45,7 @@ def dev_markup():
 
 @dp.message_handler(commands=["dev"], state="*")
 async def dev(message: types.Message, state: FSMContext):
+    # await WorkersModel.delete_all()
     # await OrdersModel.delete_all()
     # bot_name = (await message.bot.get_me()).username
     # link = f"https://t.me/{bot_name}?start=c_123"
@@ -88,58 +89,60 @@ async def dev(message: types.Message, state: FSMContext):
     # return
     # await WorkersModel.delete_all()
     # await message.answer("start making workers")
-    # user = await BotUsersModel.get_by_telegram_id(message.from_user.id)
-    # worker_data = {
-    #     "user": user,
-    #     "name": "test_user",
-    #     "location": "54.983218 82.805607",
-    #     "phone": "79237343772"
-    # }
+    user = await BotUsersModel.get_by_telegram_id(message.from_user.id)
+    worker_data = {
+        "user": user,
+        "name": "test_user",
+        "location": f"54.987307 82.825439",
+        "latitude": 54,
+        "longitude": 82,
+        "phone": "79237343772"
+    }
+
+    worker = await WorkersModel.create_worker(**worker_data)
     #
-    # worker = await WorkersModel.create_worker(**worker_data)
-    # #
-    # categories = list()
-    # categories_list = await JobCategoriesModel.get_all()
-    # for category_id in [1, 3, 4, 5, 6]:
-    #     categories.append(get_category_by_id(categories_list, int(category_id)))
-    # await WorkersModel.add_categories_to_worker(worker, categories)
-    #
-    # for i in range(100000):
-    #     worker = await WorkersModel.create_worker(**worker_data)
-    #     await WorkersModel.add_categories_to_worker(worker, categories)
-    #
+    categories = list()
+    categories_list = await JobCategoriesModel.get_all()
+    for category_id in [1, 3, 4, 5, 6]:
+        categories.append(get_category_by_id(categories_list, int(category_id)))
+    await WorkersModel.add_categories_to_worker(worker, categories)
+
+    for i in range(100000):
+        worker = await WorkersModel.create_worker(**worker_data)
+        await WorkersModel.add_categories_to_worker(worker, categories)
+
     # await message.answer("finish making workers")
     # state_data = await state.get_data()
     # print(state_data)
 
-    execution_time = time(int(10), int(20), 0)
-    customer = await CustomersModel.get_by_telegram_id(message.from_user.id)
-    category = await JobCategoriesModel.get_by_id(1)
-    category_name = category.name
-    # location = f"54.983357  82.805794"
-    location = f"54.990032 82.823077"
-    # location = f"{randint(25, 180)}  {randint(25, 180)}"
-    t = location.split()
-    order_data = {
-        "customer": customer,
-        "customer_telegram_id": message.from_user.id,
-        "category": category,
-        "customer_name": category.name,
-        "location": location,
-        "latitude": int(float(t[0])),
-        "longitude": int(float(t[1])),
-        "customer_phone": "79237343772",
-        "start_date": datetime.now(),
-        "execution_time": execution_time,
-        "allow_to_write_in_telegram": False,
-        "category_name": category_name,
-        "status": OrderStatuses.waiting_for_start
-    }
-
-    await message.answer("start making orders")
-    for i in range(1, 80000):
-        await OrdersModel.create(**order_data)
-    await message.answer("finish making orders")
+    # execution_time = time(int(10), int(20), 0)
+    # customer = await CustomersModel.get_by_telegram_id(message.from_user.id)
+    # category = await JobCategoriesModel.get_by_id(1)
+    # category_name = category.name
+    # # location = f"54.983357  82.805794"
+    # location = f"54.990032 82.823077"
+    # # location = f"{randint(25, 180)}  {randint(25, 180)}"
+    # t = location.split()
+    # order_data = {
+    #     "customer": customer,
+    #     "customer_telegram_id": message.from_user.id,
+    #     "category": category,
+    #     "customer_name": category.name,
+    #     "location": location,
+    #     "latitude": int(float(t[0])),
+    #     "longitude": int(float(t[1])),
+    #     "customer_phone": "79237343772",
+    #     "start_date": datetime.now(),
+    #     "execution_time": execution_time,
+    #     "allow_to_write_in_telegram": False,
+    #     "category_name": category_name,
+    #     "status": OrderStatuses.waiting_for_start
+    # }
+    #
+    # await message.answer("start making orders")
+    # for i in range(1, 80000):
+    #     await OrdersModel.create(**order_data)
+    # await message.answer("finish making orders")
 
 
 

@@ -194,6 +194,8 @@ async def save_worker_data(worker_telegram_id: int, state: FSMContext):
         "name": state_data.get("worker_name"),
         "telegram_id": worker_telegram_id,
         "location": location,
+        "latitude": int(state_data.get('location').latitude),
+        "longitude": int(state_data.get('location').longitude),
         "phone": state_data.get("phone"),
         "is_privacy_policy_confirmed": True
     }
