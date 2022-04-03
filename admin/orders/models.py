@@ -16,6 +16,8 @@ class Orders(TimeBasedModel):
     status = models.CharField("Статус", max_length=120, default=OrderStatuses.waiting_for_payment)
     customer_name = models.CharField("Имя для обращения к заказчику", max_length=255)
     location = models.CharField("Координаты", max_length=255)
+    latitude = models.PositiveIntegerField("Целая часть от широты", default=0)
+    longitude = models.PositiveIntegerField("Целая часть от долготы", default=0)
     city = models.CharField("Город", default="Неизвестный", max_length=255)
     customer_phone = models.CharField("Телефон заказчика", max_length=255)
     additional_contacts = models.CharField("Дополнительные контакты", max_length=255, null=True, blank=True)

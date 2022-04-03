@@ -2,6 +2,7 @@ from django.db.models import Q
 from asgiref.sync import sync_to_async
 from admin.orders.models import Orders, OrderCandidates
 from data.config import OrderStatuses
+from django.db.models import Q
 
 
 class OrdersModel:
@@ -47,6 +48,22 @@ class OrdersModel:
     @sync_to_async
     def get_not_completed_by_categories(categories: list):
         return Orders.objects.filter(status=OrderStatuses.waiting_for_start, category__in=categories)
+
+    @staticmethod
+    @sync_to_async
+    def get_not_completed_by_categories_and_coordinates(categories: list,
+                                                        worker_latitude: int,
+                                                        worker_longitude: int,
+                                                        worker_telegram_id):
+        latitude_range = [worker_latitude-1, worker_latitude, worker_latitude+1]
+        longitude_range = [worker_longitude-1, worker_longitude, worker_longitude+1]
+        return Orders.objects.filter(
+            ~Q(customer_telegram_id=worker_telegram_id),
+            status=OrderStatuses.waiting_for_start,
+            category__in=categories,
+            latitude__in=latitude_range,
+            longitude__in=longitude_range,
+        )
 
     @staticmethod
     @sync_to_async

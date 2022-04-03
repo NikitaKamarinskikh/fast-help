@@ -8,6 +8,8 @@ class Workers(TimeBasedModel):
     telegram_id = models.CharField("ID в телеграмме", default="", max_length=255)
     name = models.CharField("Имя", max_length=255)
     location = models.CharField("Координаты", max_length=255)
+    latitude = models.PositiveIntegerField("Целая часть от широты", default=0)
+    longitude = models.PositiveIntegerField("Целая часть от долготы", default=0)
     city = models.CharField("Город", default="Неизвестный", max_length=255)
     phone = models.CharField("Телефон", max_length=255)
     additional_contacts = models.CharField("Дополнительная информация", max_length=255, null=True, blank=True)
