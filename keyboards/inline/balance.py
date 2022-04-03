@@ -11,11 +11,11 @@ def balance_markup():
         InlineKeyboardButton(
             text="Пополнить",
             callback_data=balance_callback.new("update_balance"),
-        ),
-        InlineKeyboardButton(
-            text="Пригласить",
-            callback_data=balance_callback.new("invite"),
-        ),
+        )
+        # InlineKeyboardButton(
+        #     text="Пригласить",
+        #     callback_data=balance_callback.new("invite"),
+        # ),
     )
     return markup
 
