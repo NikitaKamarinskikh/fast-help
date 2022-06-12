@@ -42,8 +42,10 @@ async def get_referral_link(callback: types.CallbackQuery):
     bot_name = (await callback.message.bot.get_me()).username
     link = f"https://t.me/{bot_name}?start={callback.from_user.id}"
     await callback.message.answer("Просто скопируй сообщение ниже или перешли его тому с кем хочешь поделиться")
-    await callback.message.answer(f"Переходи по моей ссылке и получи {REFERRAL_COINS} бонусных монет "
-                                  f"для работы внутри бота:\n{link}")
-
+    await callback.message.answer(
+        text="Привет. Я нашел классного бота, в котором можно заработать, выполняя несложные задания рядом с "
+             "домом. Для регистрации перейди по моей ссылке ниже, и мы оба получим дополнительные бонусы для "
+             f"получения и размещения заданий. {link}"
+    )
 
 

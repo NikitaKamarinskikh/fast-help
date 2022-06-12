@@ -17,6 +17,12 @@ async def get_photo_id(message: types.Message):
         await message.reply(text=f'ID фотографии: \n{photo_id}')
 
 
+@dp.message_handler(AdminOnly(), content_types=types.ContentType.VIDEO)
+async def get_video_id(message: types.Message):
+    if message.chat.type == types.ChatType.PRIVATE:
+        video_id = message.photo[-1].file_id
+        await message.reply(text=f'ID фотографии: \n{video_id}')
+
 
 
 
