@@ -2,7 +2,7 @@ import logging
 
 from aiogram.dispatcher import FSMContext
 from aiogram import types
-
+from data.config import PROMOTIONAL_VIDEO_ID
 from keyboards.default.start import start_keyboard
 from keyboards.inline.skip import skip_markup, skip_callback
 from loader import dp
@@ -271,6 +271,7 @@ async def has_additional_contacts(message: types.Message, state: FSMContext):
                  "домом. Для регистрации перейди по моей ссылке ниже, и мы оба получим дополнительные бонусы для "
                  f"получения и размещения заданий. https://t.me/FindHelp_bot?start={message.from_user.id}"
         )
+        await message.answer_video(PROMOTIONAL_VIDEO_ID)
     await state.finish()
 
 

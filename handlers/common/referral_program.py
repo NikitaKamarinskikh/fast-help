@@ -2,7 +2,7 @@ from aiogram import types
 from loader import dp
 from keyboards.inline.balance import balance_callback
 from keyboards.inline.referral import referral_markup, referral_callback
-from data.config import MainMenuCommands, REFERRER_COINS, REFERRAL_COINS
+from data.config import MainMenuCommands, REFERRER_COINS, REFERRAL_COINS, PROMOTIONAL_VIDEO_ID
 from models import BotUsersModel
 from data.config import MainMenuCommands
 
@@ -47,5 +47,6 @@ async def get_referral_link(callback: types.CallbackQuery):
              "домом. Для регистрации перейди по моей ссылке ниже, и мы оба получим дополнительные бонусы для "
              f"получения и размещения заданий. {link}"
     )
+    await callback.message.answer_video(PROMOTIONAL_VIDEO_ID)
 
 
