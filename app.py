@@ -1,8 +1,9 @@
+import os
+
 import asyncio
+import django
 
 from loader import bot, storage
-import django
-import os
 
 
 async def on_startup(dp):
@@ -11,7 +12,6 @@ async def on_startup(dp):
     filters.setup(dp)
     import middlewares
 
-    # await on_startup_notify(dp)
     await set_default_commands(dp)
 
 

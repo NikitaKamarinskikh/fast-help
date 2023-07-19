@@ -1,10 +1,12 @@
 import time
 import logging
 from datetime import datetime, time
+
 from aiogram import types
 from aiogram.dispatcher import FSMContext
+
 from handlers.customers.chose_candidate import get_order_finish_time_in_seconds
-from common import parse_date, get_candidates_by_filters, correct_time
+from common import parse_date, get_candidates_by_filters, is_correct_time
 from keyboards.default.main import main_markup
 from loader import dp
 from keyboards.inline.update_order import update_order_start_date_callback, update_order_execution_time_markup, \
@@ -80,7 +82,7 @@ async def update_order(state_data: dict, user_telegram_id: int):
 @dp.message_handler(state=UpdateOrderStates.get_execution_time)
 async def update_order_execution_time(message: types.Message, state: FSMContext):
     order_execution_time: str = message.text
-    if correct_time(order_execution_time):
+    if is_correct_time(order_execution_time):
         await state.update_data(order_execution_time=order_execution_time)
         state_data = await state.get_data()
         try:

@@ -3,6 +3,7 @@ import logging
 from aiogram import types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.builtin import CommandStart
+
 from loader import dp
 from keyboards.default.start import start_keyboard
 from keyboards.default.main import main_markup
@@ -11,20 +12,11 @@ from notifications.notifications import notify_referrer_about_new_referral
 from data.config import REFERRER_COINS, REFERRAL_COINS, START_PHOTO_FILE_ID
 
 
-async def get_referrer_by_message_args(message_args, user_telegram_id: int):
-    referrer = None
-    if message_args:
-        try:
-            referrer_telegram_id = int(message_args)
-            if referrer_telegram_id != user_telegram_id:
-                referrer = await BotUsersModel.get_by_telegram_id(referrer_telegram_id)
-        except Exception as e:
-            logging.exception(e)
-    return referrer
-
-
 @dp.message_handler(CommandStart(), state="*")
 async def bot_start(message: types.Message, state: FSMContext):
+
+    dp.register_message_handler()
+
     await state.finish()
     customer = await CustomersModel.get_or_none(message.from_user.id)
     worker = await WorkersModel.get_or_none(message.from_user.id)
@@ -38,7 +30,7 @@ async def bot_start(message: types.Message, state: FSMContext):
         referrer = None
         company = None
         if message_args.isdigit():  # Приведен пользователем
-            referrer = await get_referrer_by_message_args(message.get_args(), message.from_user.id)
+            referrer = await _get_referrer_by_message_args(message.get_args(), message.from_user.id)
 
         user = await BotUsersModel.create_user(message.from_user.id, message.from_user.username, referrer)
 
@@ -72,5 +64,16 @@ async def bot_start(message: types.Message, state: FSMContext):
             await BotUsersModel.add_coins(message.from_user.id, REFERRAL_COINS)
             await message.answer(f"Вам зачислен бонус {REFERRAL_COINS} монет!")
 
+
+async def _get_referrer_by_message_args(message_args, user_telegram_id: int):
+    referrer = None
+    if message_args:
+        try:
+            referrer_telegram_id = int(message_args)
+            if referrer_telegram_id != user_telegram_id:
+                referrer = await BotUsersModel.get_by_telegram_id(referrer_telegram_id)
+        except Exception as e:
+            logging.exception(e)
+    return referrer
 
 

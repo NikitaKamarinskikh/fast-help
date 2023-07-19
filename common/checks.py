@@ -2,7 +2,7 @@ import re
 from datetime import datetime
 
 
-def correct_date(string: str) -> bool:
+def is_correct_date(string: str) -> bool:
     if re.match(r"^\d\d\.\d\d\.\d\d\d\d$", string):
         current_year = datetime.now().year
         days, months, years = string.split(".")
@@ -12,7 +12,7 @@ def correct_date(string: str) -> bool:
     return False
 
 
-def correct_time(string: str) -> bool:
+def is_correct_time(string: str) -> bool:
     if re.match(r"^\d{1,2}:\d\d$", string):
         hours, minutes = string.split(":")
         if int(hours) in range(0, 25) and int(minutes) in range(0, 61):
@@ -30,6 +30,6 @@ def parse_date(string: str):
     """
     if re.match(r"^\d\d\.\d\d\.\d\d\d\d \d{1,2}:\d\d$", string):
         date, time = string.split(" ")
-        if correct_date(date) and correct_time(time):
+        if is_correct_date(date) and is_correct_time(time):
             return datetime.strptime(f"{date} {time}", "%d.%m.%Y %H:%M")
     return None

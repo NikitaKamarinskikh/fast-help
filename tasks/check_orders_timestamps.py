@@ -1,5 +1,5 @@
 from datetime import datetime
-from time import time
+
 from models import OrderTimestampsModel
 from notifications import notify_customer_about_completed_order
 

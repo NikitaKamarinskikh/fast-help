@@ -6,6 +6,11 @@ class CustomersModel:
 
     @staticmethod
     @sync_to_async
+    def get_all() -> list:
+        return Customers.objects.all()
+
+    @staticmethod
+    @sync_to_async
     def get_by_id(id_: int) -> object:
         return Customers.objects.get(pk=id_)
 

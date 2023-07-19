@@ -1,6 +1,7 @@
+from aiogram import types
+
 from common.rating import count_rating
 from loader import dp
-from aiogram import types
 from keyboards.inline.rating import rating_callback
 from models import CustomersModel, OrdersModel
 from notifications import notify_customer_about_new_feedback

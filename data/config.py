@@ -58,11 +58,6 @@ class OrderStatuses:
 
 
 @dataclass
-class TransactionStatuses:
-    ...
-
-
-@dataclass
 class PaymentMethods:
     one_time = "one_time"
     coins = "coins"

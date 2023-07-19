@@ -1,7 +1,9 @@
-from aiogram import types
 from datetime import datetime
+
+from aiogram import types
 from aiogram.dispatcher import FSMContext
-from keyboards.inline.customer_orders import orders_markup, orders_callback, find_new_candidate_markup
+
+from keyboards.inline.customer_orders import find_new_candidate_markup
 from keyboards.inline.update_order import update_order_execution_time_markup
 from loader import dp
 from keyboards.inline.complete_order import is_order_competed_callback, order_complete_denied_markup, \

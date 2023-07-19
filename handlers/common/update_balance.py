@@ -1,11 +1,13 @@
 import logging
+
 from aiogram.dispatcher import FSMContext
-from loader import dp
 from aiogram import types
+
+from loader import dp
 from keyboards.inline.balance import balance_callback, coins_sum_callback
 from keyboards.inline.balance import coins_sum_markup
 from keyboards.inline.yes_or_no import yes_or_no_callback
-from payments.payments import get_payment_link, send_invoice
+from payments.payments import send_invoice
 from models import BotUsersModel, TransactionsModel
 from states.common.update_balance import UpdateBalanceStates
 from states.workers.chose_order import ChoseOrderStates

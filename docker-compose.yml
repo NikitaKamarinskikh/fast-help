@@ -71,5 +71,4 @@ networks:
 volumes:
   pgdata:
 
-# systemctl enable docker.service
 

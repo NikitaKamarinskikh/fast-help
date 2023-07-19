@@ -39,6 +39,11 @@ class BotUsersModel:
 
     @staticmethod
     @sync_to_async
+    def get_all() -> list:
+        return BotUsers.objects.all()
+
+    @staticmethod
+    @sync_to_async
     def update_user(telegram_id: int, **update_data) -> None:
         BotUsers.objects.filter(telegram_id=telegram_id).update(**update_data)
 

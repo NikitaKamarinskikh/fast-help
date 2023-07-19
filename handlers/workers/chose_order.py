@@ -1,21 +1,10 @@
-from datetime import datetime
-from keyboards.inline.orders_nerby import orders_nearby_callback, chose_order_pagination_callback, \
-    orders_at_longer_distance_callback
-from keyboards.inline.yes_or_no import yes_or_no_markup, yes_or_no_callback
-from loader import dp, bot
 from aiogram import types
 from aiogram.dispatcher import FSMContext
+
+from keyboards.inline.orders_nerby import orders_nearby_callback, chose_order_pagination_callback
+from loader import dp, bot
 from keyboards.inline.orders_nerby import chose_order_markup, back_to_orders_callback
 from states.workers.chose_order import ChoseOrderStates
-from models import OrdersModel
-
-
-def get_orders_by_category_name_and_max_distance(orders: list, category_name: str, max_distance_in_meters: int = 500):
-    candidates = list()
-    for order in orders:
-        if order.category_name == category_name and order.distance <= max_distance_in_meters:
-            candidates.append(order)
-    return candidates
 
 
 async def get_message_content(order: object, orders_quantity: int, order_number: int):
@@ -32,15 +21,6 @@ async def get_message_content(order: object, orders_quantity: int, order_number:
         "reply_markup": chose_order_markup(order_number, orders_quantity, order.pk)
     }
 
-
-async def send_voice(callback, state, order):
-    voice_message = await callback.message.answer_voice(
-        order.voice_description,
-        caption="Описание задачи"
-    )
-    await state.update_data(voice_messages_ids=[voice_message.message_id])
-
-
 @dp.callback_query_handler(orders_nearby_callback.filter(), state=ChoseOrderStates.chose_order)
 async def get_orders_nearby_by_category(callback: types.CallbackQuery, callback_data: dict, state: FSMContext):
     await callback.answer()
@@ -48,7 +28,7 @@ async def get_orders_nearby_by_category(callback: types.CallbackQuery, callback_
     orders = state_data.get("orders")
     category_name = callback_data.get("category_name")
     distance = int(callback_data.get("distance"))
-    orders = get_orders_by_category_name_and_max_distance(orders, category_name, distance)
+    orders = _get_orders_by_category_name_and_max_distance(orders, category_name, distance)
     if len(orders):
         await state.update_data(category_orders=orders, voice_messages_ids=[])
         if orders[0].voice_description:
@@ -76,7 +56,22 @@ async def move_candidate(callback: types.CallbackQuery, callback_data: dict, sta
     await callback.message.answer(
         **(await get_message_content(order, len(orders), order_number))
     )
-    await callback.message.delete()  # Возможно его нужно будет убрать
+    await callback.message.delete()
+
+
+async def send_voice(callback, state, order) -> None:
+    voice_message = await callback.message.answer_voice(
+        order.voice_description,
+        caption="Описание задачи"
+    )
+    await state.update_data(voice_messages_ids=[voice_message.message_id])
+
+def _get_orders_by_category_name_and_max_distance(orders: list, category_name: str, max_distance_in_meters: int = 500):
+    candidates = list()
+    for order in orders:
+        if order.category_name == category_name and order.distance <= max_distance_in_meters:
+            candidates.append(order)
+    return candidates
 
 
 

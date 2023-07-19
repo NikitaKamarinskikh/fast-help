@@ -1,7 +1,8 @@
 from aiogram import types
 from aiogram.dispatcher import FSMContext
+
 from loader import dp
-from models import BotUsersModel, WorkersModel, CustomersModel
+from models import WorkersModel, CustomersModel
 from keyboards.default.start import start_keyboard
 from keyboards.default.main import main_markup
 

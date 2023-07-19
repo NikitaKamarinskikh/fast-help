@@ -3,14 +3,13 @@ import logging
 from aiogram import types
 
 from admin.customers.models import Customers
-from keyboards.inline.customer_orders import orders_markup, orders_callback, orders_status_callback, \
+from keyboards.inline.customer_orders import orders_markup, orders_status_callback, \
     orders_status_markup
 from loader import dp
-from keyboards.inline.start_or_back import start_or_back_markup, start_or_back_callback
-from keyboards.inline.candidates_data import candidates_markup, candidate_callback
+from keyboards.inline.start_or_back import start_or_back_markup
 from data.config import Roles, MainMenuCommands, OrderStatuses
 from states.common.confirm_privacy_policy import ConfirmPrivacyPolicy
-from models import CustomersModel, OrdersModel, OrderCandidatesModel, WorkersModel
+from models import CustomersModel, OrdersModel, WorkersModel
 from handlers.customers.utils import get_orders_quantity_by_order_status
 
 
@@ -51,7 +50,7 @@ async def show_waiting_for_start_orders(callback: types.CallbackQuery, callback_
     await callback.answer()
     customer = await CustomersModel.get_by_telegram_id(callback.from_user.id)
     orders = await OrdersModel.get_by_filters(customer=customer, status=OrderStatuses.waiting_for_start)
-    if len(orders):
+    if orders:
         await callback.message.answer(
             text="Ваши задания",
             reply_markup=orders_markup(orders, OrderStatuses.waiting_for_start)

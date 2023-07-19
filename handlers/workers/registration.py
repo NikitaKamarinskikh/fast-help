@@ -2,11 +2,11 @@ import logging
 
 from aiogram.dispatcher import FSMContext
 from aiogram import types
+
 from data.config import PROMOTIONAL_VIDEO_ID
 from keyboards.default.start import start_keyboard
 from keyboards.inline.skip import skip_markup, skip_callback
 from loader import dp
-from keyboards.inline.chose_role import chose_role_callback, chose_role_markup
 from keyboards.inline.start_or_back import start_or_back_markup, start_or_back_callback
 from keyboards.inline.agree_or_not import agree_or_not_markup, agree_or_not_callback
 from keyboards.inline.categories import create_categories_markup, get_category_callback, confirm_callback
@@ -281,7 +281,4 @@ async def has_additional_contacts(message: types.Message, state: FSMContext):
         )
         await message.answer_video(PROMOTIONAL_VIDEO_ID)
     await state.finish()
-
-
-
 

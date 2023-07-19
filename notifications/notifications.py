@@ -1,3 +1,5 @@
+import logging
+
 from keyboards.inline.rating import rating_markup
 from loader import bot
 from keyboards.inline.respond_to_order import respond_markup
@@ -6,6 +8,8 @@ from keyboards.inline.candidates_data import show_order_candidates_markup
 from common.search_candidates import get_distance_between_two_points_in_meters
 from models import OrdersModel
 from data.config import OrderStatuses
+from admin.orders.models import Orders
+from admin.workers.models import Workers
 
 
 async def send_message(user_telegram_id: int, text: str, reply_markup=None):
@@ -16,7 +20,7 @@ async def send_message(user_telegram_id: int, text: str, reply_markup=None):
             reply_markup=reply_markup
         )
     except Exception as e:
-        print(e)
+        logging.exception(e)
 
 
 async def send_voice(user_telegram_id: int, voice_file_id: str):
@@ -26,11 +30,11 @@ async def send_voice(user_telegram_id: int, voice_file_id: str):
             voice=voice_file_id,
             caption="Описание задачи"
         )
-    except:
-        ...
+    except Exception as e:
+        logging.exception(e)
 
 
-async def notify_workers_about_new_order(workers: list, order: object):
+async def notify_workers_about_new_order(workers: list, order: Orders):
     for worker in workers:
         text = f"Появилось задание!\n" \
                f"Рейтинг заказчика: {order.customer.rating}/{order.customer.completed_orders_quantity}\n" \
@@ -45,11 +49,8 @@ async def notify_workers_about_new_order(workers: list, order: object):
         await send_message(worker.user.telegram_id, text, respond_markup(order.pk))
 
 
-async def notify_worker_about_success_response(worker: object):
-    ...
 
-
-async def notify_worker_about_being_chosen_as_implementer(worker: object, order: object):
+async def notify_worker_about_being_chosen_as_implementer(worker: Workers, order: Orders):
     worker_coordinates_list = worker.location.split()
     order_coordinates_list = order.location.split()
     worker_coordinates = (float(worker_coordinates_list[0]), float(worker_coordinates_list[1]))
@@ -71,7 +72,7 @@ async def notify_worker_about_being_chosen_as_implementer(worker: object, order:
     await send_message(worker.user.telegram_id, text)
 
 
-async def notify_customer_about_new_response(order: object, worker: object):
+async def notify_customer_about_new_response(order: Orders, worker: Workers):
     if order.description:
         text = f"На ваш заказ \"{order.description}\" откликнулся {worker.name}"
     else:
@@ -93,7 +94,7 @@ async def notify_customer_about_completed_order(order):
     )
 
 
-async def notify_worker_about_completed_order(order: object):
+async def notify_worker_about_completed_order(order: Orders):
     if order.description:
         text = f"Заказчик подтвердил выполнение задания \"{order.description}\""
     else:
@@ -109,7 +110,7 @@ async def notify_worker_about_completed_order(order: object):
     )
 
 
-async def notify_worker_about_new_feedback(order: object, feedback_value: int):
+async def notify_worker_about_new_feedback(order: Orders, feedback_value: int):
     if order.description:
         text = f"Вам поставили оценку {feedback_value} за задание \"{order.description}\"\n"
     else:
@@ -121,7 +122,7 @@ async def notify_worker_about_new_feedback(order: object, feedback_value: int):
     )
 
 
-async def notify_customer_about_new_feedback(order: object, feedback_value: int):
+async def notify_customer_about_new_feedback(order: Orders, feedback_value: int):
     if order.description:
         text = f"Вам поставили оценку {feedback_value} за задание \"{order.description}\"\n"
     else:

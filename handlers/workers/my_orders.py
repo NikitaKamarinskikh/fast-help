@@ -10,20 +10,6 @@ from states.workers.executable_orders import ExecutableOrdersStates
 from models import WorkersModel, OrdersModel
 
 
-async def get_executable_order_data(worker_order: object, orders_number: int, orders_quantity: int) -> dict:
-    text = f"Задание [{orders_number + 1} из {orders_quantity}]\n"
-    if worker_order.description:
-        text += f"Задание \"{worker_order.description}\"\n"
-    else:
-        text += f"Задание в категории \"{worker_order.category_name}\"\n"
-    text += f"Средний балл заказчика: {worker_order.customer.rating}/" \
-            f"{worker_order.customer.completed_orders_quantity}\n"
-    return {
-        "text": text,
-        "reply_markup": executable_orders_markup(worker_order.pk, orders_number, orders_quantity)
-    }
-
-
 @dp.callback_query_handler(orders_status_callback.filter(status="executable"))
 async def show_in_progress_orders(callback: types.CallbackQuery, callback_data: dict, state: FSMContext):
     await callback.answer()
@@ -42,7 +28,7 @@ async def show_in_progress_orders(callback: types.CallbackQuery, callback_data: 
                 worker_orders[0].voice_description
             )
         await callback.message.answer(
-            **(await get_executable_order_data(worker_orders[0], 0, len(worker_orders)))
+            **(await _get_executable_order_data(worker_orders[0], 0, len(worker_orders)))
         )
     else:
         await callback.message.answer(
@@ -72,8 +58,21 @@ async def move_orders_to(callback: types.CallbackQuery, callback_data: dict, sta
     if orders[int(order_number)].voice_description:
         await send_voice(callback, state, orders[int(order_number)])
     await callback.message.answer(
-        **(await get_executable_order_data(order, order_number, len(orders)))
+        **(await _get_executable_order_data(order, order_number, len(orders)))
     )
     await callback.message.delete()
 
+
+async def _get_executable_order_data(worker_order: object, orders_number: int, orders_quantity: int) -> dict:
+    text = f"Задание [{orders_number + 1} из {orders_quantity}]\n"
+    if worker_order.description:
+        text += f"Задание \"{worker_order.description}\"\n"
+    else:
+        text += f"Задание в категории \"{worker_order.category_name}\"\n"
+    text += f"Средний балл заказчика: {worker_order.customer.rating}/" \
+            f"{worker_order.customer.completed_orders_quantity}\n"
+    return {
+        "text": text,
+        "reply_markup": executable_orders_markup(worker_order.pk, orders_number, orders_quantity)
+    }
 

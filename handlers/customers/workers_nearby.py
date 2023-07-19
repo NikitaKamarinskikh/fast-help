@@ -3,6 +3,7 @@ import logging
 from aiogram import types
 from aiogram.dispatcher import FSMContext
 from admin.customers.models import Customers
+
 from keyboards.default.main import main_markup
 from keyboards.inline.categories import create_categories_markup, get_category_callback
 from keyboards.inline.start_or_back import start_or_back_markup
@@ -19,7 +20,6 @@ async def workers_nearby(message: types.Message):
     try:
         customer = await CustomersModel.get_by_telegram_id(message.from_user.id)
         categories: list = await JobCategoriesModel.get_all()
-        # workers1 = await WorkersModel.get_by_category()
         await message.answer(
             text="Выберите категорию",
             reply_markup=create_categories_markup(categories)

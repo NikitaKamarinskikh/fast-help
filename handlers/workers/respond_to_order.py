@@ -1,11 +1,11 @@
 import logging
 
 from aiogram import types
+
 from loader import dp
 from keyboards.inline.respond_to_order import respond_callback
 from models import OrdersModel, WorkersModel
 from notifications import notify_customer_about_new_response
-from models import OrderCandidatesModel
 from states.workers.chose_order import ChoseOrderStates
 
 

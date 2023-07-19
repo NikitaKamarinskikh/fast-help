@@ -3,10 +3,10 @@ import logging
 from aiogram.dispatcher import FSMContext
 from aiogram import types
 from admin.customers.models import Customers
+
 from keyboards.default.start import start_keyboard
 from keyboards.inline.categories import create_categories_markup
 from loader import dp
-from keyboards.inline.chose_role import chose_role_callback, chose_role_markup
 from keyboards.inline.start_or_back import start_or_back_markup, start_or_back_callback
 from keyboards.inline.agree_or_not import agree_or_not_markup, agree_or_not_callback
 from keyboards.default.main import main_markup

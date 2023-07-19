@@ -1,27 +1,27 @@
 import logging
 from datetime import datetime, time
+
 from aiogram.dispatcher import FSMContext
 from aiogram import types
+
 from data.config import OrderStatuses, distances, PaymentMethods
 from handlers.payments.get_invoice import send_order_to_workers
-from keyboards.inline.send_order_to_workers import send_order_to_workers_markup
 from loader import dp
 from keyboards.default.main import main_markup
 from keyboards.inline.balance import coins_sum_markup, coins_sum_callback
-from keyboards.inline.categories import create_categories_markup, get_category_callback
+from keyboards.inline.categories import get_category_callback
 from keyboards.inline.yes_or_no import yes_or_no_markup, yes_or_no_callback
 from keyboards.inline.skip import skip_markup, skip_callback
 from keyboards.inline.now import now_markup, now_callback
 from keyboards.inline.order_execution_time import order_execution_time_markup, order_execution_time_callback
-from keyboards.inline.payments import chose_payment_markup, chose_payment_callback, payment_method_markup, \
-    payment_method_callback
+from keyboards.inline.payments import payment_method_markup,payment_method_callback
 from keyboards.inline.distance import order_distance_markup, order_distance_callback
 from keyboards.default.get_location import get_location_markup
 from keyboards.default.get_phone import get_phone_markup
 from states.customers.create_order import CreateOrderStates
 from models import JobCategoriesModel, CustomersModel, OrdersModel, BotUsersModel, TransactionsModel, WithdrawalsModel
-from common import parse_date, correct_time
-from payments.payments import get_payment_link, get_invoice_data, send_invoice
+from common import parse_date, is_correct_time
+from payments.payments import send_invoice
 
 
 @dp.callback_query_handler(get_category_callback.filter(), state=CreateOrderStates.get_category)
@@ -237,7 +237,7 @@ async def get_order_execution_time_callback(callback: types.CallbackQuery, callb
 async def get_order_execution_time(message: types.Message, state: FSMContext):
     order_execution_time: str = message.text
     user = await BotUsersModel.get_by_telegram_id(message.from_user.id)
-    if correct_time(order_execution_time):
+    if is_correct_time(order_execution_time):
         await state.update_data(order_execution_time=order_execution_time)
         await message.answer(
             text=f"Оплатите сумму {distances.short.customer_price * 2} рублей "
@@ -262,7 +262,6 @@ async def get_order_execution_time(message: types.Message, state: FSMContext):
 async def get_distance(callback: types.CallbackQuery, callback_data: dict, state: FSMContext):
     await callback.answer()
     distance = int(callback_data.get("distance"))
-    print(distance)
     await state.update_data(distance=distance)
     user = await BotUsersModel.get_by_telegram_id(callback.from_user.id)
     use_coins_button = False
